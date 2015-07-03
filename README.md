@@ -8,9 +8,8 @@ import pyourd as ourd
 
 
 @ourd.op("hello:word")
-def say(io):
-    io.write("hello peter")
-    return
+def say(name="world!"):
+    return {"message": "hello " + name}
 
 
 @ourd.handler("chima:echo", auth_required=True)
