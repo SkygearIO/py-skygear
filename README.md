@@ -33,6 +33,16 @@ def auto_assignment(booking, db_conn): # booking is record
 def prevent_dead(user, db_conn):
     return "Can't dead"
 
+@ourd.every(interval=3600)
+def generate_daily_report():
+    // do something
+    return
+
+@ourd.every("0 0 0 1 * *")
+def generate_monthly_report():
+    // do something
+    return
+
 
 if __name__ == "__main__":
     ourd.stdin()

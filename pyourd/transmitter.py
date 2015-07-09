@@ -25,12 +25,14 @@ class ConsoleTransport(object):
         self.func_map = {
             'op': {},
             'handler': {},
-            'hook': {}
+            'hook': {},
+            'timer': {},
         }
         self.param_map = {
             'op': [],
             'handler': {},
-            'hook': []
+            'hook': [],
+            'timer': [],
         }
 
     def register(self, kind, name, func, *args, **kwargs):
@@ -44,9 +46,15 @@ class ConsoleTransport(object):
             self.func_map[kind][kwargs['type'] + ':' + name] = func
             kwargs['trigger'] = name
             self.param_map['hook'].append(kwargs)
-        else:
+        elif kind == 'op':
             self.param_map['op'].append(name)
             log.debug("Op param is not yet support, you will get the io")
+        elif kind == 'timer':
+            kwargs['name'] = name
+            self.param_map['timer'].append(kwargs)
+        else:
+            raise Exception("Unrecognized transport kind '%d'.".format(kind))
+
         log.debug("Registering %s:%s to ourd!!", kind, name)
 
     def func_list(self):
@@ -73,3 +81,6 @@ class ConsoleTransport(object):
         new_obj = self.func_map['hook'][evt](_input, None)
         log.debug("Got new Object", new_obj)
         self.write(new_obj)
+
+    def timer(self, name):
+        return self.func_map['timer'][name](self)
