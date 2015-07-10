@@ -34,12 +34,13 @@ def prevent_dead(user, db_conn):
     return "Can't dead"
 
 @ourd.every(interval=3600)
-def generate_daily_report():
+def generate_daily_report(io):
+    io.write("Ourd will see this bytes")
     // do something
     return
 
 @ourd.every("0 0 0 1 * *")
-def generate_monthly_report():
+def generate_monthly_report(io):
     // do something
     return
 
@@ -57,4 +58,6 @@ python sample.py op hello:word
 python sample.py handler chima:echo < README.md
 python sample.py hook booking:beforeSave
 python sample.py hook _user:beforeDelete
+python sample.py timer __main__.generate_daily_report
+python sample.py timer __main__.generate_monthly_report
 ```
