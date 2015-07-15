@@ -68,8 +68,43 @@ def handler(name, *args, **kwargs):
     return ourd_handler
 
 
+# preprocess record before passing it to the hook
+# this function mutates the record dictionary directly
+def preprocess_record(record):
+    data = record['data']
+    if data:
+        del record['data']
+        for key, value in data.items():
+            record[key] = value
+
+
+# postproess record before returning it for serialization
+# this function mutates the record dictionary directly
+def postprocess_record(record):
+    data = {}
+    deleting_keys = set()
+    for key, value in record.items():
+        if not key.startswith('_'):
+            data[key] = value
+            deleting_keys.add(key)
+    for key in deleting_keys:
+        del record[key]
+    record['data'] = data
+
+
 def hook(name, *args, **kwargs):
     def ourd_hook(func):
-        trans.register("hook", name, func, *args, **kwargs)
+        def hook_caller(io, db):
+            in_data = io.read()
+            record = json.loads(in_data)
+
+            preprocess_record(record)
+            func(record, db)
+            postprocess_record(record)
+
+            out_data = json.dumps(record)
+            io.write(out_data)
+
+        trans.register("hook", name, hook_caller, *args, **kwargs)
         return func
     return ourd_hook

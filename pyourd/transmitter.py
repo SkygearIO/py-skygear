@@ -77,10 +77,7 @@ class ConsoleTransport(object):
         return self.func_map['handler'][end_point](_input, self)
 
     def hook(self, evt):
-        _input = self.read()
-        new_obj = self.func_map['hook'][evt](_input, None)
-        log.debug("Got new Object", new_obj)
-        self.write(new_obj)
+        return self.func_map['hook'][evt](self, None)
 
     def timer(self, name):
         return self.func_map['timer'][name](self)
