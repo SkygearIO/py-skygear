@@ -1,12 +1,12 @@
 import sys
 import logging
 import json
-
+import traceback
 
 log = logging.getLogger(__name__)
 
-
 _single = None
+
 
 def get_transmitter(media=None):
     global _single
@@ -14,6 +14,28 @@ def get_transmitter(media=None):
         if media is None:
             _single = ConsoleTransport(sys.stdin, sys.stdout)
     return _single
+
+
+# a decorator intended to be used in ConsoleTransport's member method.
+# it encapsulates return value or exception thrown into a response,
+# then write it to the console
+def _serialize(func):
+    def serialize_with_exc(self, *args, **kwargs):
+        d = {}
+        try:
+            d['result'] = func(self, *args, **kwargs)
+        except Exception as e:
+            d['error'] = _serialize_exc(e)
+        self.write(json.dumps(d))
+
+    return serialize_with_exc
+
+
+def _serialize_exc(e):
+    return {
+        'name': str(e),
+        'desc': traceback.format_stack(),
+    }
 
 
 def _read_op_args(io):
@@ -30,7 +52,7 @@ def _read_op_args(io):
 
 
 def _call_op(func, args):
-    if isinstance(args, dict): 
+    if isinstance(args, dict):
         return func(**args)
     elif isinstance(args, list):
         return func(*args)
@@ -116,18 +138,21 @@ class ConsoleTransport(object):
     def write(self, obj, format='text'):
         return self.output.write(obj)
 
+    @_serialize
     def op(self, command):
         func = self.func_map['op'][command]
 
         args = _read_op_args(self)
         output = _call_op(func, args)
-        self.write(json.dumps(output))
 
+        return output
 
+    @_serialize
     def handler(self, end_point):
         _input = self.read()
-        self.func_map['handler'][end_point](_input, self)
+        return self.func_map['handler'][end_point](_input, self)
 
+    @_serialize
     def hook(self, evt):
         func = self.func_map['hook'][evt]
 
@@ -138,8 +163,8 @@ class ConsoleTransport(object):
         func(record, None)
 
         _postprocess_record(record)
-        out_data = json.dumps(record)
-        self.write(out_data)
+        return record
 
+    @_serialize
     def timer(self, name):
-        self.func_map['timer'][name](self)
+        return self.func_map['timer'][name](self)
