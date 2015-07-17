@@ -34,7 +34,7 @@ def _serialize(func):
 def _serialize_exc(e):
     return {
         'name': str(e),
-        'desc': traceback.format_stack(),
+        'desc': traceback.format_exc(),
     }
 
 
