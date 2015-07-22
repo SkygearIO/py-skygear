@@ -2,6 +2,8 @@ import sys
 import logging
 import json
 import traceback
+from collections import defaultdict
+
 
 from .encoding import (
     deserialize_record,
@@ -101,13 +103,16 @@ class ConsoleTransport(object):
             'handler': {},
             'hook': {},
             'timer': {},
+            'provider': {},
         }
         self.param_map = {
             'op': [],
             'handler': {},
             'hook': [],
             'timer': [],
+            'provider': [],
         }
+        self.providers = {}
 
     def register(self, kind, name, func, *args, **kwargs):
         self.func_map[kind][name] = func
@@ -130,6 +135,13 @@ class ConsoleTransport(object):
             raise Exception("Unrecognized transport kind '%d'.".format(kind))
 
         log.debug("Registering %s:%s to ourd!!", kind, name)
+
+    def register_provider(self, provider_type, provider_id, provider,
+                          *args, **kwargs):
+        kwargs['type'] = provider_type
+        kwargs['id'] = provider_id
+        self.param_map['provider'].append(kwargs)
+        self.providers[provider_id] = provider
 
     def func_list(self):
         return self.output.write(json.dumps(self.param_map))
@@ -172,3 +184,11 @@ class ConsoleTransport(object):
     @_serialize
     def timer(self, name):
         return self.func_map['timer'][name](self)
+
+    @_serialize
+    def provider(self, provider_id, action):
+        provider = self.providers[provider_id]
+
+        in_data = self.read()
+        auth_data = json.loads(in_data)
+        return provider.handle_action(action, auth_data)

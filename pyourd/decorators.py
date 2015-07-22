@@ -45,3 +45,13 @@ def hook(name, *args, **kwargs):
         trans.register("hook", name, func, *args, **kwargs)
         return func
     return ourd_hook
+
+
+def provides(provider_type, provider_id, *args, **kwargs):
+    def ourd_provider(klass):
+        provider = klass()
+        trans.register_provider(provider_type, provider_id, provider,
+                                *args, **kwargs)
+        return klass
+    return ourd_provider
+
