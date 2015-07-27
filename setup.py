@@ -14,5 +14,7 @@ setup(
       author_email='rick.mak@gmail.com',
       url='https://github.com/oursky/pyourd',
       license='MIT',
-      requires=[]
+      install_requires=[
+            'strict-rfc3339==0.5',
+      ]
 )

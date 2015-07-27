@@ -3,6 +3,11 @@ import logging
 import json
 import traceback
 
+from .encoding import (
+    deserialize_record,
+    serialize_record,
+)
+
 log = logging.getLogger(__name__)
 
 _single = None
@@ -157,13 +162,12 @@ class ConsoleTransport(object):
         func = self.func_map['hook'][evt]
 
         in_data = self.read()
-        record = json.loads(in_data)
-        _preprocess_record(record)
+        record_dict = json.loads(in_data)
+        record = deserialize_record(record_dict)
 
         func(record, None)
 
-        _postprocess_record(record)
-        return record
+        return serialize_record(record)
 
     @_serialize
     def timer(self, name):
