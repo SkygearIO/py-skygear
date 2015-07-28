@@ -50,10 +50,11 @@ class _RecordDecoder:
 
     def decode_ace(self, d):
         level = d['level']
-        if 'user_id' in d:
+        relation = d['relation']
+        if relation == '$direct':
             return DirectAccessControlEntry(d['user_id'], level)
-        elif 'relation' in d:
-            return RelationalAccessControlEntry(d['relation'], level)
+        else:
+            return RelationalAccessControlEntry(relation, level)
 
     def decode_dict(self, d):
         return {k: self.decode_value(v) for k, v in d.items()}
@@ -114,6 +115,7 @@ class _RecordEncoder:
         elif isinstance(ace, DirectAccessControlEntry):
             return {
                 'level': ace.level,
+                'relation': '$direct',
                 'user_id': ace.user_id,
             }
         else:
