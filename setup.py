@@ -29,6 +29,7 @@ setup(
       license='MIT',
       install_requires=[
             'strict-rfc3339==0.5',
+            'pyzmq==14.7',
       ],
       entry_points={
           'console_scripts': [

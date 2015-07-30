@@ -1,26 +1,13 @@
-import sys
 import logging
 import json
-import traceback
-from collections import defaultdict
-
 
 from .encoding import (
     deserialize_record,
     serialize_record,
+    _serialize_exc,
 )
 
 log = logging.getLogger(__name__)
-
-_single = None
-
-
-def get_transmitter(media=None):
-    global _single
-    if not _single:
-        if media is None:
-            _single = ConsoleTransport(sys.stdin, sys.stdout)
-    return _single
 
 
 # a decorator intended to be used in ConsoleTransport's member method.
@@ -36,13 +23,6 @@ def _serialize(func):
         self.write(json.dumps(d))
 
     return serialize_with_exc
-
-
-def _serialize_exc(e):
-    return {
-        'name': str(e),
-        'desc': traceback.format_exc(),
-    }
 
 
 def _read_op_args(io):

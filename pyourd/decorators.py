@@ -1,8 +1,7 @@
-import json
 import datetime
 from .transmitter import get_transmitter
 
-trans = get_transmitter()
+trans = get_transmitter('zmq')
 
 
 def op(name, *args, **kwargs):
@@ -42,8 +41,12 @@ def handler(name, *args, **kwargs):
 
 def hook(name, *args, **kwargs):
     def ourd_hook(func):
-        trans.register("hook", name, func, *args, **kwargs)
-        return func
+        def hook_func(record):  # return the record for user
+            func(record)
+            return record
+
+        trans.register("hook", name, hook_func, *args, **kwargs)
+
     return ourd_hook
 
 

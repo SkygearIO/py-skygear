@@ -64,7 +64,10 @@ if __name__ == "__main__":
 
 Run following will be asyncio process and bind to 0mq
 
-```
+You need to install pyzmq, and respective cbinding
+
+OSX -> `brew install zeromq`
+
 pyourd sample.py --ourd-address 0.0.0.0:3000
 
 ```

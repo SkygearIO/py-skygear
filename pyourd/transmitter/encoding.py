@@ -1,7 +1,9 @@
 from datetime import datetime
+import traceback
+
 import strict_rfc3339
 
-from .models import (
+from ..models import (
     Record,
     RecordID,
     RelationalAccessControlEntry,
@@ -9,6 +11,13 @@ from .models import (
     Asset,
     Reference,
 )
+
+
+def _serialize_exc(e):
+    return {
+        'name': str(e),
+        'desc': traceback.format_exc(),
+    }
 
 
 def deserialize_record(obj):

@@ -3,20 +3,23 @@ import argparse
 import asyncio
 from importlib.machinery import SourceFileLoader
 
+import zmq
+
 from .transmitter import get_transmitter
 
 
 def get_arguments():
     ap = argparse.ArgumentParser(description="Ourd Plugin runner")
     ap.add_argument('--ourd-address', metavar="ADDR", action='store',
-                    help="Binds to Ourd using this socket",
-                    default='127.0.0.1:3000')
+                    help="Binds to this socket for ourd",
+                    default='tcp://127.0.0.1:6543')
     ap.add_argument('--subprocess', dest='subprocess', action='store',
                     nargs='*',
                     help='Trigger subprocess everytime for debug')
     ap.add_argument('plugin')
 
     return ap
+
 
 def main():
     ap = get_arguments()
@@ -31,20 +34,20 @@ def run_plugin(options):
     if options.subprocess is not None:
         SourceFileLoader('plugin', options.plugin).load_module()
         return stdin(options.subprocess)
-    get_transmitter(options.transport)
-    plugin = SourceFileLoader('plugin', options.plugin).load_module()
+
+    SourceFileLoader('plugin', options.plugin).load_module()
+
     print("Connecting to address %s" % options.ourd_address, file=sys.stdout)
-    try:
-        loop = asyncio.get_event_loop()
-        # TODO: handling zmq event
-        loop.run_forever()
-    except KeyboardInterrupt:
-        loop.stop()
-        loop.close()
+    transmitter = get_transmitter(
+        'zmq',
+        options={'addr': 'tcp://127.0.0.1:5555'},
+    )
+    transmitter.run()
 
 
 stdin_usage = "Example usage: pyourd sample.py --subprocess \
 init|{op script}|{hook name}|{handler name}|{timer func_name}"
+
 
 def stdin(_input):
     if len(_input) < 1:
