@@ -11,10 +11,10 @@ from .transmitter import (
 
 
 def get_arguments():
-    ap = argparse.ArgumentParser(description="Ourd Plugin runner")
-    ap.add_argument('--ourd-address', metavar="ADDR", action='store',
-                    help="Binds to this socket for ourd",
-                    default='tcp://127.0.0.1:6543')
+    ap = argparse.ArgumentParser(description='Ourd Plugin runner')
+    ap.add_argument('--ourd-address', metavar='ADDR', action='store',
+                    default='tcp://127.0.0.1:5555',
+                    help="Binds to this socket for ourd")
     ap.add_argument('--subprocess', dest='subprocess', action='store',
                     nargs='+',
                     metavar=('(init|op|hook|handler|timer)', 'name'),
@@ -40,7 +40,7 @@ def run_plugin(options):
         return stdin(options.subprocess)
 
     print("Connecting to address %s" % options.ourd_address, file=sys.stdout)
-    transport = ZmqTransport('tcp://127.0.0.1:5555')
+    transport = ZmqTransport(options.ourd_address)
     transport.run()
 
 
