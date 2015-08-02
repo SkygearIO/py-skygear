@@ -1,12 +1,12 @@
 import datetime
-from .transmitter import get_transmitter
+from .registry import get_registry
 
-trans = get_transmitter('zmq')
+_registry = get_registry()
 
 
 def op(name, *args, **kwargs):
     def our_op(func):
-        trans.register("op", name, func, *args, **kwargs)
+        _registry.register("op", name, func, *args, **kwargs)
         return func
     return our_op
 
@@ -27,14 +27,14 @@ def every(interval, name=None, *args, **kwargs):
         name = kwargs.pop('name', None) or \
                 func.__module__ + "." + func.__name__ 
 
-        trans.register("timer", name, func, *args, **kwargs)
+        _registry.register("timer", name, func, *args, **kwargs)
         return func
     return our_every
 
 
 def handler(name, *args, **kwargs):
     def ourd_handler(func):
-        trans.register("handler", name, func, *args, **kwargs)
+        _registry.register("handler", name, func, *args, **kwargs)
         return func
     return ourd_handler
 
@@ -45,7 +45,7 @@ def hook(name, *args, **kwargs):
             func(record)
             return record
 
-        trans.register("hook", name, hook_func, *args, **kwargs)
+        _registry.register("hook", name, hook_func, *args, **kwargs)
 
     return ourd_hook
 
@@ -53,8 +53,7 @@ def hook(name, *args, **kwargs):
 def provides(provider_type, provider_id, *args, **kwargs):
     def ourd_provider(klass):
         provider = klass()
-        trans.register_provider(provider_type, provider_id, provider,
-                                *args, **kwargs)
+        _registry.register_provider(provider_type, provider_id, provider,
+                                    *args, **kwargs)
         return klass
     return ourd_provider
-

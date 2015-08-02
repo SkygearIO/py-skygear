@@ -1,11 +1,13 @@
-import sys
 import argparse
-import asyncio
+import json
 from importlib.machinery import SourceFileLoader
+import sys
 
-import zmq
-
-from .transmitter import get_transmitter
+from .registry import get_registry
+from .transmitter import (
+    ConsoleTransport,
+    ZmqTransport,
+)
 
 
 def get_arguments():
@@ -14,7 +16,8 @@ def get_arguments():
                     help="Binds to this socket for ourd",
                     default='tcp://127.0.0.1:6543')
     ap.add_argument('--subprocess', dest='subprocess', action='store',
-                    nargs='*',
+                    nargs='+',
+                    metavar=('(init|op|hook|handler|timer)', 'name'),
                     help='Trigger subprocess everytime for debug')
     ap.add_argument('plugin')
 
@@ -31,18 +34,14 @@ def run_plugin(options):
     if not options.plugin:
         print("Usage: pyourd plugin.py", file=sys.stderr)
         sys.exit(1)
-    if options.subprocess is not None:
-        SourceFileLoader('plugin', options.plugin).load_module()
-        return stdin(options.subprocess)
-
     SourceFileLoader('plugin', options.plugin).load_module()
 
+    if options.subprocess is not None:
+        return stdin(options.subprocess)
+
     print("Connecting to address %s" % options.ourd_address, file=sys.stdout)
-    transmitter = get_transmitter(
-        'zmq',
-        options={'addr': 'tcp://127.0.0.1:5555'},
-    )
-    transmitter.run()
+    transport = ZmqTransport('tcp://127.0.0.1:5555')
+    transport.run()
 
 
 stdin_usage = "Example usage: pyourd sample.py --subprocess \
@@ -50,29 +49,16 @@ init|{op script}|{hook name}|{handler name}|{timer func_name}"
 
 
 def stdin(_input):
-    if len(_input) < 1:
-        print(stdin_usage, file=sys.stderr)
-        sys.exit(1)
     target = _input[0]
     if target not in ['init', 'op', 'hook', 'handler', 'timer', 'provider']:
-        print("Only init, op, hook, handler and timer is support now",
+        print("Only init, op, hook, handler, timer and provider is support now",
             file=sys.stderr)
         sys.exit(1)
-    transport = get_transmitter()
+    transport = ConsoleTransport()
     if target == 'init':
-        transport.func_list()
+        json.dump(get_registry().func_list(), sys.stdout)
     elif len(_input) < 2:
         print("Missing param for %s", target, file=sys.stderr)
         sys.exit(1)
     else:
-        command = _input[1]
-        if target == 'op':
-            transport.op(command)
-        elif target == 'hook':
-            transport.hook(command)
-        elif target == 'handler':
-            transport.handler(command)
-        elif target == 'timer':
-            transport.timer(command)
-        elif target == 'provider':
-            transport.provider(command, _input[2])
+        transport.handle_call(target, *_input[1:])

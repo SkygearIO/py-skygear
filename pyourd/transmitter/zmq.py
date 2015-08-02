@@ -3,7 +3,12 @@ import zmq
 import json
 import logging
 
+from ..registry import (
+    get_registry
+)
 from .encoding import (
+    deserialize_record,
+    serialize_record,
     _serialize_exc,
 )
 
@@ -26,51 +31,17 @@ def _encoded(func):
 
 class ZmqTransport:
 
-    def __init__(self, addr, context=None):
+    def __init__(self, addr, context=None, registry=None):
         if context is None:
             context = zmq.Context()
-        self._context = context
+        if registry is None:
+            registry = get_registry()
 
+        self._registry = registry
+
+        self._context = context
         self._socket = context.socket(zmq.REP)
         self._socket.connect(addr)
-
-        self.func_map = {
-            'op': {},
-            'handler': {},
-            'hook': {},
-            'timer': {},
-        }
-        self.param_map = {
-            'op': [],
-            'handler': {},
-            'hook': [],
-            'timer': [],
-        }
-
-    def register(self, kind, name, func, *args, **kwargs):
-        self.func_map[kind][name] = func
-        if kind == 'handler':
-            # TODO: param checking
-            self.param_map['handler'][name] = kwargs
-        elif kind == 'hook':
-            if kwargs['type'] is None:
-                raise ValueError("type is required for hook")
-            self.func_map[kind][kwargs['type'] + ':' + name] = func
-            kwargs['trigger'] = name
-            self.param_map['hook'].append(kwargs)
-        elif kind == 'op':
-            self.param_map['op'].append(name)
-            log.debug("Op param is not yet support, you will get the io")
-        elif kind == 'timer':
-            kwargs['name'] = name
-            self.param_map['timer'].append(kwargs)
-        else:
-            raise Exception("Unrecognized transport kind '%d'.".format(kind))
-
-        log.debug("Registering %s:%s to ourd!!", kind, name)
-
-    def func_list(self):
-        return self.param_map
 
     def run(self):
         while True:
@@ -82,38 +53,63 @@ class ZmqTransport:
     def handle_message(self, req):
         kind = req['kind']
         if kind == 'init':
-            return self.func_list()
+            return self._registry.func_list()
 
-        func, args, kwargs = self._get_func(kind, req)
+        name = req['name']
+        param = req.get('param')
+
         resp = {}
         try:
-            resp['result'] = func(*args, **kwargs)
+            resp['result'] = self.call_func(kind, name, param)
         except Exception as e:
             resp['error'] = _serialize_exc(e)
 
         return resp
 
-    def _get_func(self, kind, req):
-        name = req['name']
-        func = self.func_map[kind][name]
+    # the following methods are almost exactly the same as their counterpart
+    # of ConsoleTransport, which probably can be factored out
+
+    def call_func(self, kind, name, param):
+        obj = self._registry.get_obj(kind, name)
 
         # derive args and kwargs
         if kind == 'op':
-            _args = req.get('args', [])
-            if isinstance(_args, list):
-                args = _args
+            if isinstance(param, list):
+                args = param
                 kwargs = {}
-            elif isinstance(_args, dict):
+            elif isinstance(param, dict):
                 args = []
-                kwargs = _args
-        elif kind == 'handler':
-            args = [req['input']]
-            kwargs = {}
-        elif kind == 'hook':
-            args = [req['record']]
-            kwargs = {}
-        elif kind == 'timer':
-            args = []
-            kwargs = {}
+                kwargs = param
+            else:
+                msg = "Unsupported args type '{0}'".format(type(param))
+                raise ValueError(msg)
 
-        return func, args, kwargs
+            return self.op(obj, *args, **kwargs)
+        elif kind == 'handler':
+            return self.handler(obj)
+        elif kind == 'hook':
+            return self.hook(obj, param)
+        elif kind == 'timer':
+            return self.timer(obj)
+        elif kind == 'provider':
+            action = param['action']
+            return self.provider(obj, action, param)
+
+        return obj, args, kwargs
+
+    def op(self, func, *args, **kwargs):
+        return func(*args, **kwargs)
+
+    def handler(self, func):
+        return func()
+
+    def hook(self, func, record_dict):
+        record = deserialize_record(record_dict)
+        func(record)
+        return serialize_record(record)
+
+    def timer(self, func):
+        return func()
+
+    def provider(self, provider, action, data):
+        return provider.handle_action(action, data)

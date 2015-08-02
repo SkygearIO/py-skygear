@@ -1,6 +1,8 @@
 import logging
 import json
+import sys
 
+from ..registry import get_registry
 from .encoding import (
     deserialize_record,
     serialize_record,
@@ -25,106 +27,15 @@ def _serialize(func):
     return serialize_with_exc
 
 
-def _read_op_args(io):
-    in_data = io.read()
-    if in_data:
-        try:
-            payload = json.loads(in_data)
-            args = payload['args']
-        except:
-            args = []
-    else:
-        args = []
-    return args
+class ConsoleTransport:
 
+    def __init__(self, stdin=sys.stdin, stdout=sys.stdout, registry=None):
+        if registry is None:
+            registry = get_registry()
+        self._registry = registry
 
-def _call_op(func, args):
-    if isinstance(args, dict):
-        return func(**args)
-    elif isinstance(args, list):
-        return func(*args)
-    else:
-        msg = "Unsupported args type '{0}'".format(type(args))
-        raise Exception(msg)
-
-
-# preprocess record before passing it to the hook
-# this function mutates the record dictionary directly
-def _preprocess_record(record):
-    data = record['data']
-    if data:
-        del record['data']
-        for key, value in data.items():
-            record[key] = value
-
-
-# postproess record before returning it for serialization
-# this function mutates the record dictionary directly
-def _postprocess_record(record):
-    data = {}
-    deleting_keys = set()
-    for key, value in record.items():
-        if not key.startswith('_'):
-            data[key] = value
-            deleting_keys.add(key)
-    for key in deleting_keys:
-        del record[key]
-    record['data'] = data
-
-
-class ConsoleTransport(object):
-
-    def __init__(self, stdin, stdout):
-        log.debug("Setup ourd connection")
         self.input = stdin
         self.output = stdout
-        self.func_map = {
-            'op': {},
-            'handler': {},
-            'hook': {},
-            'timer': {},
-            'provider': {},
-        }
-        self.param_map = {
-            'op': [],
-            'handler': {},
-            'hook': [],
-            'timer': [],
-            'provider': [],
-        }
-        self.providers = {}
-
-    def register(self, kind, name, func, *args, **kwargs):
-        self.func_map[kind][name] = func
-        if kind == 'handler':
-            # TODO: param checking
-            self.param_map['handler'][name] = kwargs
-        elif kind == 'hook':
-            if kwargs['type'] is None:
-                raise ValueError("type is required for hook")
-            self.func_map[kind][kwargs['type'] + ':' + name] = func
-            kwargs['trigger'] = name
-            self.param_map['hook'].append(kwargs)
-        elif kind == 'op':
-            self.param_map['op'].append(name)
-            log.debug("Op param is not yet support, you will get the io")
-        elif kind == 'timer':
-            kwargs['name'] = name
-            self.param_map['timer'].append(kwargs)
-        else:
-            raise Exception("Unrecognized transport kind '%d'.".format(kind))
-
-        log.debug("Registering %s:%s to ourd!!", kind, name)
-
-    def register_provider(self, provider_type, provider_id, provider,
-                          *args, **kwargs):
-        kwargs['type'] = provider_type
-        kwargs['id'] = provider_id
-        self.param_map['provider'].append(kwargs)
-        self.providers[provider_id] = provider
-
-    def func_list(self):
-        return self.output.write(json.dumps(self.param_map))
 
     def read(self):
         if not self.input.isatty():
@@ -136,39 +47,48 @@ class ConsoleTransport(object):
         return self.output.write(obj)
 
     @_serialize
-    def op(self, command):
-        func = self.func_map['op'][command]
+    def handle_call(self, kind, name, *args):
+        param = json.loads(self.read())
 
-        args = _read_op_args(self)
-        output = _call_op(func, args)
+        obj = self._registry.get_obj(kind, name)
 
-        return output
+        # derive args and kwargs
+        if kind == 'op':
+            if isinstance(param, list):
+                args = param
+                kwargs = {}
+            elif isinstance(param, dict):
+                args = []
+                kwargs = param
+            else:
+                msg = "Unsupported args type '{0}'".format(type(param))
+                raise ValueError(msg)
 
-    @_serialize
-    def handler(self, end_point):
-        _input = self.read()
-        return self.func_map['handler'][end_point](_input, self)
+            return self.op(obj, *args, **kwargs)
+        elif kind == 'handler':
+            return self.handler(obj)
+        elif kind == 'hook':
+            return self.hook(obj, param)
+        elif kind == 'timer':
+            return self.timer(obj)
+        elif kind == 'provider':
+            return self.provider(obj, args[0], param)
 
-    @_serialize
-    def hook(self, evt):
-        func = self.func_map['hook'][evt]
+        return obj, args, kwargs
 
-        in_data = self.read()
-        record_dict = json.loads(in_data)
+    def op(self, func, *args, **kwargs):
+        return func(*args, **kwargs)
+
+    def handler(self, func):
+        return func()
+
+    def hook(self, func, record_dict):
         record = deserialize_record(record_dict)
-
-        func(record, None)
-
+        func(record)
         return serialize_record(record)
 
-    @_serialize
-    def timer(self, name):
-        return self.func_map['timer'][name](self)
+    def timer(self, func):
+        return func()
 
-    @_serialize
-    def provider(self, provider_id, action):
-        provider = self.providers[provider_id]
-
-        in_data = self.read()
-        auth_data = json.loads(in_data)
-        return provider.handle_action(action, auth_data)
+    def provider(self, provider, action, data):
+        return provider.handle_action(action, data)
