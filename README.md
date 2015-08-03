@@ -2,7 +2,6 @@ Python plugin runtime for Ourd
 
 Example usage right now:
 
-
 ```
 import pyourd as ourd
 
@@ -44,20 +43,24 @@ def generate_monthly_report(io):
     // do something
     return
 
+```
 
-if __name__ == "__main__":
-    ourd.stdin()
+Run following will be asyncio process and bind to 0mq
+
+```
+pyourd sample.py --ourd-address 0.0.0.0:3000
 
 ```
 
-Run following:
+
+Debugging your plugin using command line
 
 ```
-python sample.py init
-python sample.py op hello:word
-python sample.py handler chima:echo < README.md
-python sample.py hook booking:beforeSave
-python sample.py hook _user:beforeDelete
-python sample.py timer __main__.generate_daily_report
-python sample.py timer __main__.generate_monthly_report
+pyourd sample.py --subprocess init
+pyourd sample.py --subprocess op hello:word
+pyourd sample.py --subprocess handler chima:echo < README.md
+pyourd sample.py --subprocess hook booking:beforeSave
+pyourd sample.py --subprocess hook _user:beforeDelete
+pyourd sample.py --subprocess timer plugin.generate_daily_report
+pyourd sample.py --subprocess timer plugin.generate_monthly_report
 ```
