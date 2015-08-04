@@ -45,6 +45,23 @@ def generate_monthly_report(io):
 
 ```
 
+@ourd.provides("auth", "com.facebook")
+class FacebookProvider(pyourd.providers.BaseAuthProvider):
+    def login(self, auth_data):
+        graph = facebook.GraphAPI(access_token=auth_data['access_token'])
+        auth_data.update(graph.get_object(id='me'))
+        return {"principal_id": auth_data['id'], "auth_data": auth_data}
+
+    def logout(self, auth_data):
+        return {"auth_data": auth_data}
+
+    def info(self, auth_data):
+        return {"auth_data": auth_data}
+
+
+if __name__ == "__main__":
+    ourd.stdin()
+
 Run following will be asyncio process and bind to 0mq
 
 ```

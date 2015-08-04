@@ -51,7 +51,7 @@ def stdin(_input):
         print(stdin_usage, file=sys.stderr)
         sys.exit(1)
     target = _input[0]
-    if target not in ['init', 'op', 'hook', 'handler', 'timer']:
+    if target not in ['init', 'op', 'hook', 'handler', 'timer', 'provider']:
         print("Only init, op, hook, handler and timer is support now",
             file=sys.stderr)
         sys.exit(1)
@@ -71,3 +71,5 @@ def stdin(_input):
             transport.handler(command)
         elif target == 'timer':
             transport.timer(command)
+        elif target == 'provider':
+            transport.provider(command, _input[2])
