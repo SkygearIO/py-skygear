@@ -104,10 +104,12 @@ class ZmqTransport:
     def handler(self, func):
         return func()
 
-    def hook(self, func, record_dict):
-        record = deserialize_record(record_dict)
+    def hook(self, func, param):
+        deserialize_or_none = lambda d: deserialize_record(d) if d else None
+        original_record = deserialize_or_none(param.get('original', None))
+        record = deserialize_or_none(param.get('record', None))
         with _get_engine().begin() as conn:
-            func(record, conn)
+            func(record, original_record, conn)
         return serialize_record(record)
 
     def timer(self, func):

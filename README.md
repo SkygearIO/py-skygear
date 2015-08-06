@@ -18,7 +18,7 @@ def meow(payload, io):
 
 
 @ourd.hook("beforeSave", type="booking", async=False)
-def auto_assignment(booking, db_conn): # booking is record
+def auto_assignment(booking, original_booking, db_conn): # booking is record
     return "No Booking"
     table = db_conn.query("table").filter(status="free").first()
     if table:
@@ -28,9 +28,15 @@ def auto_assignment(booking, db_conn): # booking is record
     return booking
 
 
-@ourd.hook("beforeDelete", type="_user", async=False)
-def prevent_dead(user, db_conn):
+@ourd.before_save("_user", async=False)
+def prevent_dead(user, original_user, db_conn):
+    return user
     return "Can't dead"
+
+
+@ourd.before_delete("_user", async=False)
+def prevent_dead(user, db_connn):
+    raise Exception("can't dead")
 
 
 @ourd.every(interval=3600)

@@ -41,13 +41,60 @@ def handler(name, *args, **kwargs):
 
 def hook(name, *args, **kwargs):
     def ourd_hook(func):
-        def hook_func(record, db):  # return the record for user
-            func(record, db)
+        def hook_func(record, original_record, db):  # return the record for user
+            func(record, original_record, db)
             return record
 
         _registry.register("hook", name, hook_func, *args, **kwargs)
+        return func
 
     return ourd_hook
+
+
+def register_save_hook(name, func, *args, **kwargs):
+    def hook_func(record, original_record, db):
+        func(record, original_record, db)
+        return record
+    _registry.register("hook", name, hook_func, *args, **kwargs)
+
+
+def register_delete_hook(name, func, *args, **kwargs):
+    def hook_func(record, original_record, db):
+        func(record, db)
+        return record
+    _registry.register("hook", name, hook_func, *args, **kwargs)
+
+
+def before_save(type, *args, **kwargs):
+    kwargs['type'] = type
+    def wrapper(func):
+        register_save_hook("beforeSave", func, *args, **kwargs)
+        return func
+    return wrapper
+
+
+def after_save(type, *args, **kwargs):
+    kwargs['type'] = type
+    def wrapper(func):
+        register_save_hook("afterSave", func, *args, **kwargs)
+        return func
+    return wrapper
+
+
+def before_delete(type, *args, **kwargs):
+    kwargs['type'] = type
+    def wrapper(func):
+        register_delete_hook("beforeDelete", func, *args, **kwargs)
+        return func
+    return wrapper
+
+
+def after_delete(type, *args, **kwargs):
+    kwargs['type'] = type
+    def wrapper(func):
+        register_delete_hook("afterDelete", func, *args, **kwargs)
+        return func
+    return wrapper
 
 
 def provides(provider_type, provider_id, *args, **kwargs):
