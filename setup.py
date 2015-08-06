@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 from os import path
 
@@ -19,7 +19,7 @@ classifiers = [
 setup(
       name='pyourd',
       version='0.1',
-      packages=['pyourd'],
+      packages=find_packages(),
       description='Python plugin runtime for Ourd',
       long_description=open(README).read(),
       classifiers=classifiers,
