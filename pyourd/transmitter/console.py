@@ -3,6 +3,7 @@ import json
 import sys
 
 from ..registry import get_registry
+from .common import _get_engine
 from .encoding import (
     deserialize_record,
     serialize_record,
@@ -84,7 +85,8 @@ class ConsoleTransport:
 
     def hook(self, func, record_dict):
         record = deserialize_record(record_dict)
-        func(record)
+        with _get_engine().begin() as conn:
+            func(record, conn)
         return serialize_record(record)
 
     def timer(self, func):

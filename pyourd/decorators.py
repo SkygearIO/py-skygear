@@ -41,8 +41,8 @@ def handler(name, *args, **kwargs):
 
 def hook(name, *args, **kwargs):
     def ourd_hook(func):
-        def hook_func(record):  # return the record for user
-            func(record)
+        def hook_func(record, db):  # return the record for user
+            func(record, db)
             return record
 
         _registry.register("hook", name, hook_func, *args, **kwargs)

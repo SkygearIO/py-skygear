@@ -28,8 +28,10 @@ setup(
       url='https://github.com/oursky/pyourd',
       license='MIT',
       install_requires=[
-            'strict-rfc3339==0.5',
             'pyzmq==14.7',
+            'psycopg2==2.6.1',
+            'SQLAlchemy==1.0.8',
+            'strict-rfc3339==0.5',
       ],
       entry_points={
           'console_scripts': [
