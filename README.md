@@ -72,7 +72,7 @@ You need to install pyzmq, and respective cbinding
 OSX -> `brew install zeromq`
 
 ```
-DATABASE_URL=postgresql://localhost/ourd?sslmode=disable pyourd sample.py --ourd-address 0.0.0.0:3000
+DATABASE_URL=postgresql://localhost/ourd?sslmode=disable pyourd sample.py --ourd-address tcp://127.0.0.1:5555 --ourd-endpoint http://127.0.0.1:3000 --apikey=API_KEY
 
 ```
 
