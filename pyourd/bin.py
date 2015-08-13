@@ -8,6 +8,7 @@ from .transmitter import (
     ConsoleTransport,
     ZmqTransport,
 )
+from .container import OurdContainer
 
 
 def get_arguments():
@@ -15,6 +16,12 @@ def get_arguments():
     ap.add_argument('--ourd-address', metavar='ADDR', action='store',
                     default='tcp://127.0.0.1:5555',
                     help="Binds to this socket for ourd")
+    ap.add_argument('--ourd-endpoint', metavar='ENDPOINT', action='store',
+                    default='http://127.0.0.1:3000',
+                    help="Send to this addres for ourd handlers")
+    ap.add_argument('--apikey', metavar='APIKEY', action='store',
+                    default=None,
+                    help="API Key of the application")
     ap.add_argument('--subprocess', dest='subprocess', action='store',
                     nargs='+',
                     metavar=('(init|op|hook|handler|timer)', 'name'),
@@ -35,6 +42,9 @@ def run_plugin(options):
         print("Usage: pyourd plugin.py", file=sys.stderr)
         sys.exit(1)
     SourceFileLoader('plugin', options.plugin).load_module()
+    
+    OurdContainer.set_default_endpoint(options.ourd_endpoint)
+    OurdContainer.set_default_apikey(options.apikey)
 
     if options.subprocess is not None:
         return stdin(options.subprocess)
