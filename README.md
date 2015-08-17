@@ -40,10 +40,9 @@ def prevent_dead(user, db_connn):
 
 
 @ourd.every(interval=3600)
-def generate_daily_report(io):
-    io.write("Ourd will see this bytes")
+def generate_daily_report():
     // do something
-    return
+    return "Ourd will log this bytes to debug level"
 
 
 @ourd.every("0 0 0 1 * *")
