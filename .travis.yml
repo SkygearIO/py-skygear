@@ -1,0 +1,19 @@
+language: python
+
+python:
+  - '3.4'
+
+before_install:
+  - pip install --upgrade pip
+  - pip install pylama
+  - sudo pip install lizard
+
+install:
+  - pip install -r requirments.txt
+
+script:
+  - pylama pyourd
+  - python setup.py test
+
+notifications:
+  slack: oursky:PxqsclRADehuWEs51vpgxeUh
