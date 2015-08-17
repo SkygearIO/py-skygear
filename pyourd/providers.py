@@ -1,6 +1,3 @@
-import json
-
-
 class BaseAuthProvider(object):
     def handle_action(self, action, data):
         auth_data = data.get('auth_data', {})
@@ -13,10 +10,13 @@ class BaseAuthProvider(object):
         return output
 
     def login(self, auth_data):
-        raise NotImplementedError("Subclass of BaseAuthProvider should implement login method.")
+        raise NotImplementedError(
+            "Subclass of BaseAuthProvider should implement login method.")
 
     def logout(self, auth_data):
-        raise NotImplementedError("Subclass of BaseAuthProvider should implement logout method.")
+        raise NotImplementedError(
+            "Subclass of BaseAuthProvider should implement logout method.")
 
     def info(self, auth_data):
-        raise NotImplementedError("Subclass of BaseAuthProvider should implement info method.")
+        raise NotImplementedError(
+            "Subclass of BaseAuthProvider should implement info method.")

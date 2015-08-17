@@ -18,14 +18,14 @@ def every(interval, name=None, *args, **kwargs):
         interval = "@every {0}s".format(interval)
     elif not isinstance(interval, str):
         msg = "Expecting int, timedelta or str for interval. Got '%s'." \
-                .format(type(interval).__name__)
+            .format(type(interval).__name__)
         raise Exception(msg)
     kwargs['spec'] = interval
     kwargs['name'] = name
 
     def our_every(func):
         name = kwargs.pop('name', None) or \
-                func.__module__ + "." + func.__name__ 
+            func.__module__ + "." + func.__name__
 
         _registry.register("timer", name, func, *args, **kwargs)
         return func
@@ -41,7 +41,8 @@ def handler(name, *args, **kwargs):
 
 def hook(name, *args, **kwargs):
     def ourd_hook(func):
-        def hook_func(record, original_record, db):  # return the record for user
+        def hook_func(record, original_record, db):
+            # return the record for user
             func(record, original_record, db)
             return record
 
@@ -65,32 +66,36 @@ def register_delete_hook(name, func, *args, **kwargs):
     _registry.register("hook", name, hook_func, *args, **kwargs)
 
 
-def before_save(type, *args, **kwargs):
-    kwargs['type'] = type
+def before_save(type_, *args, **kwargs):
+    kwargs['type'] = type_
+
     def wrapper(func):
         register_save_hook("beforeSave", func, *args, **kwargs)
         return func
     return wrapper
 
 
-def after_save(type, *args, **kwargs):
-    kwargs['type'] = type
+def after_save(type_, *args, **kwargs):
+    kwargs['type'] = type_
+
     def wrapper(func):
         register_save_hook("afterSave", func, *args, **kwargs)
         return func
     return wrapper
 
 
-def before_delete(type, *args, **kwargs):
-    kwargs['type'] = type
+def before_delete(type_, *args, **kwargs):
+    kwargs['type'] = type_
+
     def wrapper(func):
         register_delete_hook("beforeDelete", func, *args, **kwargs)
         return func
     return wrapper
 
 
-def after_delete(type, *args, **kwargs):
-    kwargs['type'] = type
+def after_delete(type_, *args, **kwargs):
+    kwargs['type'] = type_
+
     def wrapper(func):
         register_delete_hook("afterDelete", func, *args, **kwargs)
         return func

@@ -8,7 +8,7 @@ from ..registry import (
 )
 from .common import _get_engine
 from .encoding import (
-    deserialize_record,
+    deserialize_or_none,
     serialize_record,
     _serialize_exc,
 )
@@ -105,7 +105,6 @@ class ZmqTransport:
         return func()
 
     def hook(self, func, param):
-        deserialize_or_none = lambda d: deserialize_record(d) if d else None
         original_record = deserialize_or_none(param.get('original', None))
         record = deserialize_or_none(param.get('record', None))
         with _get_engine().begin() as conn:

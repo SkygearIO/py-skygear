@@ -51,7 +51,8 @@ init|{op script}|{hook name}|{handler name}|{timer func_name}"
 def stdin(_input):
     target = _input[0]
     if target not in ['init', 'op', 'hook', 'handler', 'timer', 'provider']:
-        print("Only init, op, hook, handler, timer and provider is support now",
+        print(
+            "Only init, op, hook, handler, timer and provider is support now",
             file=sys.stderr)
         sys.exit(1)
     transport = ConsoleTransport()

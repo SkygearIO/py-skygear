@@ -24,6 +24,13 @@ def deserialize_record(obj):
     return _RecordDecoder().decode(obj)
 
 
+def deserialize_or_none(obj):
+    if obj:
+        return deserialize_record(obj)
+    else:
+        return None
+
+
 def serialize_record(record):
     return _RecordEncoder().encode(record)
 
