@@ -42,7 +42,7 @@ def run_plugin(options):
         print("Usage: pyourd plugin.py", file=sys.stderr)
         sys.exit(1)
     SourceFileLoader('plugin', options.plugin).load_module()
-    
+
     OurdContainer.set_default_endpoint(options.ourd_endpoint)
     OurdContainer.set_default_apikey(options.apikey)
 
