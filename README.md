@@ -76,10 +76,6 @@ You need to install pyzmq, and respective cbinding
 
 OSX -> `brew install zeromq`
 
-```
-postgresql://localhost/ourd?sslmode=disable pyourd sample.py --ourd-address tcp://127.0.0.1:5555
-```
-
 Debugging your plugin using command line:
 
 ```
@@ -95,5 +91,5 @@ pyourd sample.py --subprocess timer plugin.generate_monthly_report
 Since database url is read from environment variable, you have to start Ourd specifying the database connection string:
 
 ```
-DATABASE_URL=postgresql://localhost/ourd?sslmode=disable ourd development.ini
+DATABASE_URL=postgresql://localhost/ourd?sslmode=disable pyourd sample.py --ourd-address tcp://127.0.0.1:5555 --ourd-endpoint http://127.0.0.1:3000 --apikey=API_KEY
 ```

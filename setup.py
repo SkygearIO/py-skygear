@@ -32,6 +32,7 @@ setup(
             'psycopg2==2.6.1',
             'SQLAlchemy==1.0.8',
             'strict-rfc3339==0.5',
+            'requests==2.7.0',
       ],
       entry_points={
           'console_scripts': [
