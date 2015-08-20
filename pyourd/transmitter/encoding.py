@@ -9,6 +9,7 @@ from ..models import (
     RelationalAccessControlEntry,
     DirectAccessControlEntry,
     Asset,
+    Location,
     Reference,
 )
 
@@ -85,6 +86,8 @@ class _RecordDecoder:
                 return self.decode_date(v)
             elif type_ == 'asset':
                 return self.decode_asset(v)
+            elif type_ == 'geo':
+                return self.decode_location(v)
             elif type_ == 'ref':
                 return self.decode_ref(v)
             else:
@@ -100,6 +103,9 @@ class _RecordDecoder:
 
     def decode_asset(self, d):
         return Asset(d['$name'])
+
+    def decode_location(self, d):
+        return Location(d['$lng'], d['$lat'])
 
     def decode_ref(self, d):
         return Reference(self.decode_id(d['$id']))
@@ -152,6 +158,8 @@ class _RecordEncoder:
             return self.encode_datetime(v)
         elif isinstance(v, Asset):
             return self.encode_asset(v)
+        elif isinstance(v, Location):
+            return self.encode_location(v)
         elif isinstance(v, Reference):
             return self.encode_ref(v)
         else:
@@ -168,6 +176,13 @@ class _RecordEncoder:
         return {
             '$type': 'asset',
             '$name': asset.name,
+        }
+
+    def encode_location(self, location):
+        return {
+            '$type': 'geo',
+            '$lng': location.lng,
+            '$lat': location.lat,
         }
 
     def encode_ref(self, ref):
