@@ -63,9 +63,11 @@ class Registry:
     def func_list(self):
         return self.param_map
 
-    def get_obj(self, kind, name):
+    def get_obj(self, kind, name, type_=None):
         if kind == 'provider':
             return self.providers[name]
+        elif type_:
+            return self.func_map[kind]['%s:%s' % (type_, name)]
         else:
             return self.func_map[kind][name]
 

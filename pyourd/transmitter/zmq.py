@@ -71,10 +71,9 @@ class ZmqTransport:
     # of ConsoleTransport, which probably can be factored out
 
     def call_func(self, kind, name, param):
-        obj = self._registry.get_obj(kind, name)
-
         # derive args and kwargs
         if kind == 'op':
+            obj = self._registry.get_obj(kind, name)
             if isinstance(param, list):
                 args = param
                 kwargs = {}
@@ -87,12 +86,17 @@ class ZmqTransport:
 
             return self.op(obj, *args, **kwargs)
         elif kind == 'handler':
+            obj = self._registry.get_obj(kind, name)
             return self.handler(obj)
         elif kind == 'hook':
+            record_type = param['record']['_id'].split('/')[0]
+            obj = self._registry.get_obj(kind, name, record_type)
             return self.hook(obj, param)
         elif kind == 'timer':
+            obj = self._registry.get_obj(kind, name)
             return self.timer(obj)
         elif kind == 'provider':
+            obj = self._registry.get_obj(kind, name)
             action = param['action']
             return self.provider(obj, action, param)
 
