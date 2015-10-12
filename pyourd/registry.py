@@ -37,6 +37,7 @@ class Registry:
             # TODO: param checking
             self.param_map['handler'][name] = kwargs
         elif kind == 'hook':
+            del self.func_map[kind][name]
             if kwargs['type'] is None:
                 raise ValueError("type is required for hook")
             self.func_map[kind][kwargs['type'] + ':' + name] = func
