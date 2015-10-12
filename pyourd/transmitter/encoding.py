@@ -39,19 +39,26 @@ def serialize_record(record):
 class _RecordDecoder:
     def decode(self, d):
         id = self.decode_id(d['_id'])
-        del d['_id']
-
         owner_id = d['_ownerID']
-        del d['_ownerID']
-
         acl = self.decode_acl(d['_access'])
-        del d['_access']
+        created_at = self.decode_date_value(d.get('_created_at', None))
+        created_by = d.get('_created_by', None)
+        updated_at = self.decode_date_value(d.get('_updated_at', None))
+        updated_by = d.get('_updated_by', None)
 
         data_dict = {k: v for k, v in d.items() if not k.startswith('_')}
 
         data = self.decode_dict(data_dict)
 
-        return Record(id=id, owner_id=owner_id, acl=acl, **data)
+        return Record(
+            id=id,
+            owner_id=owner_id,
+            acl=acl,
+            created_at=created_at,
+            created_by=created_by,
+            updated_at=updated_at,
+            updated_by=updated_by,
+            **data)
 
     def decode_id(self, s):
         ss = s.split('/')
@@ -98,7 +105,10 @@ class _RecordDecoder:
             return v
 
     def decode_date(self, d):
-        ts = strict_rfc3339.rfc3339_to_timestamp(d['$date'])
+        return self.decode_date_value(d['$date'])
+
+    def decode_date_value(self, s):
+        ts = strict_rfc3339.rfc3339_to_timestamp(s)
         return datetime.utcfromtimestamp(ts)
 
     def decode_asset(self, d):

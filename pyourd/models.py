@@ -1,8 +1,17 @@
 class Record:
-    def __init__(self, id, owner_id, acl, **kwargs):
+    def __init__(
+            self, id, owner_id, acl,
+            created_at=None, created_by=None,
+            updated_at=None, updated_by=None, **kwargs):
+
         self._id = id
         self._owner_id = owner_id
         self._acl = acl
+        self._created_at = created_at
+        self._created_by = created_by
+        self._updated_at = updated_at
+        self._updated_by = updated_by
+
         self._data = kwargs or {}
 
     def __len__(self):
@@ -34,6 +43,22 @@ class Record:
     @property
     def acl(self):
         return self._acl
+
+    @property
+    def created_at(self):
+        return self._created_at
+
+    @property
+    def created_by(self):
+        return self._created_by
+
+    @property
+    def updated_at(self):
+        return self._updated_at
+
+    @property
+    def updated_by(self):
+        return self._updated_by
 
     @property
     def data(self):
