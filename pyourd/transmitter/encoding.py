@@ -41,9 +41,15 @@ class _RecordDecoder:
         id = self.decode_id(d['_id'])
         owner_id = d['_ownerID']
         acl = self.decode_acl(d['_access'])
-        created_at = self.decode_date_value(d.get('_created_at', None))
+
+        created_at = None
+        if d.get('_created_at', None):
+            created_at = self.decode_date_value(d['_created_at'])
         created_by = d.get('_created_by', None)
-        updated_at = self.decode_date_value(d.get('_updated_at', None))
+
+        updated_at = None
+        if d.get('_updated_at', None):
+            updated_at = self.decode_date_value(d['_updated_at'])
         updated_by = d.get('_updated_by', None)
 
         data_dict = {k: v for k, v in d.items() if not k.startswith('_')}

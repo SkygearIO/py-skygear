@@ -51,8 +51,6 @@ class ConsoleTransport:
     def handle_call(self, kind, name, *args):
         param = json.loads(self.read())
 
-        obj = self._registry.get_obj(kind, name)
-
         # derive args and kwargs
         if kind == 'op':
             if isinstance(param, list):
@@ -65,14 +63,20 @@ class ConsoleTransport:
                 msg = "Unsupported args type '{0}'".format(type(param))
                 raise ValueError(msg)
 
+            obj = self._registry.get_obj(kind, name)
             return self.op(obj, *args, **kwargs)
         elif kind == 'handler':
+            obj = self._registry.get_obj(kind, name)
             return self.handler(obj)
         elif kind == 'hook':
+            record_type = param['record']['_id'].split('/')[0]
+            obj = self._registry.get_obj(kind, name, record_type)
             return self.hook(obj, param)
         elif kind == 'timer':
+            obj = self._registry.get_obj(kind, name)
             return self.timer(obj)
         elif kind == 'provider':
+            obj = self._registry.get_obj(kind, name)
             return self.provider(obj, args[0], param)
 
         return obj, args, kwargs
