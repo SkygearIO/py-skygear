@@ -24,7 +24,7 @@ def auto_assignment(booking, original_booking, db_conn): # booking is record
     if table:
         booking.table = create_ref(table.record_id)
     else:
-        raise ODError("Don't save me")
+        raise SkygearError("Don't save me")
     return booking
 
 

@@ -39,7 +39,7 @@ def main():
 
 def run_plugin(options):
     if not options.plugin:
-        print("Usage: pyskygear plugin.py", file=sys.stderr)
+        print("Usage: py-skygear plugin.py", file=sys.stderr)
         sys.exit(1)
     SourceFileLoader('plugin', options.plugin).load_module()
 
@@ -54,7 +54,7 @@ def run_plugin(options):
     transport.run()
 
 
-stdin_usage = "Example usage: pyskygear sample.py --subprocess \
+stdin_usage = "Example usage: py-skygear sample.py --subprocess \
 init|{op script}|{hook name}|{handler name}|{timer func_name}"
 
 
