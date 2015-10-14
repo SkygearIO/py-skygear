@@ -9,7 +9,7 @@ def get_registry():
 
 class Registry:
     """Registry holds a mapping of registred functions and their parameters that
-    are callable by Ourd plugin system.
+    are callable by Skygear plugin system.
 
     Developers are not expected to create an instance directly. Instead, they
     should use the function get_registry() to the shared instance.
@@ -52,7 +52,7 @@ class Registry:
         else:
             raise Exception("Unrecognized transport kind '%d'.".format(kind))
 
-        log.debug("Registering %s:%s to ourd!!", kind, name)
+        log.debug("Registering %s:%s to skygear!!", kind, name)
 
     def register_provider(self, provider_type, provider_id, provider,
                           **kwargs):

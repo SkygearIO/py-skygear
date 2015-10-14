@@ -8,17 +8,17 @@ from .transmitter import (
     ConsoleTransport,
     ZmqTransport,
 )
-from .container import OurdContainer
+from .container import SkygearContainer
 
 
 def get_arguments():
-    ap = argparse.ArgumentParser(description='Ourd Plugin runner')
-    ap.add_argument('--ourd-address', metavar='ADDR', action='store',
+    ap = argparse.ArgumentParser(description='Skygear Plugin runner')
+    ap.add_argument('--skygear-address', metavar='ADDR', action='store',
                     default='tcp://127.0.0.1:5555',
-                    help="Binds to this socket for ourd")
-    ap.add_argument('--ourd-endpoint', metavar='ENDPOINT', action='store',
+                    help="Binds to this socket for skygear")
+    ap.add_argument('--skygear-endpoint', metavar='ENDPOINT', action='store',
                     default='http://127.0.0.1:3000',
-                    help="Send to this addres for ourd handlers")
+                    help="Send to this addres for skygear handlers")
     ap.add_argument('--apikey', metavar='APIKEY', action='store',
                     default=None,
                     help="API Key of the application")
@@ -39,22 +39,22 @@ def main():
 
 def run_plugin(options):
     if not options.plugin:
-        print("Usage: pyourd plugin.py", file=sys.stderr)
+        print("Usage: pyskygear plugin.py", file=sys.stderr)
         sys.exit(1)
     SourceFileLoader('plugin', options.plugin).load_module()
 
-    OurdContainer.set_default_endpoint(options.ourd_endpoint)
-    OurdContainer.set_default_apikey(options.apikey)
+    SkygearContainer.set_default_endpoint(options.skygear_endpoint)
+    SkygearContainer.set_default_apikey(options.apikey)
 
     if options.subprocess is not None:
         return stdin(options.subprocess)
 
-    print("Connecting to address %s" % options.ourd_address, file=sys.stdout)
-    transport = ZmqTransport(options.ourd_address)
+    print("Connecting to address %s" % options.skygear_address, file=sys.stdout)
+    transport = ZmqTransport(options.skygear_address)
     transport.run()
 
 
-stdin_usage = "Example usage: pyourd sample.py --subprocess \
+stdin_usage = "Example usage: pyskygear sample.py --subprocess \
 init|{op script}|{hook name}|{handler name}|{timer func_name}"
 
 
