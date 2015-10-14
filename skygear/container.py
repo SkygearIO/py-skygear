@@ -2,12 +2,12 @@ import requests
 import json
 
 
-class OurdException(Exception):
+class SkygearException(Exception):
     def __init__(self, message, error_type=None, code=None):
         self.error_type = error_type or 'UnknownError'
         self.message = message
         self.code = code
-        super(OurdException, self).__init__(message)
+        super(SkygearException, self).__init__(message)
 
     @classmethod
     def from_dict(cls, error_dict):
@@ -24,7 +24,7 @@ def send_action(url, payload):
     return requests.post(url, data=json.dumps(payload), headers=headers).json()
 
 
-class OurdContainer(object):
+class SkygearContainer(object):
     endpoint = 'http://localhost:3000'
     api_key = None
     access_token = None
@@ -62,4 +62,4 @@ class OurdContainer(object):
         resp = send_action(self._request_url(action_name),
                            self._payload(action_name, params))
         if 'error' in resp:
-            raise OurdException.from_dict(resp['error'])
+            raise SkygearException.from_dict(resp['error'])

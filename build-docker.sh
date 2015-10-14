@@ -1,4 +1,4 @@
 #!/bin/sh
 
-docker build -t oursky/pyourd:latest .
-docker build -t oursky/pyourd:onbuild -f Dockerfile-onbuild .
+docker build -t oursky/py-skygear:latest .
+docker build -t oursky/py-skygear:onbuild -f Dockerfile-onbuild .

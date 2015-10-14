@@ -12,7 +12,7 @@ install:
   - pip install -r requirments.txt
 
 script:
-  - pylama pyourd
+  - pylama skygear
   - python setup.py test
 
 notifications:

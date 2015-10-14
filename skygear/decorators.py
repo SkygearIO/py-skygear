@@ -33,14 +33,14 @@ def every(interval, name=None, *args, **kwargs):
 
 
 def handler(name, *args, **kwargs):
-    def ourd_handler(func):
+    def skygear_handler(func):
         _registry.register("handler", name, func, *args, **kwargs)
         return func
-    return ourd_handler
+    return skygear_handler
 
 
 def hook(name, *args, **kwargs):
-    def ourd_hook(func):
+    def skygear_hook(func):
         def hook_func(record, original_record, db):
             # return the record for user
             func(record, original_record, db)
@@ -49,7 +49,7 @@ def hook(name, *args, **kwargs):
         _registry.register("hook", name, hook_func, *args, **kwargs)
         return func
 
-    return ourd_hook
+    return skygear_hook
 
 
 def register_save_hook(name, func, *args, **kwargs):
@@ -103,9 +103,9 @@ def after_delete(type_, *args, **kwargs):
 
 
 def provides(provider_type, provider_id, *args, **kwargs):
-    def ourd_provider(klass):
+    def skygear_provider(klass):
         provider = klass()
         _registry.register_provider(provider_type, provider_id, provider,
                                     *args, **kwargs)
         return klass
-    return ourd_provider
+    return skygear_provider

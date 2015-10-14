@@ -17,15 +17,15 @@ classifiers = [
 ]
 
 setup(
-      name='pyourd',
+      name='skygear',
       version='0.1',
       packages=find_packages(),
-      description='Python plugin runtime for Ourd',
+      description='Python plugin runtime for Skygear',
       long_description=open(README).read(),
       classifiers=classifiers,
       author='Rick Mak',
       author_email='rick.mak@gmail.com',
-      url='https://github.com/oursky/pyourd',
+      url='https://github.com/oursky/py-skygear',
       license='MIT',
       install_requires=[
             'pyzmq==14.7',
@@ -36,7 +36,7 @@ setup(
       ],
       entry_points={
           'console_scripts': [
-              'pyourd = pyourd.bin:main'
+              'py-skygear = skygear.bin:main'
           ]
       },
 )
