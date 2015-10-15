@@ -2,6 +2,7 @@ language: python
 
 python:
   - '3.4'
+  - '3.5'
 
 before_install:
   - pip install --upgrade pip
@@ -14,6 +15,7 @@ install:
 script:
   - pylama skygear
   - python setup.py test
+  - lizard towngas -C 10 -w -i 0
 
 notifications:
   slack: oursky:PxqsclRADehuWEs51vpgxeUh

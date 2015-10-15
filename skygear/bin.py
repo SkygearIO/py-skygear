@@ -49,7 +49,9 @@ def run_plugin(options):
     if options.subprocess is not None:
         return stdin(options.subprocess)
 
-    print("Connecting to address %s" % options.skygear_address, file=sys.stdout)
+    print(
+        "Connecting to address %s" % options.skygear_address,
+        file=sys.stdout)
     transport = ZmqTransport(options.skygear_address)
     transport.run()
 
