@@ -46,7 +46,7 @@ def generate_daily_report():
 
 
 @skygear.every("0 0 0 1 * *")
-def generate_monthly_report(io):
+def generate_monthly_report():
     // do something
     return
 
@@ -79,13 +79,15 @@ OSX -> `brew install zeromq`
 Debugging your plugin using command line:
 
 ```
-py-skygear sample.py --subprocess init
-py-skygear sample.py --subprocess op hello:word
-py-skygear sample.py --subprocess handler chima:echo < README.md
-py-skygear sample.py --subprocess hook booking:beforeSave
-py-skygear sample.py --subprocess hook _user:beforeDelete
-py-skygear sample.py --subprocess timer plugin.generate_daily_report
-py-skygear sample.py --subprocess timer plugin.generate_monthly_report
+export DATABASE_URL=postgres://127.0.0.1/skygear?sslmode=disable
+export PUBSUB_URL=ws://localhost:3000/pubsub
+echo "{}" | py-skygear sample.py --subprocess init
+echo "{}" | py-skygear sample.py --subprocess op hello:word
+py-skygear sample.py --subprocess handler chima:echo < < record.json
+py-skygear sample.py --subprocess hook book:beforeSave < record.json
+py-skygear sample.py --subprocess hook _user:beforeDelete < user.json
+echo "{}" | py-skygear sample.py --subprocess timer plugin.generate_daily_report
+echo "{}" | py-skygear sample.py --subprocess timer plugin.generate_monthly_report
 ```
 
 Since database url is read from environment variable, you have to start Ourd specifying the database connection string:
