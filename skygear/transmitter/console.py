@@ -53,6 +53,7 @@ class ConsoleTransport:
 
         # derive args and kwargs
         if kind == 'op':
+            param = param.get('args', {})
             if isinstance(param, list):
                 args = param
                 kwargs = {}

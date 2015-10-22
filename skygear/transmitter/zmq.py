@@ -73,6 +73,7 @@ class ZmqTransport:
     def call_func(self, kind, name, param):
         # derive args and kwargs
         if kind == 'op':
+            param = param.get('args', {})
             obj = self._registry.get_obj(kind, name)
             if isinstance(param, list):
                 args = param
