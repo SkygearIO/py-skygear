@@ -2,7 +2,7 @@ class Record:
     def __init__(
             self, id, owner_id, acl,
             created_at=None, created_by=None,
-            updated_at=None, updated_by=None, **kwargs):
+            updated_at=None, updated_by=None, kwargs):
 
         self._id = id
         self._owner_id = owner_id
