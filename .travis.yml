@@ -15,7 +15,7 @@ install:
 script:
   - pylama skygear
   - python setup.py test
-  - lizard towngas -C 10 -w -i 0
+  - lizard skygear -C 10 -w -i 0
 
 notifications:
   slack: oursky:PxqsclRADehuWEs51vpgxeUh

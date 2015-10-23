@@ -64,7 +64,7 @@ class _RecordDecoder:
             created_by=created_by,
             updated_at=updated_at,
             updated_by=updated_by,
-            data)
+            data=data)
 
     def decode_id(self, s):
         ss = s.split('/')

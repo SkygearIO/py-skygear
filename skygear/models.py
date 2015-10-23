@@ -2,7 +2,7 @@ class Record:
     def __init__(
             self, id, owner_id, acl,
             created_at=None, created_by=None,
-            updated_at=None, updated_by=None, kwargs):
+            updated_at=None, updated_by=None, data=None):
 
         self._id = id
         self._owner_id = owner_id
@@ -12,7 +12,7 @@ class Record:
         self._updated_at = updated_at
         self._updated_by = updated_by
 
-        self._data = kwargs or {}
+        self._data = data or {}
 
     def __len__(self):
         return len(self._data)
