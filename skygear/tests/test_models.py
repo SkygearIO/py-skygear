@@ -1,5 +1,6 @@
 from datetime import datetime
-from ..models import RecordID, Record
+
+from ..models import Record, RecordID
 
 
 class TestRecord():

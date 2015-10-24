@@ -1,17 +1,10 @@
-from datetime import datetime
 import traceback
+from datetime import datetime
 
 import strict_rfc3339
 
-from ..models import (
-    Record,
-    RecordID,
-    RelationalAccessControlEntry,
-    DirectAccessControlEntry,
-    Asset,
-    Location,
-    Reference,
-)
+from ..models import (Asset, DirectAccessControlEntry, Location, Record,
+                      RecordID, Reference, RelationalAccessControlEntry)
 
 
 def _serialize_exc(e):

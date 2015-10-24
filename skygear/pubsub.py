@@ -1,8 +1,7 @@
-import os
 import json
+import os
 
 from websocket import create_connection
-
 
 encoder = json.dumps
 

@@ -1,14 +1,11 @@
 import argparse
 import json
-from importlib.machinery import SourceFileLoader
 import sys
+from importlib.machinery import SourceFileLoader
 
-from .registry import get_registry
-from .transmitter import (
-    ConsoleTransport,
-    ZmqTransport,
-)
 from .container import SkygearContainer
+from .registry import get_registry
+from .transmitter import ConsoleTransport, ZmqTransport
 
 
 def get_arguments():
