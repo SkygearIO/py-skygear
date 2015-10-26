@@ -108,7 +108,7 @@ class _RecordDecoder:
 
     def decode_date_value(self, s):
         ts = strict_rfc3339.rfc3339_to_timestamp(s)
-        return datetime.utcfromtimestamp(ts)
+        return datetime.fromtimestamp(ts)
 
     def decode_asset(self, d):
         return Asset(d['$name'])
@@ -178,7 +178,7 @@ class _RecordEncoder:
         ts = dt.timestamp()
         return {
             '$type': 'date',
-            '$date': strict_rfc3339.timestamp_to_rfc3339_utcoffset(ts)
+            '$date': strict_rfc3339.timestamp_to_rfc3339_utcoffset(ts),
         }
 
     def encode_asset(self, asset):
