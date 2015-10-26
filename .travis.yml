@@ -7,6 +7,7 @@ python:
 before_install:
   - pip install --upgrade pip
   - pip install pylama
+  - pip install isort
   - sudo pip install lizard
 
 install:

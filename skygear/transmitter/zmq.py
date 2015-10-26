@@ -1,18 +1,11 @@
-import zmq
-
 import json
 import logging
 
-from ..registry import (
-    get_registry
-)
-from .common import _get_engine
-from .encoding import (
-    deserialize_or_none,
-    serialize_record,
-    _serialize_exc,
-)
+import zmq
 
+from ..registry import get_registry
+from .common import _get_engine
+from .encoding import _serialize_exc, deserialize_or_none, serialize_record
 
 log = logging.getLogger(__name__)
 
