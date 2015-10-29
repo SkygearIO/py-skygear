@@ -4,3 +4,4 @@ pyzmq==14.7.0
 six==1.9.0
 strict-rfc3339==0.5
 websocket-client==0.32.0
+bcrypt==2.0.0

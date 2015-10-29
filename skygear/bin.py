@@ -19,6 +19,9 @@ def get_arguments():
     ap.add_argument('--apikey', metavar='APIKEY', action='store',
                     default=None,
                     help="API Key of the application")
+    ap.add_argument('--appname', metavar='APPNAME', action='store',
+                    default='',
+                    help="Application name of the skygear daemon")
     ap.add_argument('--subprocess', dest='subprocess', action='store',
                     nargs='+',
                     metavar=('(init|op|hook|handler|timer)', 'name'),
@@ -40,6 +43,7 @@ def run_plugin(options):
         sys.exit(1)
     SourceFileLoader('plugin', options.plugin).load_module()
 
+    SkygearContainer.set_default_app_name(options.appname)
     SkygearContainer.set_default_endpoint(options.skygear_endpoint)
     SkygearContainer.set_default_apikey(options.apikey)
 

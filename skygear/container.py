@@ -29,6 +29,7 @@ class SkygearContainer(object):
     endpoint = 'http://localhost:3000'
     api_key = None
     access_token = None
+    app_name = ''
 
     def __init__(self, endpoint=None, api_key=None, access_token=None):
         if endpoint:
@@ -50,6 +51,14 @@ class SkygearContainer(object):
         elif self.api_key:
             payload['api_key'] = self.api_key
         return payload
+
+    @classmethod
+    def set_default_app_name(cls, app_name):
+        cls.app_name = app_name
+
+    @classmethod
+    def get_default_app_name(cls):
+        return cls.app_name
 
     @classmethod
     def set_default_endpoint(cls, endpoint):
