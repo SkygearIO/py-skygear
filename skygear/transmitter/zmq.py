@@ -1,5 +1,7 @@
 import json
 import logging
+from random import randint
+import time
 
 import zmq
 
@@ -22,8 +24,29 @@ def _encoded(func):
         return out
     return encoded
 
+HEARTBEAT_LIVENESS = 3
+HEARTBEAT_INTERVAL = 1
+INTERVAL_INIT = 1
+INTERVAL_MAX = 32
+
+PPP_READY = b'\x01'
+PPP_HEARTBEAT = b'\x02'
+
+
+def worker_socket(addr, context, poller):
+    worker = context.socket(zmq.DEALER)
+    identity = "%04X-%04X" % (randint(0, 0x10000), randint(0, 0x10000))
+    worker.setsockopt_string(zmq.IDENTITY, identity)
+    poller.register(worker, zmq.POLLIN)
+    worker.connect(addr)
+    worker.send(PPP_READY)
+    return worker
+
 
 class ZmqTransport:
+    """ZmqTransport implements the Paranoid-Pirate worker described in the zguide:
+    http://zguide.zeromq.org/py:all#Robust-Reliable-Queuing-Paranoid-Pirate-Pattern
+    """
 
     def __init__(self, addr, context=None, registry=None):
         if context is None:
@@ -31,17 +54,68 @@ class ZmqTransport:
         if registry is None:
             registry = get_registry()
 
+        self._addr = addr
+        self._context = context
         self._registry = registry
 
-        self._context = context
-        self._socket = context.socket(zmq.REP)
-        self._socket.connect(addr)
-
+    # the majority of this function is taken from:
+    # http://zguide.zeromq.org/py:ppworker
     def run(self):
+        context = self._context
+        poller = zmq.Poller()
+
+        liveness = HEARTBEAT_LIVENESS
+        interval = INTERVAL_INIT
+
+        heartbeat_at = time.time() + HEARTBEAT_INTERVAL
+
+        worker = worker_socket(self._addr, context, poller)
         while True:
-            message = self._socket.recv()
-            response = self.handle_message(message)
-            self._socket.send(response)
+            socks = dict(poller.poll(HEARTBEAT_INTERVAL * 1000))
+
+            # Handle worker activity on backend
+            if socks.get(worker) == zmq.POLLIN:
+                #  Get message
+                #  - 3-part envelope + content -> request
+                #  - 1-part HEARTBEAT -> heartbeat
+                frames = worker.recv_multipart()
+                if not frames:
+                    break
+
+                if len(frames) == 3:
+                    client, empty, message = frames
+                    assert empty == b''
+
+                    response = self.handle_message(message)
+                    worker.send_multipart([
+                        client,
+                        b'',
+                        response,
+                    ])
+
+                    liveness = HEARTBEAT_LIVENESS
+                elif len(frames) == 1 and frames[0] == PPP_HEARTBEAT:
+                    liveness = HEARTBEAT_LIVENESS
+                else:
+                    print('Invalid message: %s', frames)
+                interval = INTERVAL_INIT
+            else:
+                liveness -= 1
+                if liveness == 0:
+                    print('Heartbeat failure, can\'t reach queue')
+                    print('Reconnecting in %0.2fs...' % interval)
+                    time.sleep(interval)
+
+                    if interval < INTERVAL_MAX:
+                        interval *= 2
+                    poller.unregister(worker)
+                    worker.setsockopt(zmq.LINGER, 0)
+                    worker.close()
+                    worker = worker_socket(self._addr, context, poller)
+                    liveness = HEARTBEAT_LIVENESS
+            if time.time() > heartbeat_at:
+                heartbeat_at = time.time() + HEARTBEAT_INTERVAL
+                worker.send(PPP_HEARTBEAT)
 
     @_encoded
     def handle_message(self, req):
