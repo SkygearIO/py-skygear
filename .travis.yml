@@ -1,14 +1,20 @@
 language: python
 
+sudo: false
+
 python:
   - '3.4'
   - '3.5'
+
+cache:
+  directories:
+    - $HOME/.cache/pip
 
 before_install:
   - pip install --upgrade pip
   - pip install pylama
   - pip install isort
-  - sudo pip install lizard
+  - pip install lizard
 
 install:
   - pip install -r requirments.txt
@@ -16,7 +22,7 @@ install:
 script:
   - pylama skygear
   - python setup.py test
-  - lizard skygear -C 10 -w -i 0
+  - python "`which lizard`" skygear -C 10 -w -i 0
 
 notifications:
   slack: oursky:PxqsclRADehuWEs51vpgxeUh
