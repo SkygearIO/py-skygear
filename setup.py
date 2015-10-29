@@ -1,7 +1,8 @@
-from setuptools import setup, find_packages
-from setuptools.command.test import test as TestCommand
-
+import sys
 from os import path
+
+from setuptools import find_packages, setup
+from setuptools.command.test import test as TestCommand
 
 README = path.abspath(path.join(path.dirname(__file__), 'README.md'))
 
@@ -25,7 +26,8 @@ class PyTest(TestCommand):
     def run_tests(self):
         #import here, cause outside the eggs aren't loaded
         import pytest
-        pytest.main(self.test_args)
+        errno = pytest.main(self.test_args)
+        sys.exit(errno)
 
 setup(
       name='skygear',
