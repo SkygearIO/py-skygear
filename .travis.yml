@@ -4,6 +4,12 @@ python:
   - '3.4'
   - '3.5'
 
+addons:
+  postgresql: "9.4"
+
+env:
+  - DATABASE_URL=postgresql://postgres:@localhost/skygear_test?sslmode=disable
+
 before_install:
   - pip install --upgrade pip
   - pip install pylama
@@ -12,6 +18,10 @@ before_install:
 
 install:
   - pip install -r requirments.txt
+
+before_script:
+  - psql -c 'CREATE DATABASE skygear_test;' -U postgres
+  - psql -c 'CREATE EXTENSION postgis;' -U postgres -d skygear_test
 
 script:
   - pylama skygear
