@@ -31,6 +31,7 @@ INTERVAL_MAX = 32
 
 PPP_READY = b'\x01'
 PPP_HEARTBEAT = b'\x02'
+PPP_SHUTDOWN = b'\x03'
 
 
 def worker_socket(addr, context, poller):
@@ -58,9 +59,16 @@ class ZmqTransport:
         self._context = context
         self._registry = registry
 
+    def run(self):
+        try:
+            self._run()
+        except KeyboardInterrupt:
+            if self._worker:
+                self._worker.send(PPP_SHUTDOWN)
+
     # the majority of this function is taken from:
     # http://zguide.zeromq.org/py:ppworker
-    def run(self):
+    def _run(self):
         context = self._context
         poller = zmq.Poller()
 
@@ -70,6 +78,7 @@ class ZmqTransport:
         heartbeat_at = time.time() + HEARTBEAT_INTERVAL
 
         worker = worker_socket(self._addr, context, poller)
+        self._worker = worker
         while True:
             socks = dict(poller.poll(HEARTBEAT_INTERVAL * 1000))
 
@@ -112,6 +121,7 @@ class ZmqTransport:
                     worker.setsockopt(zmq.LINGER, 0)
                     worker.close()
                     worker = worker_socket(self._addr, context, poller)
+                    self._worker = worker
                     liveness = HEARTBEAT_LIVENESS
             if time.time() > heartbeat_at:
                 heartbeat_at = time.time() + HEARTBEAT_INTERVAL
