@@ -1,7 +1,11 @@
+import re
+
 import bcrypt
 from sqlalchemy.sql import text
 
 from ..container import SkygearContainer
+
+_app_name_pattern = re.compile('[.:]')
 
 
 def hash_password(password):
@@ -14,6 +18,7 @@ def hash_password(password):
 
 def _set_search_path(db):
     app_name = SkygearContainer.get_default_app_name()
+    app_name = _app_name_pattern.sub('_', app_name)
     db.execute("set search_path to app_{0};".format(app_name))
 
 
