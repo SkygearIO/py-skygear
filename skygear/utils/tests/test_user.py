@@ -35,13 +35,13 @@ class TestResetPassword(unittest.TestCase):
             conn.execute("set search_path to app_{0};".format(self.app_name))
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS _user (
-                    id text PRIMARY KEY,
+                    username text PRIMARY KEY,
                     email text,
                     password text,
                     auth jsonb
                 );""")
             sql = text("""
-                INSERT INTO _user (id, password)
+                INSERT INTO _user (username, password)
                 VALUES (:user_id, :password);
                 """)
             conn.execute(sql,
@@ -60,7 +60,7 @@ class TestResetPassword(unittest.TestCase):
             result = conn.execute(text("""
                 SELECT password
                 FROM app_{0}._user
-                WHERE id=:user_id
+                WHERE username=:user_id
                 """.format(self.app_name)),
                 user_id='USER_1')
             r = result.fetchone()

@@ -33,7 +33,7 @@ def reset_password(db, user_id, new_password):
     sql = text('''
         UPDATE \"_user\"
         SET password = :new_password
-        WHERE id = :user_id
+        WHERE username = :user_id
         ''')
 
     result = db.execute(sql,
