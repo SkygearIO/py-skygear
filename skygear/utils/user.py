@@ -22,21 +22,21 @@ def _set_search_path(db):
     db.execute("set search_path to app_{0};".format(app_name))
 
 
-def reset_password(db, user_id, new_password):
+def reset_password_by_username(db, username, new_password):
     """
     Reset the user password with a new password.
     """
-    if not (isinstance(user_id, str) and isinstance(new_password, str)):
-        raise ValueError("user_id and new_password must be string")
+    if not (isinstance(username, str) and isinstance(new_password, str)):
+        raise ValueError("username and new_password must be string")
 
     _set_search_path(db)
     sql = text('''
         UPDATE \"_user\"
         SET password = :new_password
-        WHERE username = :user_id
+        WHERE username = :username
         ''')
 
     result = db.execute(sql,
                         new_password=hash_password(new_password),
-                        user_id=user_id)
+                        username=username)
     return result.rowcount > 0
