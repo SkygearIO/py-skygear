@@ -1,7 +1,7 @@
 import json
 import logging
-from random import randint
 import time
+from random import randint
 
 import zmq
 

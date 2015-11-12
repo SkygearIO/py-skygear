@@ -1,7 +1,8 @@
 import re
 
-import bcrypt
 from sqlalchemy.sql import text
+
+import bcrypt
 
 from ..container import SkygearContainer
 
