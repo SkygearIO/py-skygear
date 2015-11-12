@@ -1,7 +1,11 @@
-SQLAlchemy==1.0.8
+bcrypt==2.0.0
 psycopg2==2.6.1
+py==1.4.30
+pycparser==2.14
+pytest==2.8.2
 pyzmq==14.7.0
+requests==2.7.0
 six==1.9.0
+SQLAlchemy==1.0.8
 strict-rfc3339==0.5
 websocket-client==0.32.0
-bcrypt==2.0.0
