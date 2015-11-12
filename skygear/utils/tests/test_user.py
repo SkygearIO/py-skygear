@@ -1,8 +1,8 @@
 import unittest
 
+import bcrypt
 from sqlalchemy.sql import text
 
-import bcrypt
 import pytest
 from skygear.container import SkygearContainer
 from skygear.transmitter.common import _get_engine
