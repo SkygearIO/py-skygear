@@ -1,3 +1,4 @@
+import traceback
 import json
 import logging
 import time
@@ -95,6 +96,8 @@ class ZmqTransport:
                     client, empty, message = frames
                     assert empty == b''
 
+                    log.debug('Recv message')
+                    log.debug(message)
                     response = self.handle_message(message)
                     worker.send_multipart([
                         client,
@@ -106,13 +109,13 @@ class ZmqTransport:
                 elif len(frames) == 1 and frames[0] == PPP_HEARTBEAT:
                     liveness = HEARTBEAT_LIVENESS
                 else:
-                    print('Invalid message: %s', frames)
+                    log.warn('Invalid message: %s', frames)
                 interval = INTERVAL_INIT
             else:
                 liveness -= 1
                 if liveness == 0:
-                    print('Heartbeat failure, can\'t reach queue')
-                    print('Reconnecting in %0.2fs...' % interval)
+                    log.warn('Heartbeat failure, can\'t reach queue')
+                    log.warn('Reconnecting in %0.2fs...' % interval)
                     time.sleep(interval)
 
                     if interval < INTERVAL_MAX:
@@ -129,6 +132,7 @@ class ZmqTransport:
 
     @_encoded
     def handle_message(self, req):
+
         kind = req['kind']
         if kind == 'init':
             return self._registry.func_list()
@@ -140,6 +144,8 @@ class ZmqTransport:
         try:
             resp['result'] = self.call_func(kind, name, param)
         except Exception as e:
+            log.error(e)
+            log.error(traceback.format_exc())
             resp['error'] = _serialize_exc(e)
 
         return resp
