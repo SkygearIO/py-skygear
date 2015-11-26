@@ -21,7 +21,7 @@ class Hub:
         self.end_point = 'ws://localhost:3000/pubsub'
 
     def publish(self, channel, data):
-        conn = create_connection('ws://localhost:3000/pubsub')
+        conn = create_connection(self.end_point)
         _data = encoder({
             'action': 'pub',
             'channel': channel,
