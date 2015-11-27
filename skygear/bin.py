@@ -1,11 +1,14 @@
 import argparse
 import json
+import logging
 import sys
 from importlib.machinery import SourceFileLoader
 
 from .container import SkygearContainer
 from .registry import get_registry
 from .transmitter import ConsoleTransport, ZmqTransport
+
+log = logging.getLogger(__name__)
 
 
 def get_arguments():
@@ -22,6 +25,8 @@ def get_arguments():
     ap.add_argument('--appname', metavar='APPNAME', action='store',
                     default='',
                     help="Application name of the skygear daemon")
+    ap.add_argument('--loglevel', action='store', default='INFO',
+                    help="Log level")
     ap.add_argument('--subprocess', dest='subprocess', action='store',
                     nargs='+',
                     metavar=('(init|op|hook|handler|timer)', 'name'),
@@ -34,12 +39,13 @@ def get_arguments():
 def main():
     ap = get_arguments()
     options = ap.parse_args()
+    setup_logging(options)
     run_plugin(options)
 
 
 def run_plugin(options):
     if not options.plugin:
-        print("Usage: py-skygear plugin.py", file=sys.stderr)
+        log.error("Usage: py-skygear plugin.py", file=sys.stderr)
         sys.exit(1)
     SourceFileLoader('plugin', options.plugin).load_module()
 
@@ -50,9 +56,8 @@ def run_plugin(options):
     if options.subprocess is not None:
         return stdin(options.subprocess)
 
-    print(
-        "Connecting to address %s" % options.skygear_address,
-        file=sys.stdout)
+    log.info(
+        "Connecting to address %s" % options.skygear_address)
     transport = ZmqTransport(options.skygear_address)
     transport.run()
 
@@ -76,3 +81,23 @@ def stdin(_input):
         sys.exit(1)
     else:
         transport.handle_call(target, *_input[1:])
+
+
+def setup_logging(options):
+    # TODO: Make it load a stadard python logging config.
+    logger = logging.getLogger()
+    level = {
+        'DEBUG': logging.DEBUG,
+        'INFO': logging.INFO,
+        'WARN': logging.WARN,
+        'ERROR': logging.ERROR,
+        'CRITICAL': logging.CRITICAL
+    }.get(options.loglevel, logging.INFO)
+    logger.setLevel(level)
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('''\
+%(asctime)s %(levelname)-5.5s [%(name)s:%(lineno)s][%(threadName)s] %(message)s\
+''')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
