@@ -1,7 +1,7 @@
-import traceback
 import json
 import logging
 import time
+import traceback
 from random import randint
 
 import zmq
