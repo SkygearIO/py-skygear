@@ -45,7 +45,7 @@ def main():
 
 def run_plugin(options):
     if not options.plugin:
-        log.error("Usage: py-skygear plugin.py", file=sys.stderr)
+        log.error("Usage: py-skygear plugin.py")
         sys.exit(1)
     SourceFileLoader('plugin', options.plugin).load_module()
 
@@ -97,7 +97,8 @@ def setup_logging(options):
     handler = logging.StreamHandler()
     handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter('''\
-%(asctime)s %(levelname)-5.5s [%(name)s:%(lineno)s][%(threadName)s] %(message)s\
+%(asctime)s %(levelname)-5.5s \
+[%(name)s:%(lineno)s][%(threadName)s] %(message)s\
 ''')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
