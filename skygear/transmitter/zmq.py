@@ -1,7 +1,6 @@
 import json
 import logging
 import time
-import traceback
 from random import randint
 
 import zmq
@@ -132,7 +131,6 @@ class ZmqTransport:
 
     @_encoded
     def handle_message(self, req):
-
         kind = req['kind']
         if kind == 'init':
             return self._registry.func_list()
@@ -144,8 +142,7 @@ class ZmqTransport:
         try:
             resp['result'] = self.call_func(kind, name, param)
         except Exception as e:
-            log.error(e)
-            log.error(traceback.format_exc())
+            log.exception("Error occurred in call_func")
             resp['error'] = _serialize_exc(e)
 
         return resp
