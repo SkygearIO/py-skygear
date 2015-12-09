@@ -23,7 +23,7 @@ before_install:
   - pip install lizard
 
 install:
-  - pip install -r requirments.txt
+  - pip install -r requirements.txt
 
 before_script:
   - psql -c 'CREATE DATABASE skygear_test;' -U postgres
