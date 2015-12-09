@@ -1,8 +1,9 @@
-import argparse
 import json
 import logging
 import sys
 from importlib.machinery import SourceFileLoader
+
+import configargparse as argparse
 
 from .container import SkygearContainer
 from .registry import get_registry
@@ -15,16 +16,20 @@ def get_arguments():
     ap = argparse.ArgumentParser(description='Skygear Plugin runner')
     ap.add_argument('--skygear-address', metavar='ADDR', action='store',
                     default='tcp://127.0.0.1:5555',
-                    help="Binds to this socket for skygear")
+                    help="Binds to this socket for skygear",
+                    env_var='SKYGEAR_ADDRESS')
     ap.add_argument('--skygear-endpoint', metavar='ENDPOINT', action='store',
                     default='http://127.0.0.1:3000',
-                    help="Send to this addres for skygear handlers")
+                    help="Send to this addres for skygear handlers",
+                    env_var='SKYGEAR_ENDPOINT')
     ap.add_argument('--apikey', metavar='APIKEY', action='store',
                     default=None,
-                    help="API Key of the application")
+                    help="API Key of the application",
+                    env_var='SKYGEAR_APIKEY')
     ap.add_argument('--appname', metavar='APPNAME', action='store',
                     default='',
-                    help="Application name of the skygear daemon")
+                    help="Application name of the skygear daemon",
+                    env_var='SKYGEAR_APPNAME')
     ap.add_argument('--loglevel', action='store', default='INFO',
                     help="Log level")
     ap.add_argument('--subprocess', dest='subprocess', action='store',

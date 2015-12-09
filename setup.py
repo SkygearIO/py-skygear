@@ -48,6 +48,7 @@ setup(
             'requests==2.7.0',
             'websocket-client==0.32.0',
             'bcrypt==2.0.0',
+            'ConfigArgParse==0.10.0',
       ],
       cmdclass= {'test': PyTest},
       tests_require=['pytest'],
