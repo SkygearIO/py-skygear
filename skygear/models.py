@@ -64,6 +64,9 @@ class Record:
     def data(self):
         return self._data
 
+    def get(self, key, default=None):
+        return self._data.get(key, default)
+
 
 # RecordID is immutable. Developer is not expected to modify a record's id
 # once instantiated
