@@ -19,7 +19,7 @@ def hash_password(password):
 def _set_search_path(db):
     app_name = SkygearContainer.get_default_app_name()
     app_name = _app_name_pattern.sub('_', app_name)
-    db.execute("set search_path to app_{0};".format(app_name))
+    db.execute("set search_path to app_{0}, public;".format(app_name))
 
 
 def reset_password_by_username(db, username, new_password):

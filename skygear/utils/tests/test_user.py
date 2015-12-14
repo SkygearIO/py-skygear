@@ -32,7 +32,8 @@ class TestResetPassword(unittest.TestCase):
         with _get_engine().begin() as conn:
             conn.execute("CREATE SCHEMA IF NOT EXISTS app_{0}"
                          .format(self.app_name))
-            conn.execute("set search_path to app_{0};".format(self.app_name))
+            conn.execute(
+                "set search_path to app_{0}, public;".format(self.app_name))
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS _user (
                     id text PRIMARY KEY,
