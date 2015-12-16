@@ -1,7 +1,7 @@
 import bcrypt
 from sqlalchemy.sql import text
 
-from .db import _set_search_path
+from .db import conn
 
 
 def hash_password(password):
@@ -19,14 +19,13 @@ def reset_password_by_username(db, username, new_password):
     if not (isinstance(username, str) and isinstance(new_password, str)):
         raise ValueError("username and new_password must be string")
 
-    _set_search_path(db)
     sql = text('''
         UPDATE \"_user\"
         SET password = :new_password
         WHERE username = :username
         ''')
-
-    result = db.execute(sql,
-                        new_password=hash_password(new_password),
-                        username=username)
+    with conn() as db:
+        result = db.execute(sql,
+                            new_password=hash_password(new_password),
+                            username=username)
     return result.rowcount > 0
