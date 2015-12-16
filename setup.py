@@ -38,7 +38,7 @@ setup(
       classifiers=classifiers,
       author='Rick Mak',
       author_email='rick.mak@gmail.com',
-      url='https://github.com/oursky/py-skygear',
+      url='https://github.com/SkygearIO/py-skygear',
       license='MIT',
       install_requires=[
             'pyzmq>=14.7',
