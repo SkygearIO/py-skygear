@@ -16,7 +16,10 @@ class TestResetPassword(unittest.TestCase):
             conn.execute("CREATE SCHEMA IF NOT EXISTS \"app_{0}\""
                          .format(self.app_name))
             conn.execute(
-                "set search_path to \"app_{0}\", public;".format(self.app_name))
+                "set search_path to \"app_{0}\", public;".format(
+                    self.app_name
+                )
+            )
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS note (
                     id text PRIMARY KEY,
