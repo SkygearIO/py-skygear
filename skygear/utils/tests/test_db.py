@@ -8,15 +8,15 @@ from skygear.utils import db
 
 
 class TestResetPassword(unittest.TestCase):
-    app_name = 'db'
+    app_name = 'app+db'
 
     def setUp(self):
         SkygearContainer.set_default_app_name(self.app_name)
         with _get_engine().begin() as conn:
-            conn.execute("CREATE SCHEMA IF NOT EXISTS app_{0}"
+            conn.execute("CREATE SCHEMA IF NOT EXISTS \"app_{0}\""
                          .format(self.app_name))
             conn.execute(
-                "set search_path to app_{0}, public;".format(self.app_name))
+                "set search_path to \"app_{0}\", public;".format(self.app_name))
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS note (
                     id text PRIMARY KEY,
@@ -32,7 +32,7 @@ class TestResetPassword(unittest.TestCase):
 
     def tearDown(self):
         with _get_engine().begin() as conn:
-            conn.execute("DROP TABLE app_{0}.note;".format(self.app_name))
+            conn.execute("DROP TABLE \"app_{0}\".note;".format(self.app_name))
 
     def test_correct_db_context(self):
         with db.conn() as conn:
