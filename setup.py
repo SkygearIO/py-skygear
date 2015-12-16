@@ -7,7 +7,7 @@ from setuptools.command.test import test as TestCommand
 README = path.abspath(path.join(path.dirname(__file__), 'README.md'))
 
 classifiers = [
-    'License :: OSI Approved :: MIT License',
+    'License :: OSI Approved :: Apache Software License',
     'Intended Audience :: Developers',
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.3',
