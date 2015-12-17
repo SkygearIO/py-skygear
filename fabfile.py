@@ -9,13 +9,41 @@ This file is collection of commands regarding deployment
 
 env.user = 'oursky'
 env.roledefs.update({
-    'hub': ['hub.docker.com'],
+    'oursky': ['oursky'],
+    'skygear': ['skygeario'],
 })
+config = '/home/faseng/.docker'
+
 
 # Heaven will execute fab -R edge deploy:branch_name=edge
 def deploy(branch_name):
     print("Executing on %s as %s" % (env.host, env.user))
-    local('docker build -t oursky/py-skygear:latest .')
-    local('docker build -t oursky/py-skygear:onbuild -f Dockerfile-onbuild .')
-    local('docker --config=/home/faseng/.docker push oursky/py-skygear:latest')
-    local('docker --config=/home/faseng/.docker push oursky/py-skygear:onbuild')
+    if branch_name == 'master':
+        tag = 'latest'
+        onbuild = 'onbuild'
+    elif branch_name[0] == 'v':
+        # Tag is in format of v0.1.0, but docker convention is 0.1.0
+        tag = branch_name[1:]
+        onbuild = branch_name[1:] + '-onbuild'
+    else:
+        print("Brnach name not in supported format")
+        return
+
+    local('docker build -t %s/py-skygear:%s .' % (
+        env.host,
+        tag
+    ))
+    local('docker build -t %s/py-skygear:%s -f Dockerfile-onbuild .' % (
+        env.host,
+        onbuild
+    ))
+    local('docker --config=%s push %s/py-skygear:%s' % (
+        config,
+        env.host,
+        tag
+    ))
+    local('docker --config=%s push %s/py-skygear:%s' % (
+        config,
+        env.host,
+        onbuild
+    ))
