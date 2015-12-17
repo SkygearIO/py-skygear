@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+
 class BaseAuthProvider(object):
     def handle_action(self, action, data):
         auth_data = data.get('auth_data', {})
