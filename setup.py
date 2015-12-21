@@ -39,7 +39,7 @@ setup(
       author='Rick Mak',
       author_email='rick.mak@gmail.com',
       url='https://github.com/SkygearIO/py-skygear',
-      license='MIT',
+      license='Apache License, Version 2.0',
       install_requires=[
             'pyzmq>=14.7',
             'psycopg2>=2.6.1',
