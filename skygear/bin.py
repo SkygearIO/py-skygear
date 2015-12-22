@@ -16,47 +16,16 @@ import logging
 import sys
 from importlib.machinery import SourceFileLoader
 
-import configargparse as argparse
-
 from .container import SkygearContainer
+from .options import parse_args
 from .registry import get_registry
 from .transmitter import ConsoleTransport, ZmqTransport
 
 log = logging.getLogger(__name__)
 
 
-def get_arguments():
-    ap = argparse.ArgumentParser(description='Skygear Plugin runner')
-    ap.add_argument('--skygear-address', metavar='ADDR', action='store',
-                    default='tcp://127.0.0.1:5555',
-                    help="Binds to this socket for skygear",
-                    env_var='SKYGEAR_ADDRESS')
-    ap.add_argument('--skygear-endpoint', metavar='ENDPOINT', action='store',
-                    default='http://127.0.0.1:3000',
-                    help="Send to this addres for skygear handlers",
-                    env_var='SKYGEAR_ENDPOINT')
-    ap.add_argument('--apikey', metavar='APIKEY', action='store',
-                    default=None,
-                    help="API Key of the application",
-                    env_var='SKYGEAR_APIKEY')
-    ap.add_argument('--appname', metavar='APPNAME', action='store',
-                    default='',
-                    help="Application name of the skygear daemon",
-                    env_var='SKYGEAR_APPNAME')
-    ap.add_argument('--loglevel', action='store', default='INFO',
-                    help="Log level")
-    ap.add_argument('--subprocess', dest='subprocess', action='store',
-                    nargs='+',
-                    metavar=('(init|op|hook|handler|timer)', 'name'),
-                    help='Trigger subprocess everytime for debug')
-    ap.add_argument('plugin')
-
-    return ap
-
-
 def main():
-    ap = get_arguments()
-    options = ap.parse_args()
+    options = parse_args()
     setup_logging(options)
     run_plugin(options)
 
