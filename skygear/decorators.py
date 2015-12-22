@@ -31,7 +31,7 @@ def every(interval, name=None, *args, **kwargs):
     elif isinstance(interval, int):
         interval = "@every {0}s".format(interval)
     elif not isinstance(interval, str):
-        msg = "Expecting int, timedelta or str for interval. Got '%s'." \
+        msg = "Expecting int, timedelta or str for interval. Got '{0}'." \
             .format(type(interval).__name__)
         raise Exception(msg)
     kwargs['spec'] = interval
