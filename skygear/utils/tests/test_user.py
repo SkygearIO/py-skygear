@@ -18,8 +18,8 @@ import pytest
 from sqlalchemy.sql import text
 
 from skygear.container import SkygearContainer
-from skygear.transmitter.common import _get_engine
 from skygear.utils import user as u
+from skygear.utils import db
 
 PLAINTEXT = 'helloworld!'
 
@@ -42,11 +42,9 @@ class TestResetPassword(unittest.TestCase):
 
     def setUp(self):
         SkygearContainer.set_default_app_name(self.app_name)
-        with _get_engine().begin() as conn:
+        with db.conn() as conn:
             conn.execute("CREATE SCHEMA IF NOT EXISTS app_{0}"
                          .format(self.app_name))
-            conn.execute(
-                "set search_path to app_{0}, public;".format(self.app_name))
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS _user (
                     id text PRIMARY KEY,
@@ -65,14 +63,14 @@ class TestResetPassword(unittest.TestCase):
                          password=u.hash_password('supersecret1'))
 
     def tearDown(self):
-        with _get_engine().begin() as conn:
+        with db.conn() as conn:
             conn.execute("DROP TABLE app_{0}._user;".format(self.app_name))
 
     def test_reset_password(self):
-        with _get_engine().begin() as conn:
-            done = u.reset_password_by_username(conn, "USER_1", PLAINTEXT)
-            assert done
+        done = u.reset_password_by_username("USER_1", PLAINTEXT)
+        assert done
 
+        with db.conn() as conn:
             result = conn.execute(text("""
                 SELECT password
                 FROM app_{0}._user
@@ -83,14 +81,12 @@ class TestResetPassword(unittest.TestCase):
             assert_correct_pw(PLAINTEXT, r[0])
 
     def test_no_such_user(self):
-        with _get_engine().begin() as conn:
-            done = u.reset_password_by_username(conn, "USER_2", PLAINTEXT)
-            assert not done
+        done = u.reset_password_by_username("USER_2", PLAINTEXT)
+        assert not done
 
     def test_bad_parameter(self):
-        with _get_engine().begin() as conn:
-            with pytest.raises(ValueError):
-                u.reset_password_by_username(conn, 1, '')
+        with pytest.raises(ValueError):
+            u.reset_password_by_username(1, '')
 
-            with pytest.raises(ValueError):
-                u.reset_password_by_username(conn, '', 1)
+        with pytest.raises(ValueError):
+            u.reset_password_by_username('', 1)

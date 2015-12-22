@@ -25,7 +25,7 @@ def hash_password(password):
     return hashed.decode("utf-8")
 
 
-def reset_password_by_username(db, username, new_password):
+def reset_password_by_username(username, new_password):
     """
     Reset the user password with a new password.
     """
