@@ -12,14 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import json
+import logging
 import os
+from urllib.parse import urlparse, urlunparse
 
 from websocket import create_connection
 
+from .options import options
+
 encoder = json.dumps
+_hub = None
 
 
 def get_hub():
+    global _hub
+    if not _hub:
+        _hub = Hub()
     return _hub
 
 
@@ -27,14 +35,39 @@ def publish(channel, data):
     get_hub().publish(channel, data)
 
 
+def _get_default_pubsub_url():
+    if os.getenv('PUBSUB_URL', None):
+        logger = logging.getLogger(__name__)
+        logger.info('Environment variable PUBSUB_URL ("{0}") is deprecated, '
+                    'but this setting is honored anyway. To remove this '
+                    'message, remove PUBSUB_URL from environment and make '
+                    'sure you specify skygear endpoint and API key.'
+                    .format(os.getenv('PUBSUB_URL')))
+        return os.getenv('PUBSUB_URL')
+
+    parsed_endpoint = urlparse(options.skygear_endpoint)
+
+    scheme = 'wss' if parsed_endpoint.scheme == 'https' else 'ws'
+    netloc = parsed_endpoint.netloc
+    path = '/pubsub'
+    urlparts = (scheme, netloc, path, '', '', '')
+    return urlunparse(urlparts)
+
+
 class Hub:
 
-    def __init__(self):
+    def __init__(self, end_point=None, api_key=None):
         self.transport = 'websocket'
-        self.end_point = 'ws://localhost:3000/pubsub'
+        self.end_point = end_point or _get_default_pubsub_url()
+        self.api_key = api_key or options.apikey
 
     def publish(self, channel, data):
-        conn = create_connection(self.end_point)
+        wsopts = {}
+        if self.api_key:
+            wsopts['header'] = [
+                    'X-Skygear-API-Key: {0}'.format(self.api_key)
+                    ]
+        conn = create_connection(self.end_point, **wsopts)
         _data = encoder({
             'action': 'pub',
             'channel': channel,
@@ -42,9 +75,3 @@ class Hub:
         })
         conn.send(_data)
         conn.close()
-
-
-_hub = Hub()
-_hub.end_point = os.getenv('PUBSUB_URL', None)
-if not _hub.end_point:
-    raise ValueError('empty environment variable "PUBSUB_URL"')
