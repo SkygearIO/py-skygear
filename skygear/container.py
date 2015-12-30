@@ -86,3 +86,5 @@ class SkygearContainer(object):
                            self._payload(action_name, params))
         if 'error' in resp:
             raise SkygearException.from_dict(resp['error'])
+
+        return resp
