@@ -1,5 +1,9 @@
 Python plugin runtime for Skygear
 
+[![PyPI](https://img.shields.io/pypi/v/skygear.svg)](https://pypi.python.org/pypi/skygear)
+[![Build Status](https://travis-ci.org/SkygearIO/skygear-SDK-JS.svg)](https://travis-ci.org/SkygearIO/skygear-SDK-JS)
+[![License](https://img.shields.io/pypi/l/skygear.svg)](https://pypi.python.org/pypi/skygear)
+
 Example usage right now:
 
 ```
