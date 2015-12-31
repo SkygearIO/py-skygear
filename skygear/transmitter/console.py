@@ -16,7 +16,7 @@ import logging
 import sys
 
 from ..registry import get_registry
-from .common import _get_engine
+from ..utils import db
 from .encoding import _serialize_exc, deserialize_or_none, serialize_record
 
 log = logging.getLogger(__name__)
@@ -100,7 +100,7 @@ class ConsoleTransport:
     def hook(self, func, param):
         original_record = deserialize_or_none(param.get('original', None))
         record = deserialize_or_none(param.get('record', None))
-        with _get_engine().begin() as conn:
+        with db.conn() as conn:
             func(record, original_record, conn)
         return serialize_record(record)
 
