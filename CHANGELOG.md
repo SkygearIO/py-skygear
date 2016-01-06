@@ -1,3 +1,15 @@
+## 0.3.0 (2016-01-06)
+
+### Features
+
+- Set API Key to pubsub websocket request #85
+
+### Bug Fixes
+
+- Set search path properly before pass conn to db hook
+- Fix response not being returned in Container.send_action #96
+- Remove unused parameter at user.reset_password_by_username #93
+
 ## 0.2.0 (2015-12-23)
 
 ### Bug Fixes
