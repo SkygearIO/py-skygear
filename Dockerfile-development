@@ -1,0 +1,14 @@
+FROM python:3.4
+
+COPY requirements.txt /tmp/py-skygear/
+
+# Updated setuptools is required because version updates will cause py-skygear
+# to fail because of version string mismatch.
+RUN pip install --upgrade setuptools
+RUN pip install --no-cache-dir -r /tmp/py-skygear/requirements.txt
+
+COPY . /usr/src/app
+WORKDIR /usr/src/app
+
+RUN python setup.py develop
+ENV PYTHONUNBUFFERED 0
