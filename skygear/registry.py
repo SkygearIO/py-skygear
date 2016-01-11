@@ -57,8 +57,11 @@ class Registry:
             kwargs['trigger'] = name
             self.param_map['hook'].append(kwargs)
         elif kind == 'op':
-            self.param_map['op'].append(name)
-            log.debug("Op param is not yet support, you will get the io")
+            self.param_map['op'].append({
+                'name': name,
+                'auth_required': kwargs.get('key_required', False),
+                'user_required': kwargs.get('user_required', False),
+                })
         elif kind == 'timer':
             kwargs['name'] = name
             self.param_map['timer'].append(kwargs)

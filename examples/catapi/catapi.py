@@ -18,7 +18,7 @@ import requests
 CATAPI_URL = 'http://thecatapi.com/api/images/get'
 
 
-@skygear.op('catapi:get')
+@skygear.op('catapi:get', key_required=True, user_required=True)
 def get_cat():
     r = requests.get(CATAPI_URL, allow_redirects=False)
     if r.status_code == 302:

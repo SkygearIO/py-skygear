@@ -20,6 +20,7 @@ import zmq
 
 from ..registry import get_registry
 from ..utils import db
+from ..utils.context import start_context
 from .encoding import _serialize_exc, deserialize_or_none, serialize_record
 
 log = logging.getLogger(__name__)
@@ -151,9 +152,12 @@ class ZmqTransport:
         name = req['name']
         param = req.get('param')
 
+        ctx = req.get('context') or {}
+
         resp = {}
         try:
-            resp['result'] = self.call_func(kind, name, param)
+            with start_context(ctx):
+                resp['result'] = self.call_func(kind, name, param)
         except Exception as e:
             log.exception("Error occurred in call_func")
             resp['error'] = _serialize_exc(e)
