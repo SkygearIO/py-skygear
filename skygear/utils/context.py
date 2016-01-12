@@ -24,7 +24,8 @@ class RequestContextManager(threading.local):
 
     def push(self, context):
         self.stack.append(context)
-        log.debug("Pushed request context: %s. Length: %d", context, len(self.stack))
+        log.debug("Pushed request context: %s. Length: %d",
+                  context, len(self.stack))
 
     def pop(self):
         if len(self.stack) == 1:
