@@ -31,7 +31,7 @@ class PyTest(TestCommand):
 
 setup(
       name='skygear',
-      version='0.3.0',
+      version='0.4.0',
       packages=find_packages(),
       description='Python plugin runtime for Skygear',
       long_description=open(README).read(),

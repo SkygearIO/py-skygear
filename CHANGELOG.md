@@ -1,3 +1,13 @@
+## 0.4.0 (2016-01-13)
+
+### Feature
+
+- It is now possible to get the current request context from lambda
+  and hook. Use the current_user_id() function to get the current User ID
+  oursky/skygear#470
+- Lambda function can specify whether authenticated user or access key
+  is required oursky/skygear#367
+
 ## 0.3.0 (2016-01-06)
 
 ### Features
