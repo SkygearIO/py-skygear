@@ -49,10 +49,6 @@ def run_plugin(options):
     transport.run()
 
 
-stdin_usage = "Example usage: py-skygear sample.py --subprocess \
-init|{op script}|{hook name}|{handler name}|{timer func_name}"
-
-
 def stdin(_input):
     target = _input[0]
     if target not in ['init', 'op', 'hook', 'handler', 'timer', 'provider']:
