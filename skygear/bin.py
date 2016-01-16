@@ -13,6 +13,7 @@
 # limitations under the License.
 import json
 import logging
+import signal
 import sys
 from importlib.machinery import SourceFileLoader
 
@@ -43,6 +44,8 @@ def run_plugin(options):
     if options.subprocess is not None:
         return stdin(options.subprocess)
 
+    log.debug("Install signal handler for SIGTERM")
+    signal.signal(signal.SIGTERM, sigterm_handler)
     log.info(
         "Connecting to address %s" % options.skygear_address)
     transport = ZmqTransport(options.skygear_address)
@@ -85,3 +88,14 @@ def setup_logging(options):
 ''')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
+
+
+def sigterm_handler(signum, frame):
+    """
+    When docker stops the container, it sends PID 1 with SIGTERM.
+    This function exits the program when SIGTERM is received.
+
+    Remember not to run this program in a shell as PID 1 because the shell may
+    not forward the signal.
+    """
+    sys.exit(1)
