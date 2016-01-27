@@ -53,12 +53,17 @@ def handler(name, *args, **kwargs):
     return skygear_handler
 
 
-def hook(name, *args, **kwargs):
+def hook(trigger, *args, **kwargs):
+    kwargs['trigger'] = trigger
+
     def skygear_hook(func):
         def hook_func(record, original_record, db):
             # return the record for user
             func(record, original_record, db)
             return record
+
+        name = kwargs.pop('name', None) or \
+            func.__module__ + "." + func.__name__
 
         _registry.register("hook", name, hook_func, *args, **kwargs)
         return func
@@ -66,52 +71,64 @@ def hook(name, *args, **kwargs):
     return skygear_hook
 
 
-def register_save_hook(name, func, *args, **kwargs):
+def register_save_hook(func, *args, **kwargs):
     def hook_func(record, original_record, db):
         func(record, original_record, db)
         return record
+
+    name = kwargs.pop('name', None) or \
+        func.__module__ + "." + func.__name__
+
     _registry.register("hook", name, hook_func, *args, **kwargs)
 
 
-def register_delete_hook(name, func, *args, **kwargs):
+def register_delete_hook(func, *args, **kwargs):
     def hook_func(record, original_record, db):
         func(record, db)
         return record
+
+    name = kwargs.pop('name', None) or \
+        func.__module__ + "." + func.__name__
+
     _registry.register("hook", name, hook_func, *args, **kwargs)
 
 
 def before_save(type_, *args, **kwargs):
     kwargs['type'] = type_
+    kwargs['trigger'] = "beforeSave"
 
     def wrapper(func):
-        register_save_hook("beforeSave", func, *args, **kwargs)
+        register_save_hook(func, *args, **kwargs)
         return func
     return wrapper
 
 
 def after_save(type_, *args, **kwargs):
     kwargs['type'] = type_
+    kwargs['trigger'] = "afterSave"
 
     def wrapper(func):
-        register_save_hook("afterSave", func, *args, **kwargs)
+        register_save_hook(func, *args, **kwargs)
         return func
     return wrapper
 
 
 def before_delete(type_, *args, **kwargs):
     kwargs['type'] = type_
+    kwargs['trigger'] = "beforeDelete"
 
     def wrapper(func):
-        register_delete_hook("beforeDelete", func, *args, **kwargs)
+        register_delete_hook(func, *args, **kwargs)
         return func
     return wrapper
 
 
 def after_delete(type_, *args, **kwargs):
     kwargs['type'] = type_
+    kwargs['trigger'] = "afterDelete"
 
     def wrapper(func):
-        register_delete_hook("afterDelete", func, *args, **kwargs)
+        register_delete_hook(func, *args, **kwargs)
         return func
     return wrapper
 
