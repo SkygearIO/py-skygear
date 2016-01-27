@@ -17,23 +17,78 @@ from ..registry import Registry
 
 
 class TestRegistry(unittest.TestCase):
-    def test_register_hook(eslf):
-        def hook_func():
+    def test_register_op(self):
+        def fn():
             pass
 
+        kwargs = {
+                'key_required': True,
+                'user_required': True,
+                }
         registry = Registry()
+        registry.register('op', 'plugin:action', fn, **kwargs)
+
+        func_map = registry.func_map['op']
+        assert len(func_map) == 1
+        assert func_map['plugin:action'] == fn
+
+        param_map = registry.param_map['op']
+        assert len(param_map) == 1
+        assert param_map[0]['name'] == 'plugin:action'
+        assert param_map[0]['auth_required'] == True
+        assert param_map[0]['user_required'] == True
+
+    def test_register_hook(self):
+        def fn():
+            pass
+
         kwargs = {
                 'type': 'note',
                 'trigger': 'beforeSave',
                 }
-        registry.register('hook', 'hook_name', hook_func, **kwargs)
+        registry = Registry()
+        registry.register('hook', 'hook_name', fn, **kwargs)
 
         func_map = registry.func_map['hook']
         assert len(func_map) == 1
-        assert func_map['hook_name'] == hook_func
+        assert func_map['hook_name'] == fn
 
         param_map = registry.param_map['hook']
         assert len(param_map) == 1
         assert param_map[0]['name'] == 'hook_name'
         assert param_map[0]['type'] == 'note'
         assert param_map[0]['trigger'] == 'beforeSave'
+
+    def test_register_timer(self):
+        def fn():
+            pass
+
+        registry = Registry()
+        registry.register('timer', 'timer_name', fn)
+
+        func_map = registry.func_map['timer']
+        assert len(func_map) == 1
+        assert func_map['timer_name'] == fn
+
+        param_map = registry.param_map['timer']
+        assert len(param_map) == 1
+        assert param_map[0]['name'] == 'timer_name'
+
+    def test_register_provider(self):
+        def fn():
+            pass
+
+        class Provider():
+            pass
+
+        the_provider = Provider()
+        registry = Registry()
+        registry.register_provider('example', 'com.example', the_provider)
+
+        assert len(registry.providers) == 1
+        assert registry.providers['com.example'] == the_provider
+
+        param_map = registry.param_map['provider']
+        assert len(param_map) == 1
+        assert param_map[0]['type'] == 'example'
+        assert param_map[0]['id'] == 'com.example'

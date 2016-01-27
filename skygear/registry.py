@@ -59,7 +59,8 @@ class Registry:
         elif kind == 'op':
             self.param_map['op'].append({
                 'name': name,
-                'auth_required': kwargs.get('key_required', False),
+                'auth_required': kwargs.get('auth_required',
+                                            kwargs.get('key_required', False)),
                 'user_required': kwargs.get('user_required', False),
                 })
         elif kind == 'timer':
