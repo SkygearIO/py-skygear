@@ -35,8 +35,8 @@ class TestRegistry(unittest.TestCase):
         param_map = registry.param_map['op']
         assert len(param_map) == 1
         assert param_map[0]['name'] == 'plugin:action'
-        assert param_map[0]['auth_required'] == True
-        assert param_map[0]['user_required'] == True
+        assert param_map[0]['auth_required'] is True
+        assert param_map[0]['user_required'] is True
 
     def test_register_hook(self):
         def fn():
