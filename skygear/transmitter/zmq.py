@@ -187,8 +187,7 @@ class ZmqTransport:
             obj = self._registry.get_obj(kind, name)
             return self.handler(obj)
         elif kind == 'hook':
-            record_type = param['record']['_id'].split('/')[0]
-            obj = self._registry.get_obj(kind, name, record_type)
+            obj = self._registry.get_obj(kind, name)
             return self.hook(obj, param)
         elif kind == 'timer':
             obj = self._registry.get_obj(kind, name)
