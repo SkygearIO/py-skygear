@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import unittest
-from unittest.mock import patch, ANY
+from unittest.mock import ANY, patch
 
 from .. import decorators as d
-from ..registry import Registry
+from ..registry import Registry  # noqa
 
 
 class TestHookDecorators(unittest.TestCase):
@@ -24,7 +24,8 @@ class TestHookDecorators(unittest.TestCase):
         @d.before_save('note')
         def fn():
             pass
-        mocker.assert_called_with('hook',
+        mocker.assert_called_with(
+            'hook',
             'skygear.tests.test_decorators.fn', ANY,
             type='note', trigger='beforeSave')
 
@@ -33,7 +34,8 @@ class TestHookDecorators(unittest.TestCase):
         @d.after_save('note')
         def fn():
             pass
-        mocker.assert_called_with('hook',
+        mocker.assert_called_with(
+            'hook',
             'skygear.tests.test_decorators.fn', ANY,
             type='note', trigger='afterSave')
 
@@ -42,7 +44,8 @@ class TestHookDecorators(unittest.TestCase):
         @d.before_delete('note')
         def fn():
             pass
-        mocker.assert_called_with('hook',
+        mocker.assert_called_with(
+            'hook',
             'skygear.tests.test_decorators.fn', ANY,
             type='note', trigger='beforeDelete')
 
@@ -51,7 +54,8 @@ class TestHookDecorators(unittest.TestCase):
         @d.after_delete('note')
         def fn():
             pass
-        mocker.assert_called_with('hook',
+        mocker.assert_called_with(
+            'hook',
             'skygear.tests.test_decorators.fn', ANY,
             type='note', trigger='afterDelete')
 
@@ -60,6 +64,7 @@ class TestHookDecorators(unittest.TestCase):
         @d.hook('beforeSave', type="note")
         def fn():
             pass
-        mocker.assert_called_with('hook',
+        mocker.assert_called_with(
+            'hook',
             'skygear.tests.test_decorators.fn', ANY,
             type='note', trigger='beforeSave')
