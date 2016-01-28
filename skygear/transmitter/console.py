@@ -15,6 +15,7 @@ import json
 import logging
 import sys
 
+from ..error import SkygearException
 from ..registry import get_registry
 from ..utils import db
 from .encoding import _serialize_exc, deserialize_or_none, serialize_record
@@ -30,8 +31,11 @@ def _serialize(func):
         d = {}
         try:
             d['result'] = func(self, *args, **kwargs)
+        except SkygearException as e:
+            d['error'] = e.as_dict()
         except Exception as e:
-            d['error'] = _serialize_exc(e)
+            log.exception("Error occurred in call_func")
+            d['error'] = _serialize_exc(e).as_dict()
         self.write(json.dumps(d))
 
     return serialize_with_exc

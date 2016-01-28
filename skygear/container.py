@@ -15,20 +15,7 @@ import json
 
 import requests
 
-
-class SkygearException(Exception):
-    def __init__(self, message, error_type=None, code=None):
-        self.error_type = error_type or 'UnknownError'
-        self.message = message
-        self.code = code
-        super(SkygearException, self).__init__(message)
-
-    @classmethod
-    def from_dict(cls, error_dict):
-        error_type = error_dict.get('type', 'UnknownError')
-        message = error_dict.get('message', None)
-        code = error_dict.get('code', None)
-        return cls(message, error_type, code)
+from . import error
 
 
 def send_action(url, payload):
@@ -85,6 +72,6 @@ class SkygearContainer(object):
         resp = send_action(self._request_url(action_name),
                            self._payload(action_name, params))
         if 'error' in resp:
-            raise SkygearException.from_dict(resp['error'])
+            raise error.SkygearException.from_dict(resp['error'])
 
         return resp
