@@ -18,6 +18,7 @@ from random import randint
 
 import zmq
 
+from ..error import SkygearException
 from ..registry import get_registry
 from ..utils import db
 from ..utils.context import start_context
@@ -158,9 +159,11 @@ class ZmqTransport:
         try:
             with start_context(ctx):
                 resp['result'] = self.call_func(kind, name, param)
+        except SkygearException as e:
+            resp['error'] = e.as_dict()
         except Exception as e:
             log.exception("Error occurred in call_func")
-            resp['error'] = _serialize_exc(e)
+            resp['error'] = _serialize_exc(e).as_dict()
 
         return resp
 

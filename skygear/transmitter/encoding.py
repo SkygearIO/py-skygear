@@ -16,15 +16,16 @@ from datetime import datetime
 
 import strict_rfc3339
 
+from ..error import SkygearException, UnexpectedError
 from ..models import (Asset, DirectAccessControlEntry, Location, Record,
                       RecordID, Reference, RelationalAccessControlEntry)
 
 
 def _serialize_exc(e):
-    return {
-        'name': str(e),
-        'desc': traceback.format_exc(),
-    }
+    return SkygearException(
+        str(e),
+        UnexpectedError,
+        {'trace': traceback.format_exc()})
 
 
 def deserialize_record(obj):
