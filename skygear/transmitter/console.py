@@ -43,13 +43,29 @@ def _serialize(func):
 
 class ConsoleTransport:
 
-    def __init__(self, stdin=sys.stdin, stdout=sys.stdout, registry=None):
+    def __init__(self, options, stdin=sys.stdin, stdout=sys.stdout, registry=None):
         if registry is None:
             registry = get_registry()
         self._registry = registry
+        self._options = options
 
         self.input = stdin
         self.output = stdout
+
+    def run(self):
+        target = self._options.subprocess[0]
+        if target not in ['init', 'op', 'hook', 'handler', 'timer', 'provider']:
+            print(
+                "Only init, op, hook, handler, timer and provider is support now",
+                file=sys.stderr)
+            sys.exit(1)
+        if target == 'init':
+            json.dump(get_registry().func_list(), sys.stdout)
+        elif len(_input) < 2:
+            print("Missing param for %s", target, file=sys.stderr)
+            sys.exit(1)
+        else:
+            self.handle_call(target, *_input[1:])
 
     def read(self):
         if not self.input.isatty():
