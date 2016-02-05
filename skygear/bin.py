@@ -18,7 +18,7 @@ from importlib.machinery import SourceFileLoader
 
 from .container import SkygearContainer
 from .options import parse_args
-from .transmitter import ConsoleTransport, ZmqTransport
+from .transmitter import ConsoleTransport, HttpTransport, ZmqTransport
 
 log = logging.getLogger(__name__)
 
@@ -42,8 +42,10 @@ def run_plugin(options):
     log.debug("Install signal handler for SIGTERM")
     signal.signal(signal.SIGTERM, sigterm_handler)
 
-    elif options.http is not None:
-        transport = HttpTransport()
+    if options.subprocess is not None:
+        transport = ConsoleTransport(options)
+    elif options.http is True:
+        transport = HttpTransport("")
     else:
         log.info(
             "Connecting to address %s" % options.skygear_address)

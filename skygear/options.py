@@ -40,6 +40,8 @@ def get_argument_parser():
                     nargs='+',
                     metavar=('(init|op|hook|handler|timer)', 'name'),
                     help='Trigger subprocess everytime for debug')
+    ap.add_argument('--http', action='store_true',
+                    help='Trigger http web server')
     ap.add_argument('plugin')
     return ap
 

@@ -13,6 +13,7 @@
 # limitations under the License.
 from .console import ConsoleTransport
 from .zmq import ZmqTransport
+from .http import HttpTransport
 
 
-__all__ = ['ConsoleTransport', 'ZmqTransport']
+__all__ = ['ConsoleTransport', 'ZmqTransport', 'HttpTransport']
