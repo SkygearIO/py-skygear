@@ -11,8 +11,87 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .utils import db
+import logging
+
+from ..error import SkygearException
+from ..registry import get_registry
+from ..utils import db
+from ..utils.context import start_context
+from .encoding import _serialize_exc, deserialize_or_none, serialize_record
 
 
 def _get_engine():
     return db._get_engine()
+
+
+class CommonTransport:
+    def __init__(self, registry=None, logger=None):
+        self._registry = registry or get_registry()
+        self.logger = logger or logging.getLogger(__name__)
+
+    def init_info(self):
+        return self._registry.func_list()
+
+    def call_func(self, ctx, kind, name, param):
+        with start_context(ctx):
+            try:
+                return dict(result=self._call_func(kind, name, param))
+            except SkygearException as e:
+                return dict(error=e.as_dict())
+            except Exception as e:
+                self.logger.exception("Error occurred in call_func")
+                return dict(error=_serialize_exc(e).as_dict())
+
+    def _call_func(self, kind, name, param):
+        obj = self._registry.get_obj(kind, name)
+
+        # derive args and kwargs
+        if kind == 'op':
+            return self.op(obj, param.get('args', {}))
+        elif kind == 'handler':
+            return self.handler(obj)
+        elif kind == 'hook':
+            return self.hook(obj, param)
+        elif kind == 'timer':
+            return self.timer(obj)
+        elif kind == 'provider':
+            action = param.pop('action')
+            return self.provider(obj, action, param)
+        else:
+            raise SkygearException("unknown plugin extension point")
+
+    def op(self, func, param):
+        if isinstance(param, list):
+            args = param
+            kwargs = {}
+        elif isinstance(param, dict):
+            args = []
+            kwargs = param
+        else:
+            msg = "Unsupported args type '{0}'".format(type(param))
+            raise ValueError(msg)
+        return func(*args, **kwargs)
+
+    def handler(self, func):
+        raise NotImplemented()
+
+    def hook(self, func, param):
+        original_record = deserialize_or_none(param.get('original', None))
+        record = deserialize_or_none(param.get('record', None))
+        with db.conn() as conn:
+            returned = func(record, original_record, conn)
+
+            # If the hook function does not return a value, assume that
+            # the record in the first argument is to be returned.
+            if returned is None:
+                returned = record
+        return serialize_record(returned)
+
+    def timer(self, func):
+        return func()
+
+    def provider(self, provider, action, data):
+        return provider.handle_action(action, data)
+
+    def run(self):
+        raise NotImplemented()
