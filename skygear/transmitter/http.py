@@ -11,33 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import base64
 import json
 
 from werkzeug.routing import Map, Rule
 from werkzeug.serving import run_simple
 from werkzeug.wrappers import Request, Response
 
-from .common import CommonTransport
+from .common import CommonTransport, decode_base64_json
 from .encoding import _serialize_exc
-
-
-def encode_base64_json(data):
-    """
-    Encode dict-like data into a base64 encoded JSON string.
-
-    This can be used to put dict-like data into HTTP headers.
-    """
-    return base64.b64encode(bytes(json.dumps(data), 'utf-8'))
-
-
-def decode_base64_json(data):
-    """
-    Decode dict-like data from a base64 encoded JSON string.
-
-    This can be used to get dict-like data into HTTP headers.
-    """
-    return json.loads(base64.b64decode(data).decode('utf-8'))
 
 
 class HttpTransport(CommonTransport):

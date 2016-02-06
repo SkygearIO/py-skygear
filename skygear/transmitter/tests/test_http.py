@@ -19,7 +19,8 @@ from werkzeug.test import Client
 from werkzeug.wrappers import BaseResponse
 
 from ...registry import Registry
-from ..http import HttpTransport, encode_base64_json
+from ..common import encode_base64_json
+from ..http import HttpTransport
 
 
 def headers_with_context(data):

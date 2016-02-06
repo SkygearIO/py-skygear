@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import base64
+import json
 import logging
 from functools import wraps
 
@@ -36,6 +38,24 @@ def _wrap_result(f):
             self.logger.exception("Error occurred processing request")
             return dict(error=_serialize_exc(e).as_dict())
     return wrapper
+
+
+def encode_base64_json(data):
+    """
+    Encode dict-like data into a base64 encoded JSON string.
+
+    This can be used to get dict-like data into HTTP headers / envvar.
+    """
+    return base64.b64encode(bytes(json.dumps(data), 'utf-8'))
+
+
+def decode_base64_json(data):
+    """
+    Decode dict-like data from a base64 encoded JSON string.
+
+    This can be used to get dict-like data into HTTP headers / envvar.
+    """
+    return json.loads(base64.b64decode(data).decode('utf-8'))
 
 
 class CommonTransport:

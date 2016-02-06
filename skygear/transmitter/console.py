@@ -13,9 +13,10 @@
 # limitations under the License.
 import json
 import logging
+import os
 import sys
 
-from .common import CommonTransport
+from .common import CommonTransport, decode_base64_json
 
 log = logging.getLogger(__name__)
 
@@ -24,33 +25,35 @@ ACCEPTED_TARGETS = ['init', 'op', 'hook', 'handler', 'timer', 'provider']
 
 
 class ConsoleTransport(CommonTransport):
-    def __init__(self, options, stdin=sys.stdin, stdout=sys.stdout,
+    def __init__(self, args, stdin=sys.stdin, stdout=sys.stdout,
                  registry=None):
         super().__init__(registry)
-        self._options = options
+        self.args = args
 
         self.input = stdin
         self.output = stdout
 
     def run(self):
-        subprocess_args = self._options.subprocess
-        target = subprocess_args[0]
+        self.args = self.args
+        target = self.args[0]
         if target not in ACCEPTED_TARGETS:
             print("Only init, op, hook, handler, timer and provider is"
                   " supported now", file=sys.stderr)
             sys.exit(1)
         if target == 'init':
             self.write(json.dumps(self.init_info()))
-        elif len(subprocess_args) < 2:
+        elif len(self.args) < 2:
             print("Missing param for %s", target, file=sys.stderr)
             sys.exit(1)
         else:
             param = json.loads(self.read())
+            context_data = os.environ.get('SKYGEAR_CONTEXT')
+            context = decode_base64_json(context_data) if context_data else {}
             if target == 'provider':
-                output = self.call_provider({}, subprocess_args[1],
-                                            subprocess_args[2], param)
+                output = self.call_provider(context, self.args[1],
+                                            self.args[2], param)
             else:
-                output = self.call_func({}, target, subprocess_args[1], param)
+                output = self.call_func(context, target, self.args[1], param)
 
             self.write(json.dumps(output))
 

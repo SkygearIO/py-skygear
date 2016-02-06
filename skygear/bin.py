@@ -43,7 +43,7 @@ def run_plugin(options):
     signal.signal(signal.SIGTERM, sigterm_handler)
 
     if options.subprocess is not None:
-        transport = ConsoleTransport(options)
+        transport = ConsoleTransport(options.subprocess)
     elif options.http:
         transport = HttpTransport(options.http_addr, debug=options.debug)
     else:
