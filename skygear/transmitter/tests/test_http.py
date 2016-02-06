@@ -34,10 +34,17 @@ class TestHttpTransport(unittest.TestCase):
         return Client(self.get_app(), BaseResponse)
 
     def setUp(self):
-        self.transport = HttpTransport('', Registry())
+        self.transport = HttpTransport('127.0.0.1:8888', Registry())
 
     def tearDown(self):
         self.transport = None
+
+    @patch('skygear.transmitter.http.run_simple')
+    def testRun(self, mocker):
+        self.transport.run()
+        mocker.assert_called_once_with('127.0.0.1', 8888,
+                                       self.transport.dispatch,
+                                       use_reloader=False)
 
     @patch('skygear.transmitter.http.HttpTransport.init_info')
     def testInitInfo(self, mocker):

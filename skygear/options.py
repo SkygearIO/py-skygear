@@ -41,7 +41,15 @@ def get_argument_parser():
                     metavar=('(init|op|hook|handler|timer)', 'name'),
                     help='Trigger subprocess everytime for debug')
     ap.add_argument('--http', action='store_true',
-                    help='Trigger http web server')
+                    help='Trigger http web server',
+                    env_var='SKYGEAR_HTTP')
+    ap.add_argument('--http-addr', metavar='HTTP_ADDR', action='store',
+                    default='0.0.0.0:8000',
+                    help='Address where htp web server listen to',
+                    env_var='SKYGEAR_HTTP_ADDR')
+    ap.add_argument('--debug', action='store_true',
+                    help='Enable debugging features',
+                    env_var='SKYGEAR_DEBUG')
     ap.add_argument('plugin')
     return ap
 

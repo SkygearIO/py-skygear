@@ -58,9 +58,20 @@ class HttpTransport(CommonTransport):
             Rule('/timer/<name>', endpoint='timer'),
         ])
 
-    def __init__(self, addr, registry=None):
+    def __init__(self, addr, registry=None, debug=False):
         super().__init__(registry)
         self.url_map = self._url_map()
+        if ':' in addr:
+            hostname, port = addr.split(':', 2)
+        else:
+            hostname = addr
+            port = 8000
+        self.hostname = hostname.strip() if hostname.strip() else '0.0.0.0'
+        try:
+            self.port = int(port)
+        except:
+            self.port = 8000
+        self.debug = debug
 
     @Request.application
     def dispatch(self, request):
@@ -109,4 +120,5 @@ class HttpTransport(CommonTransport):
         """
         Start the web server.
         """
-        run_simple('0.0.0.0', 8000, self.dispatch)
+        run_simple(self.hostname, self.port, self.dispatch,
+                   use_reloader=self.debug)

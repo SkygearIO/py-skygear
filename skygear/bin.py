@@ -44,8 +44,8 @@ def run_plugin(options):
 
     if options.subprocess is not None:
         transport = ConsoleTransport(options)
-    elif options.http is True:
-        transport = HttpTransport("")
+    elif options.http:
+        transport = HttpTransport(options.http_addr, debug=options.debug)
     else:
         log.info(
             "Connecting to address %s" % options.skygear_address)
