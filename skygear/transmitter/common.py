@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
+from functools import wraps
 
 from ..error import SkygearException
 from ..registry import get_registry
@@ -24,6 +25,19 @@ def _get_engine():
     return db._get_engine()
 
 
+def _wrap_result(f):
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        try:
+            return dict(result=f(self, *args, **kwargs))
+        except SkygearException as e:
+            return dict(error=e.as_dict())
+        except Exception as e:
+            self.logger.exception("Error occurred processing request")
+            return dict(error=_serialize_exc(e).as_dict())
+    return wrapper
+
+
 class CommonTransport:
     def __init__(self, registry=None, logger=None):
         self._registry = registry or get_registry()
@@ -32,33 +46,28 @@ class CommonTransport:
     def init_info(self):
         return self._registry.func_list()
 
+    @_wrap_result
     def call_func(self, ctx, kind, name, param):
-        with start_context(ctx):
-            try:
-                return dict(result=self._call_func(kind, name, param))
-            except SkygearException as e:
-                return dict(error=e.as_dict())
-            except Exception as e:
-                self.logger.exception("Error occurred in call_func")
-                return dict(error=_serialize_exc(e).as_dict())
-
-    def _call_func(self, kind, name, param):
         obj = self._registry.get_obj(kind, name)
 
-        # derive args and kwargs
-        if kind == 'op':
-            return self.op(obj, param.get('args', {}))
-        elif kind == 'handler':
-            return self.handler(obj)
-        elif kind == 'hook':
-            return self.hook(obj, param)
-        elif kind == 'timer':
-            return self.timer(obj)
-        elif kind == 'provider':
-            action = param.pop('action')
+        with start_context(ctx):
+            if kind == 'op':
+                return self.op(obj, param.get('args', {}))
+            elif kind == 'handler':
+                return self.handler(obj)
+            elif kind == 'hook':
+                return self.hook(obj, param)
+            elif kind == 'timer':
+                return self.timer(obj)
+            else:
+                raise SkygearException("unknown plugin extension point")
+
+    @_wrap_result
+    def call_provider(self, ctx, name, action, param):
+        obj = self._registry.get_obj('provider', name)
+
+        with start_context(ctx):
             return self.provider(obj, action, param)
-        else:
-            raise SkygearException("unknown plugin extension point")
 
     def op(self, func, param):
         if isinstance(param, list):

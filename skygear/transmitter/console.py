@@ -47,9 +47,11 @@ class ConsoleTransport(CommonTransport):
         else:
             param = json.loads(self.read())
             if target == 'provider':
-                param['action'] = subprocess_args[2]
+                output = self.call_provider({}, subprocess_args[1],
+                                            subprocess_args[2], param)
+            else:
+                output = self.call_func({}, target, subprocess_args[1], param)
 
-            output = self.call_func({}, target, subprocess_args[1], param)
             self.write(json.dumps(output))
 
     def read(self):

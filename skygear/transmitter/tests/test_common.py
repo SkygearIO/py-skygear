@@ -38,7 +38,7 @@ class TestCommonTransport(unittest.TestCase):
         assert self.transport.init_info() == mocker.return_value
 
     @patch('skygear.registry.Registry.get_obj')
-    def testCallGetCorrectObject(self, mocker):
+    def testCallFuncGetCorrectObject(self, mocker):
         mocker.return_value = MagicMock()
         self.transport.call_func(self.ctx, 'timer', 'name', {})
         mocker.assert_called_once_with('timer', 'name')
@@ -60,6 +60,33 @@ class TestCommonTransport(unittest.TestCase):
     def testCallFuncResult(self, mocker):
         mocker.return_value = MagicMock(return_value={'data': 'hello'})
         result = self.transport.call_func(self.ctx, 'timer', 'name', {})
+        assert result['result'] == {'data': 'hello'}
+
+    @patch('skygear.registry.Registry.get_obj')
+    def testCallProviderGetCorrectObject(self, mocker):
+        mocker.return_value = MagicMock()
+        self.transport.call_provider(self.ctx, 'name', 'action', {})
+        mocker.assert_called_once_with('provider', 'name')
+        mocker.return_value.handle_action.assert_called_once_with('action', {})
+
+    @patch('skygear.registry.Registry.get_obj')
+    def testCallProviderContext(self, mocker):
+        def assertState(expectedState):
+            def func():
+                assert current_context().get('state') == expectedState
+            return func
+
+        mocker.return_value = MagicMock(side_effect=assertState("happy"))
+        self.transport.call_provider(self.ctx, 'name', 'action', {})
+        mocker.return_value.handle_action.assert_called_once_with('action', {})
+        assert 'state' not in current_context()
+
+    @patch('skygear.registry.Registry.get_obj')
+    def testCallProviderResult(self, mocker):
+        provider_mock = MagicMock()
+        provider_mock.handle_action.return_value = {'data': 'hello'}
+        mocker.return_value = provider_mock
+        result = self.transport.call_provider(self.ctx, 'name', 'action', {})
         assert result['result'] == {'data': 'hello'}
 
     @patch('skygear.registry.Registry.get_obj')

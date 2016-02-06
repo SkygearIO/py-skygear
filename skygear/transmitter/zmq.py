@@ -149,4 +149,8 @@ class ZmqTransport(CommonTransport):
 
         ctx = req.get('context') or {}
 
-        return self.call_func(ctx, kind, name, param)
+        if kind == 'provider':
+            action = param.pop('action')
+            return self.call_provider(ctx, name, action, param)
+        else:
+            return self.call_func(ctx, kind, name, param)
