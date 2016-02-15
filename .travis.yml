@@ -34,7 +34,7 @@ script:
   - pylama skygear
   - coverage run --source skygear setup.py test
   - python "`which lizard`" skygear -C 10 -w -i 0
-  - coverage report -m
+  - coverage report -m --omit *tests*
 
 notifications:
   slack: oursky:PxqsclRADehuWEs51vpgxeUh
