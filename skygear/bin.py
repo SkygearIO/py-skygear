@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
 import logging
 import signal
 import sys
@@ -19,8 +18,7 @@ from importlib.machinery import SourceFileLoader
 
 from .container import SkygearContainer
 from .options import parse_args
-from .registry import get_registry
-from .transmitter import ConsoleTransport, ZmqTransport
+from .transmitter import ConsoleTransport, HttpTransport, ZmqTransport
 
 log = logging.getLogger(__name__)
 
@@ -41,32 +39,18 @@ def run_plugin(options):
     SkygearContainer.set_default_endpoint(options.skygear_endpoint)
     SkygearContainer.set_default_apikey(options.apikey)
 
-    if options.subprocess is not None:
-        return stdin(options.subprocess)
-
     log.debug("Install signal handler for SIGTERM")
     signal.signal(signal.SIGTERM, sigterm_handler)
-    log.info(
-        "Connecting to address %s" % options.skygear_address)
-    transport = ZmqTransport(options.skygear_address)
-    transport.run()
 
-
-def stdin(_input):
-    target = _input[0]
-    if target not in ['init', 'op', 'hook', 'handler', 'timer', 'provider']:
-        print(
-            "Only init, op, hook, handler, timer and provider is support now",
-            file=sys.stderr)
-        sys.exit(1)
-    transport = ConsoleTransport()
-    if target == 'init':
-        json.dump(get_registry().func_list(), sys.stdout)
-    elif len(_input) < 2:
-        print("Missing param for %s", target, file=sys.stderr)
-        sys.exit(1)
+    if options.subprocess is not None:
+        transport = ConsoleTransport(options.subprocess)
+    elif options.http:
+        transport = HttpTransport(options.http_addr, debug=options.debug)
     else:
-        transport.handle_call(target, *_input[1:])
+        log.info(
+            "Connecting to address %s" % options.skygear_address)
+        transport = ZmqTransport(options.skygear_address)
+    transport.run()
 
 
 def setup_logging(options):

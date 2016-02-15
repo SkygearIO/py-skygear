@@ -13,43 +13,49 @@
 # limitations under the License.
 import json
 import logging
+import os
 import sys
 
-from ..error import SkygearException
-from ..registry import get_registry
-from ..utils import db
-from .encoding import _serialize_exc, deserialize_or_none, serialize_record
+from .common import CommonTransport, decode_base64_json
 
 log = logging.getLogger(__name__)
 
 
-# a decorator intended to be used in ConsoleTransport's member method.
-# it encapsulates return value or exception thrown into a response,
-# then write it to the console
-def _serialize(func):
-    def serialize_with_exc(self, *args, **kwargs):
-        d = {}
-        try:
-            d['result'] = func(self, *args, **kwargs)
-        except SkygearException as e:
-            d['error'] = e.as_dict()
-        except Exception as e:
-            log.exception("Error occurred in call_func")
-            d['error'] = _serialize_exc(e).as_dict()
-        self.write(json.dumps(d))
-
-    return serialize_with_exc
+ACCEPTED_TARGETS = ['init', 'op', 'hook', 'handler', 'timer', 'provider']
 
 
-class ConsoleTransport:
-
-    def __init__(self, stdin=sys.stdin, stdout=sys.stdout, registry=None):
-        if registry is None:
-            registry = get_registry()
-        self._registry = registry
+class ConsoleTransport(CommonTransport):
+    def __init__(self, args, stdin=sys.stdin, stdout=sys.stdout,
+                 registry=None):
+        super().__init__(registry)
+        self.args = args
 
         self.input = stdin
         self.output = stdout
+
+    def run(self):
+        self.args = self.args
+        target = self.args[0]
+        if target not in ACCEPTED_TARGETS:
+            print("Only init, op, hook, handler, timer and provider is"
+                  " supported now", file=sys.stderr)
+            sys.exit(1)
+        if target == 'init':
+            self.write(json.dumps(self.init_info()))
+        elif len(self.args) < 2:
+            print("Missing param for %s", target, file=sys.stderr)
+            sys.exit(1)
+        else:
+            param = json.loads(self.read())
+            context_data = os.environ.get('SKYGEAR_CONTEXT')
+            context = decode_base64_json(context_data) if context_data else {}
+            if target == 'provider':
+                output = self.call_provider(context, self.args[1],
+                                            self.args[2], param)
+            else:
+                output = self.call_func(context, target, self.args[1], param)
+
+            self.write(json.dumps(output))
 
     def read(self):
         if not self.input.isatty():
@@ -59,56 +65,3 @@ class ConsoleTransport:
 
     def write(self, obj, format='text'):
         return self.output.write(obj)
-
-    @_serialize
-    def handle_call(self, kind, name, *args):
-        param = json.loads(self.read())
-
-        # derive args and kwargs
-        if kind == 'op':
-            param = param.get('args', {})
-            if isinstance(param, list):
-                args = param
-                kwargs = {}
-            elif isinstance(param, dict):
-                args = []
-                kwargs = param
-            else:
-                msg = "Unsupported args type '{0}'".format(type(param))
-                raise ValueError(msg)
-
-            obj = self._registry.get_obj(kind, name)
-            return self.op(obj, *args, **kwargs)
-        elif kind == 'handler':
-            obj = self._registry.get_obj(kind, name)
-            return self.handler(obj)
-        elif kind == 'hook':
-            obj = self._registry.get_obj(kind, name)
-            return self.hook(obj, param)
-        elif kind == 'timer':
-            obj = self._registry.get_obj(kind, name)
-            return self.timer(obj)
-        elif kind == 'provider':
-            obj = self._registry.get_obj(kind, name)
-            return self.provider(obj, args[0], param)
-
-        return obj, args, kwargs
-
-    def op(self, func, *args, **kwargs):
-        return func(*args, **kwargs)
-
-    def handler(self, func):
-        return func()
-
-    def hook(self, func, param):
-        original_record = deserialize_or_none(param.get('original', None))
-        record = deserialize_or_none(param.get('record', None))
-        with db.conn() as conn:
-            func(record, original_record, conn)
-        return serialize_record(record)
-
-    def timer(self, func):
-        return func()
-
-    def provider(self, provider, action, data):
-        return provider.handle_action(action, data)

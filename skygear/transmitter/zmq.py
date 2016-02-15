@@ -18,11 +18,7 @@ from random import randint
 
 import zmq
 
-from ..error import SkygearException
-from ..registry import get_registry
-from ..utils import db
-from ..utils.context import start_context
-from .encoding import _serialize_exc, deserialize_or_none, serialize_record
+from .common import CommonTransport
 
 log = logging.getLogger(__name__)
 
@@ -59,20 +55,18 @@ def worker_socket(addr, context, poller):
     return worker
 
 
-class ZmqTransport:
+class ZmqTransport(CommonTransport):
     """ZmqTransport implements the Paranoid-Pirate worker described in the zguide:
     http://zguide.zeromq.org/py:all#Robust-Reliable-Queuing-Paranoid-Pirate-Pattern
     """
 
     def __init__(self, addr, context=None, registry=None):
+        super().__init__(registry)
         if context is None:
             context = zmq.Context()
-        if registry is None:
-            registry = get_registry()
 
         self._addr = addr
         self._context = context
-        self._registry = registry
 
     def run(self):
         try:
@@ -148,75 +142,15 @@ class ZmqTransport:
     def handle_message(self, req):
         kind = req['kind']
         if kind == 'init':
-            return self._registry.func_list()
+            return self.init_info()
 
         name = req['name']
         param = req.get('param')
 
         ctx = req.get('context') or {}
 
-        resp = {}
-        try:
-            with start_context(ctx):
-                resp['result'] = self.call_func(kind, name, param)
-        except SkygearException as e:
-            resp['error'] = e.as_dict()
-        except Exception as e:
-            log.exception("Error occurred in call_func")
-            resp['error'] = _serialize_exc(e).as_dict()
-
-        return resp
-
-    # the following methods are almost exactly the same as their counterpart
-    # of ConsoleTransport, which probably can be factored out
-
-    def call_func(self, kind, name, param):
-        # derive args and kwargs
-        if kind == 'op':
-            param = param.get('args', {})
-            obj = self._registry.get_obj(kind, name)
-            if isinstance(param, list):
-                args = param
-                kwargs = {}
-            elif isinstance(param, dict):
-                args = []
-                kwargs = param
-            else:
-                msg = "Unsupported args type '{0}'".format(type(param))
-                raise ValueError(msg)
-
-            return self.op(obj, *args, **kwargs)
-        elif kind == 'handler':
-            obj = self._registry.get_obj(kind, name)
-            return self.handler(obj)
-        elif kind == 'hook':
-            obj = self._registry.get_obj(kind, name)
-            return self.hook(obj, param)
-        elif kind == 'timer':
-            obj = self._registry.get_obj(kind, name)
-            return self.timer(obj)
-        elif kind == 'provider':
-            obj = self._registry.get_obj(kind, name)
-            action = param['action']
-            return self.provider(obj, action, param)
-
-        return obj, args, kwargs
-
-    def op(self, func, *args, **kwargs):
-        return func(*args, **kwargs)
-
-    def handler(self, func):
-        return func()
-
-    def hook(self, func, param):
-        original_record = deserialize_or_none(param.get('original', None))
-        record = deserialize_or_none(param.get('record', None))
-        with db.conn() as conn:
-            func(record, original_record, conn)
-        return serialize_record(record)
-
-    def timer(self, func):
-        return func()
-
-    def provider(self, provider, action, data):
-        return provider.handle_action(action, data)
+        if kind == 'provider':
+            action = param.pop('action')
+            return self.call_provider(ctx, name, action, param)
+        else:
+            return self.call_func(ctx, kind, name, param)

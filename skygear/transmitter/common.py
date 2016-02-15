@@ -11,8 +11,116 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .utils import db
+import base64
+import json
+import logging
+from functools import wraps
+
+from ..error import SkygearException
+from ..registry import get_registry
+from ..utils import db
+from ..utils.context import start_context
+from .encoding import _serialize_exc, deserialize_or_none, serialize_record
 
 
 def _get_engine():
     return db._get_engine()
+
+
+def _wrap_result(f):
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        try:
+            return dict(result=f(self, *args, **kwargs))
+        except SkygearException as e:
+            return dict(error=e.as_dict())
+        except Exception as e:
+            self.logger.exception("Error occurred processing request")
+            return dict(error=_serialize_exc(e).as_dict())
+    return wrapper
+
+
+def encode_base64_json(data):
+    """
+    Encode dict-like data into a base64 encoded JSON string.
+
+    This can be used to get dict-like data into HTTP headers / envvar.
+    """
+    return base64.b64encode(bytes(json.dumps(data), 'utf-8'))
+
+
+def decode_base64_json(data):
+    """
+    Decode dict-like data from a base64 encoded JSON string.
+
+    This can be used to get dict-like data into HTTP headers / envvar.
+    """
+    return json.loads(base64.b64decode(data).decode('utf-8'))
+
+
+class CommonTransport:
+    def __init__(self, registry=None, logger=None):
+        self._registry = registry or get_registry()
+        self.logger = logger or logging.getLogger(__name__)
+
+    def init_info(self):
+        return self._registry.func_list()
+
+    @_wrap_result
+    def call_func(self, ctx, kind, name, param):
+        obj = self._registry.get_obj(kind, name)
+
+        with start_context(ctx):
+            if kind == 'op':
+                return self.op(obj, param.get('args', {}))
+            elif kind == 'handler':
+                return self.handler(obj)
+            elif kind == 'hook':
+                return self.hook(obj, param)
+            elif kind == 'timer':
+                return self.timer(obj)
+            else:
+                raise SkygearException("unknown plugin extension point")
+
+    @_wrap_result
+    def call_provider(self, ctx, name, action, param):
+        obj = self._registry.get_obj('provider', name)
+
+        with start_context(ctx):
+            return self.provider(obj, action, param)
+
+    def op(self, func, param):
+        if isinstance(param, list):
+            args = param
+            kwargs = {}
+        elif isinstance(param, dict):
+            args = []
+            kwargs = param
+        else:
+            msg = "Unsupported args type '{0}'".format(type(param))
+            raise ValueError(msg)
+        return func(*args, **kwargs)
+
+    def handler(self, func):
+        raise NotImplemented()
+
+    def hook(self, func, param):
+        original_record = deserialize_or_none(param.get('original', None))
+        record = deserialize_or_none(param.get('record', None))
+        with db.conn() as conn:
+            returned = func(record, original_record, conn)
+
+            # If the hook function does not return a value, assume that
+            # the record in the first argument is to be returned.
+            if returned is None:
+                returned = record
+        return serialize_record(returned)
+
+    def timer(self, func):
+        return func()
+
+    def provider(self, provider, action, data):
+        return provider.handle_action(action, data)
+
+    def run(self):
+        raise NotImplemented()
