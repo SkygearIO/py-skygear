@@ -30,6 +30,10 @@ def get_argument_parser():
                     default=None,
                     help="API Key of the application",
                     env_var='SKYGEAR_APIKEY')
+    ap.add_argument('--masterkey', metavar='MASTERKEY', action='store',
+                    default=None,
+                    help="Master Key of the application",
+                    env_var='SKYGEAR_MASTERKEY')
     ap.add_argument('--appname', metavar='APPNAME', action='store',
                     default='',
                     help="Application name of the skygear daemon",
