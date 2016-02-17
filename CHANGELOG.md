@@ -1,3 +1,21 @@
+## 0.5.0 (2016-02-17)
+
+### Features
+
+- Implement HttpTransport and improve other transports oursky/skygear#537, oursky/skygear#538
+- Add support for skygear-style exception #109
+- Support registering multiple hooks of same kind #108
+
+### Bug Fixes
+
+- Fi login requirement required by catapi example
+- Fix typo in development.ini
+
+### Other Notes
+
+- Added using dumb-init to speed up docker container closing
+- Install signal to handle container stop
+
 ## 0.4.0 (2016-01-13)
 
 ### Feature
