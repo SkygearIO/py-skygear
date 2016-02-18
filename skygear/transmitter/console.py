@@ -16,6 +16,7 @@ import logging
 import os
 import sys
 
+from .. import error as skyerr
 from .common import CommonTransport, decode_base64_json
 
 log = logging.getLogger(__name__)
@@ -41,21 +42,45 @@ class ConsoleTransport(CommonTransport):
                   " supported now", file=sys.stderr)
             sys.exit(1)
         if target == 'init':
-            self.write(json.dumps(self.init_info()))
+            self.writeJSON(self.init_info())
         elif len(self.args) < 2:
             print("Missing param for %s", target, file=sys.stderr)
             sys.exit(1)
         else:
-            param = json.loads(self.read())
-            context_data = os.environ.get('SKYGEAR_CONTEXT')
-            context = decode_base64_json(context_data) if context_data else {}
-            if target == 'provider':
-                output = self.call_provider(context, self.args[1],
-                                            self.args[2], param)
-            else:
-                output = self.call_func(context, target, self.args[1], param)
+            try:
+                self.handle_command(target, self.args)
+            except skyerr.SkygearException as e:
+                self.writeJSON(e.as_dict())
 
-            self.write(json.dumps(output))
+    def handle_command(self, target, args):
+        param = self.readJSON()
+        context_data = os.environ.get('SKYGEAR_CONTEXT')
+        context = decode_base64_json(context_data) if context_data else {}
+        if target == 'provider':
+            output = self.call_provider(context, args[1], args[2], param)
+        else:
+            output = self.call_func(context, target, args[1], param)
+
+        self.writeJSON(output)
+
+    def readJSON(self):
+        data = self.read()
+        if not data:
+            return {}
+        try:
+            return json.loads(data)
+        except ValueError:
+            msg = "unable to parse JSON string"
+            logging.exception(msg)
+            raise skyerr.SkygearException(msg, skyerr.UnexpectedError)
+
+    def writeJSON(self, data):
+        try:
+            self.write(json.dumps(data))
+        except TypeError:
+            msg = "unable to serialize obj to JSON string"
+            logging.exception(msg)
+            raise skyerr.SkygearException(msg, skyerr.UnexpectedError)
 
     def read(self):
         if not self.input.isatty():
