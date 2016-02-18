@@ -29,13 +29,17 @@ class SkygearContainer(object):
     endpoint = 'http://localhost:3000'
     api_key = None
     access_token = None
+    user_id = None
     app_name = ''
 
-    def __init__(self, endpoint=None, api_key=None, access_token=None):
+    def __init__(self, endpoint=None, api_key=None, access_token=None,
+                 user_id=None):
         if endpoint:
             self.endpoint = endpoint
         if api_key:
             self.api_key = api_key
+        if user_id:
+            self.user_id = user_id
         self.access_token = access_token
 
     def _request_url(self, action_name):
@@ -50,6 +54,8 @@ class SkygearContainer(object):
             payload['access_token'] = self.access_token
         elif self.api_key:
             payload['api_key'] = self.api_key
+        if self.user_id:
+            payload['_user_id'] = self.user_id
         return payload
 
     @classmethod
