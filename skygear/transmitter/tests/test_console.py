@@ -53,10 +53,27 @@ class TestConsoleTransport(unittest.TestCase):
         assert output == mocker.return_value
 
     @patch('skygear.transmitter.console.ConsoleTransport.call_func')
-    def testOp(self, mocker):
+    def testOpInvalidJSON(self, mocker):
         mocker.return_value = {}
-        self.exec(['op', 'john'], {'data': 'bye'})
+        output = self.exec(['op', 'john'], "not-valid")
+        assert not mocker.called
+        expected_output = {'code': 10000, 'info': {},
+                           'message': 'unable to parse JSON string'}
+        assert output == expected_output
+
+    @patch('skygear.transmitter.console.ConsoleTransport.call_func')
+    def testOpEmpty(self, mocker):
+        mocker.return_value = {"data": "hi"}
+        output = self.exec(['op', 'john'], "")
+        mocker.assert_called_once_with(ANY, 'op', 'john', {})
+        assert output == mocker.return_value
+
+    @patch('skygear.transmitter.console.ConsoleTransport.call_func')
+    def testOp(self, mocker):
+        mocker.return_value = {"data": "hi"}
+        output = self.exec(['op', 'john'], {'data': 'bye'})
         mocker.assert_called_once_with(ANY, 'op', 'john', {'data': 'bye'})
+        assert output == mocker.return_value
 
     @patch('skygear.transmitter.console.ConsoleTransport.call_func')
     def testHook(self, mocker):
@@ -73,5 +90,5 @@ class TestConsoleTransport(unittest.TestCase):
     @patch('skygear.transmitter.console.ConsoleTransport.call_func')
     def testTimer(self, mocker):
         mocker.return_value = {}
-        self.exec(['timer', 'john'], {'data': 'bye'})
-        mocker.assert_called_once_with(ANY, 'timer', 'john', {'data': 'bye'})
+        self.exec(['timer', 'john'], "")
+        mocker.assert_called_once_with(ANY, 'timer', 'john', {})
