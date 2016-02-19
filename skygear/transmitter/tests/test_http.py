@@ -18,6 +18,7 @@ from unittest.mock import ANY, patch
 from werkzeug.test import Client
 from werkzeug.wrappers import BaseResponse
 
+from ... import config as skyconfig
 from ...registry import Registry
 from ..common import encode_base64_json
 from ..http import HttpTransport
@@ -27,6 +28,7 @@ def headers_with_context(data):
     return {'X-Skygear-Plugin-Context': encode_base64_json(data)}
 
 
+@patch('skygear.config.config', skyconfig.Configuration())
 class TestHttpTransport(unittest.TestCase):
     def get_app(self):
         return self.transport.dispatch
@@ -50,10 +52,12 @@ class TestHttpTransport(unittest.TestCase):
     @patch('skygear.transmitter.http.HttpTransport.init_info')
     def testInitInfo(self, mocker):
         mocker.return_value = {'data': 'hello'}
-        resp = self.get_client().post('/init')
+        request_data = json.dumps({'config': {'hello': 'world'}})
+        resp = self.get_client().post('/init', data=request_data)
         assert resp.status_code == 200
         mocker.assert_called_once_with()
         assert json.loads(resp.get_data(as_text=True)) == mocker.return_value
+        assert skyconfig.config.hello == 'world'
 
     @patch('skygear.transmitter.http.HttpTransport.call_func')
     def testCallFuncWithData(self, mocker):

@@ -18,6 +18,7 @@ from random import randint
 
 import zmq
 
+from ..config import parse_config
 from .common import CommonTransport
 
 log = logging.getLogger(__name__)
@@ -141,11 +142,12 @@ class ZmqTransport(CommonTransport):
     @_encoded
     def handle_message(self, req):
         kind = req['kind']
+        param = req.get('param')
         if kind == 'init':
+            parse_config(param.get('config') or {})
             return self.init_info()
 
         name = req['name']
-        param = req.get('param')
 
         ctx = req.get('context') or {}
 

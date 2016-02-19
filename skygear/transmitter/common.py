@@ -14,6 +14,7 @@
 import base64
 import json
 import logging
+import os
 from functools import wraps
 
 from ..error import SkygearException
@@ -56,6 +57,11 @@ def decode_base64_json(data):
     This can be used to get dict-like data into HTTP headers / envvar.
     """
     return json.loads(base64.b64decode(data).decode('utf-8'))
+
+
+def dict_from_base64_environ(name):
+    data = os.environ.get(name)
+    return decode_base64_json(data) if data else {}
 
 
 class CommonTransport:

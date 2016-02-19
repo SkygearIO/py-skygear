@@ -11,9 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import unittest
 from unittest.mock import MagicMock, patch
 
+from .. import common
 from ...error import SkygearException
 from ...models import Record, RecordID
 from ...registry import Registry
@@ -145,3 +147,16 @@ class TestCommonTransport(unittest.TestCase):
         mock = MagicMock()
         self.transport.provider(mock, 'action', {'data': 'hello'})
         mock.handle_action.assert_called_with('action', {'data': 'hello'})
+
+
+class TestBase64Encoding(unittest.TestCase):
+    @patch.dict(os.environ, {'SKYGEAR_CONTEXT': 'e30='})
+    def testFromEnviron(self):
+        d = common.dict_from_base64_environ('SKYGEAR_CONTEXT')
+        assert d == {}
+
+    def testEncoding(self):
+        assert common.encode_base64_json({}) == b'e30='
+
+    def testDecoding(self):
+        assert common.decode_base64_json('e30=') == {}

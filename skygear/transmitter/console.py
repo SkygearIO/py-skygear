@@ -13,11 +13,11 @@
 # limitations under the License.
 import json
 import logging
-import os
 import sys
 
+from .. import config as skyconfig
 from .. import error as skyerr
-from .common import CommonTransport, decode_base64_json
+from .common import CommonTransport, dict_from_base64_environ
 
 log = logging.getLogger(__name__)
 
@@ -54,8 +54,9 @@ class ConsoleTransport(CommonTransport):
 
     def handle_command(self, target, args):
         param = self.readJSON()
-        context_data = os.environ.get('SKYGEAR_CONTEXT')
-        context = decode_base64_json(context_data) if context_data else {}
+        context = dict_from_base64_environ('SKYGEAR_CONTEXT')
+        skyconfig.parse_config(dict_from_base64_environ('SKYGEAR_CONFIG'))
+
         if target == 'provider':
             output = self.call_provider(context, args[1], args[2], param)
         else:

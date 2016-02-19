@@ -17,6 +17,7 @@ from werkzeug.routing import Map, Rule
 from werkzeug.serving import run_simple
 from werkzeug.wrappers import Request, Response
 
+from ..config import parse_config
 from .common import CommonTransport, decode_base64_json
 from .encoding import _serialize_exc
 
@@ -74,6 +75,7 @@ class HttpTransport(CommonTransport):
         """
         endpoint, values, context, param = self.read_request(request)
         if endpoint == 'init':
+            parse_config(param.get('config', {}))
             return self.init_info()
         else:
             if endpoint == 'provider':
