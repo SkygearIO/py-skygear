@@ -18,7 +18,8 @@ import strict_rfc3339
 
 from ..error import SkygearException, UnexpectedError
 from ..models import (Asset, DirectAccessControlEntry, Location, Record,
-                      RecordID, Reference, RelationalAccessControlEntry)
+                      RecordID, Reference, RelationalAccessControlEntry,
+                      RoleAccessControlEntry)
 
 
 def _serialize_exc(e):
@@ -86,12 +87,20 @@ class _RecordDecoder:
         return [self.decode_ace(d) for d in l]
 
     def decode_ace(self, d):
-        level = d['level']
-        relation = d['relation']
-        if relation == '$direct':
+        level = d.get('level', None)
+        if level is None:
+            raise ValueError("ace must have level")
+        relation = d.get('relation', None)
+        role = d.get('role', None)
+        user_id = d.get('user_id', None)
+        if user_id is not None:
             return DirectAccessControlEntry(d['user_id'], level)
-        else:
+        elif relation is not None:
             return RelationalAccessControlEntry(relation, level)
+        elif role is not None:
+            return RoleAccessControlEntry(role, level)
+        else:
+            raise ValueError("invalid ace")
 
     def decode_dict(self, d):
         return {k: self.decode_value(v) for k, v in d.items()}
@@ -160,8 +169,12 @@ class _RecordEncoder:
         elif isinstance(ace, DirectAccessControlEntry):
             return {
                 'level': ace.level,
-                'relation': '$direct',
                 'user_id': ace.user_id,
+            }
+        elif isinstance(ace, RoleAccessControlEntry):
+            return {
+                'level': ace.level,
+                'role': ace.role
             }
         else:
             raise ValueError('Unknown type of ACE = %s', type(ace))

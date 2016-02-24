@@ -122,6 +122,12 @@ class RelationalAccessControlEntry(AccessControlEntry):
         self.relation = relation
 
 
+class RoleAccessControlEntry(AccessControlEntry):
+    def __init__(self, role, level):
+        super().__init__(level)
+        self.role = role
+
+
 class DirectAccessControlEntry(AccessControlEntry):
     def __init__(self, user_id, level):
         super().__init__(level)

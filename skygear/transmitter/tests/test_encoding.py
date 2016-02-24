@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from skygear.models import RoleAccessControlEntry
+
 from ..encoding import deserialize_record
 
 
@@ -30,3 +33,18 @@ class TestsDeserializeRecord():
         assert r['content'] == "Hello World!"
         assert r['noteOrder'] == 1
         assert r.owner_id == "OWNER_ID"
+
+    def test_model_with_acl(self):
+        rdata = {
+            "_id": "note/99D92DBA-74D5-477F-B35E-F735E21B2DD5",
+            "_ownerID": "OWNER _ID",
+            "_access": [{
+                "role": "admin",
+                "level": "write"
+            }]
+        }
+        r = deserialize_record(rdata)
+        assert r.id.type == "note"
+        assert r.id.key == "99D92DBA-74D5-477F-B35E-F735E21B2DD5"
+        assert isinstance(r.acl, list)
+        assert isinstance(r.acl[0], RoleAccessControlEntry)
