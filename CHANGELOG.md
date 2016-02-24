@@ -1,3 +1,12 @@
+## 0.6.0 (2016-02-24)
+
+### Features
+
+- Support roles base ACE serialisation #121
+- Support for skygear config passing
+- Run lambda function in exec without content
+- Add support for impersonating user using master key
+
 ## 0.5.0 (2016-02-17)
 
 ### Features
