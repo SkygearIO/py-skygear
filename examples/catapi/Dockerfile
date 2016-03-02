@@ -1,3 +1,3 @@
 FROM oursky/py-skygear:onbuild
 
-CMD py-skygear catapi.py
+CMD py-skygear __init__.py
