@@ -15,3 +15,4 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 ENV PYTHONUNBUFFERED 0
 ENTRYPOINT ["dumb-init"]
+CMD ["py-skygear"]

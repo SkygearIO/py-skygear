@@ -18,3 +18,4 @@ WORKDIR /usr/src/app
 RUN python setup.py develop
 ENV PYTHONUNBUFFERED 0
 ENTRYPOINT ["dumb-init"]
+CMD ["py-skygear"]

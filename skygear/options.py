@@ -54,7 +54,7 @@ def get_argument_parser():
     ap.add_argument('--debug', action='store_true',
                     help='Enable debugging features',
                     env_var='SKYGEAR_DEBUG')
-    ap.add_argument('plugin')
+    ap.add_argument('plugin', nargs='?')
     return ap
 
 
