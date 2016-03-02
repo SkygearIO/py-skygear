@@ -1,5 +1,11 @@
 ## 0.6.0 (2016-02-24)
 
+### Other Notes
+
+- Update the catapi to demo of relative import
+
+## 0.6.0 (2016-02-24)
+
 ### Features
 
 - Support roles base ACE serialisation #121
