@@ -5,6 +5,9 @@ RUN \
     dpkg -i dumb-init_*.deb && \
     rm dumb-init_*.deb
 
+RUN pip install --upgrade pip && \
+    pip install --upgrade setuptools
+
 COPY requirements.txt /tmp/py-skygear/
 RUN pip install --no-cache-dir -r /tmp/py-skygear/requirements.txt
 

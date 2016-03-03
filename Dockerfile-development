@@ -5,11 +5,11 @@ RUN \
     dpkg -i dumb-init_*.deb && \
     rm dumb-init_*.deb
 
-COPY requirements.txt /tmp/py-skygear/
+RUN pip install --upgrade pip && \
+    pip install --upgrade setuptools
+    
 
-# Updated setuptools is required because version updates will cause py-skygear
-# to fail because of version string mismatch.
-RUN pip install --upgrade setuptools
+COPY requirements.txt /tmp/py-skygear/
 RUN pip install --no-cache-dir -r /tmp/py-skygear/requirements.txt
 
 COPY . /usr/src/app

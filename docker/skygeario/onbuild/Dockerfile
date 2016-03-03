@@ -5,6 +5,9 @@ RUN \
     dpkg -i dumb-init_*.deb && \
     rm dumb-init_*.deb
 
+RUN pip install --upgrade pip && \
+    pip install --upgrade setuptools
+
 RUN ( \
     cd /tmp; \
     git clone https://github.com/SkygearIO/py-skygear.git; \
