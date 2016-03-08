@@ -17,13 +17,14 @@ import logging
 import os
 from functools import wraps
 
-from werkzeug.wrappers import Request, Response
+from werkzeug.wrappers import Request
 from werkzeug.test import EnvironBuilder
 
 from ..error import SkygearException
 from ..registry import get_registry
 from ..utils import db
 from ..utils.context import start_context
+from ..utils.http import Response
 from .encoding import _serialize_exc, deserialize_or_none, serialize_record
 
 
@@ -109,23 +110,27 @@ class CommonTransport:
         func = self._registry.get_obj('handler', name)
         with start_context(ctx):
             response = func(request)
-            if isinstance(response, str):
+            if isinstance(response, Response):
+                self.logger.warn(response.headers.__dict__)
+                headers = {}
+                for k, v in response.headers:
+                    headers[k] = [v]
+                body_byte = response.get_data()
+                body = base64.b64encode(body_byte).decode('utf-8')
+            elif isinstance(response, str):
+                headers = {'Content-Type': ['text/plain; charset=utf-8']}
                 body = base64.b64encode(
                     bytes(response, 'utf-8')
                 ).decode('utf-8')
-                return {
-                    'header': {
-                        'Content-Type': ['text/plain; charset=utf-8']
-                    },
-                    'body': body
-                }
             else:
-                return {
-                    'header': {
-                        'Content-Type': ['application/json']
-                     },
-                    'body': encode_base64_json(response).decode('utf-8')
-                }
+                headers = {
+                    'Content-Type': ['application/json']
+                 }
+                body = encode_base64_json(response).decode('utf-8')
+            return {
+                'header': headers,
+                'body': body
+            }
 
     def op(self, func, param):
         if isinstance(param, list):
