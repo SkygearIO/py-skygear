@@ -37,7 +37,7 @@ class Registry:
         }
         self.param_map = {
             'op': [],
-            'handler': {},
+            'handler': [],
             'hook': [],
             'timer': [],
             'provider': [],
@@ -47,8 +47,11 @@ class Registry:
     def register(self, kind, name, func, *args, **kwargs):
         self.func_map[kind][name] = func
         if kind == 'handler':
-            # TODO: param checking
-            self.param_map['handler'][name] = kwargs
+            self.param_map['handler'].append({
+                'name': name,
+                'key_required': kwargs.get('key_required', False),
+                'user_required': kwargs.get('user_required', False),
+            })
         elif kind == 'hook':
             if kwargs['type'] is None:
                 raise ValueError("type is required for hook")

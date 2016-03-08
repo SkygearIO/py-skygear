@@ -35,6 +35,7 @@ class HttpTransport(CommonTransport):
         return Map([
             Rule('/init', endpoint='init'),
             Rule('/op/<name>', endpoint='op'),
+            Rule('/handler/<name>', endpoint='handler'),
             Rule('/hook/<name>', endpoint='hook'),
             Rule('/provider/<name>/<action>', endpoint='provider'),
             Rule('/timer/<name>', endpoint='timer'),
@@ -81,6 +82,8 @@ class HttpTransport(CommonTransport):
             if endpoint == 'provider':
                 return self.call_provider(context, values['name'],
                                           values['action'], param)
+            elif endpoint == 'handler':
+                return self.call_handler(context, values['name'], param)
             else:
                 return self.call_func(context, endpoint, values['name'], param)
 

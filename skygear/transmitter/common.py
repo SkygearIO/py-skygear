@@ -17,6 +17,9 @@ import logging
 import os
 from functools import wraps
 
+from werkzeug.wrappers import Request, Response
+from werkzeug.test import EnvironBuilder
+
 from ..error import SkygearException
 from ..registry import get_registry
 from ..utils import db
@@ -75,12 +78,9 @@ class CommonTransport:
     @_wrap_result
     def call_func(self, ctx, kind, name, param):
         obj = self._registry.get_obj(kind, name)
-
         with start_context(ctx):
             if kind == 'op':
                 return self.op(obj, param.get('args', {}))
-            elif kind == 'handler':
-                return self.handler(obj)
             elif kind == 'hook':
                 return self.hook(obj, param)
             elif kind == 'timer':
@@ -95,6 +95,38 @@ class CommonTransport:
         with start_context(ctx):
             return self.provider(obj, action, param)
 
+    @_wrap_result
+    def call_handler(self, ctx, name, param):
+        path = '' + name.replace(':', '/')
+        builder = EnvironBuilder(
+            method='POST',
+            path=path,
+            headers=param['header'],
+            data=base64.b64decode(param['body'])
+        )
+        environ = builder.get_environ()
+        request = Request(environ, populate_request=False, shallow=True)
+        func = self._registry.get_obj('handler', name)
+        with start_context(ctx):
+            response = func(request)
+            if isinstance(response, str):
+                body = base64.b64encode(
+                    bytes(response, 'utf-8')
+                ).decode('utf-8')
+                return {
+                    'header': {
+                        'Content-Type': ['text/plain; charset=utf-8']
+                    },
+                    'body': body
+                }
+            else:
+                return {
+                    'header': {
+                        'Content-Type': ['application/json']
+                     },
+                    'body': encode_base64_json(response).decode('utf-8')
+                }
+
     def op(self, func, param):
         if isinstance(param, list):
             args = param
@@ -106,9 +138,6 @@ class CommonTransport:
             msg = "Unsupported args type '{0}'".format(type(param))
             raise ValueError(msg)
         return func(*args, **kwargs)
-
-    def handler(self, func):
-        raise NotImplemented()
 
     def hook(self, func, param):
         original_record = deserialize_or_none(param.get('original', None))

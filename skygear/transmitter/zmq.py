@@ -154,5 +154,7 @@ class ZmqTransport(CommonTransport):
         if kind == 'provider':
             action = param.pop('action')
             return self.call_provider(ctx, name, action, param)
+        elif kind == 'handler':
+            return self.call_handler(ctx, name, param)
         else:
             return self.call_func(ctx, kind, name, param)
