@@ -1,3 +1,12 @@
+## 0.8.0 (2016-03-09)
+
+### Features
+
+- Automatically import plugin file #125
+    
+  The plugin source file is now optional. py-skygear will attempt to
+  find the plugin source file in the working directory.
+
 ## 0.7.0 (2016-03-02)
 
 ### Other Notes
