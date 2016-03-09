@@ -98,39 +98,42 @@ class CommonTransport:
 
     @_wrap_result
     def call_handler(self, ctx, name, param):
-        path = '' + name.replace(':', '/')
+        func = self._registry.get_handler(name, param['method'])
+        with start_context(ctx):
+            return self.handler(func, param)
+
+    def handler(self, func, param):
         builder = EnvironBuilder(
-            method='POST',
-            path=path,
+            method=param['method'],
+            path=param['path'],
+            query_string=param.get('query_string'),
             headers=param['header'],
             data=base64.b64decode(param['body'])
         )
         environ = builder.get_environ()
-        request = Request(environ, populate_request=False, shallow=True)
-        func = self._registry.get_obj('handler', name)
-        with start_context(ctx):
-            response = func(request)
-            if isinstance(response, Response):
-                self.logger.warn(response.headers.__dict__)
-                headers = {}
-                for k, v in response.headers:
-                    headers[k] = [v]
-                body_byte = response.get_data()
-                body = base64.b64encode(body_byte).decode('utf-8')
-            elif isinstance(response, str):
-                headers = {'Content-Type': ['text/plain; charset=utf-8']}
-                body = base64.b64encode(
-                    bytes(response, 'utf-8')
-                ).decode('utf-8')
-            else:
-                headers = {
-                    'Content-Type': ['application/json']
-                 }
-                body = encode_base64_json(response).decode('utf-8')
-            return {
-                'header': headers,
-                'body': body
-            }
+        request = Request(environ, populate_request=False, shallow=False)
+        response = func(request)
+        if isinstance(response, Response):
+            headers = {}
+            for k, v in response.headers:
+                headers[k] = [v]
+            body_byte = response.get_data()
+            body = base64.b64encode(body_byte).decode('utf-8')
+        elif isinstance(response, str):
+            headers = {'Content-Type': ['text/plain; charset=utf-8']}
+            body = base64.b64encode(
+                bytes(response, 'utf-8')
+            ).decode('utf-8')
+        else:
+            headers = {
+                'Content-Type': ['application/json']
+             }
+            body = encode_base64_json(response).decode('utf-8')
+        return {
+            'header': headers,
+            'body': body
+        }
+
 
     def op(self, func, param):
         if isinstance(param, list):

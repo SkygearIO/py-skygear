@@ -31,7 +31,6 @@ class Registry:
     def __init__(self):
         self.func_map = {
             'op': {},
-            'handler': {},
             'hook': {},
             'timer': {},
         }
@@ -42,17 +41,27 @@ class Registry:
             'timer': [],
             'provider': [],
         }
+        self.handler = {}
         self.providers = {}
 
     def register(self, kind, name, func, *args, **kwargs):
-        self.func_map[kind][name] = func
         if kind == 'handler':
+            method = kwargs.get('method', ['GET', 'POST', 'PUT'])
+            if isinstance(method, str):
+                method = [method]
             self.param_map['handler'].append({
                 'name': name,
+                'method': method,
                 'key_required': kwargs.get('key_required', False),
                 'user_required': kwargs.get('user_required', False),
             })
-        elif kind == 'hook':
+            if name not in self.handler:
+                self.handler[name] = {}
+            for m in method:
+                self.handler[name][m] = func
+            return
+        self.func_map[kind][name] = func
+        if kind == 'hook':
             if kwargs['type'] is None:
                 raise ValueError("type is required for hook")
             if kwargs['trigger'] is None:
@@ -89,5 +98,8 @@ class Registry:
             return self.providers[name]
         else:
             return self.func_map[kind][name]
+
+    def get_handler(self, name, method):
+        return self.handler[name][method]
 
 _registry = Registry()
