@@ -100,6 +100,6 @@ class Registry:
             return self.func_map[kind][name]
 
     def get_handler(self, name, method):
-        return self.handler[name][method]
+        return self.handler[name].get(method, None)
 
 _registry = Registry()

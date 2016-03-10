@@ -17,8 +17,8 @@ import logging
 import os
 from functools import wraps
 
-from werkzeug.wrappers import Request
 from werkzeug.test import EnvironBuilder
+from werkzeug.wrappers import Request
 
 from ..error import SkygearException
 from ..registry import get_registry
@@ -136,7 +136,6 @@ class CommonTransport:
             'header': headers,
             'body': body
         }
-
 
     def op(self, func, param):
         if isinstance(param, list):

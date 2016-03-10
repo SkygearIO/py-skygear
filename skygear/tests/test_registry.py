@@ -17,6 +17,31 @@ from ..registry import Registry
 
 
 class TestRegistry(unittest.TestCase):
+
+    def test_register_handler(self):
+        def handler():
+            pass
+
+        kwargs = {
+            'method': ['GET', 'POST'],
+            'key_required': True,
+            'user_required': True,
+        }
+        registry = Registry()
+        registry.register('handler', 'plugin:handler', handler, **kwargs)
+
+        assert len(registry.handler) == 1
+        assert registry.get_handler('plugin:handler', 'GET') == handler
+        assert registry.get_handler('plugin:handler', 'POST') == handler
+        assert registry.get_handler('plugin:handler', 'PUT') is None
+
+        param_map = registry.param_map['handler']
+        assert len(param_map) == 1
+        assert param_map[0]['name'] == 'plugin:handler'
+        assert 'POST' in param_map[0]['method']
+        assert param_map[0]['key_required'] is True
+        assert param_map[0]['user_required'] is True
+
     def test_register_op(self):
         def fn():
             pass
