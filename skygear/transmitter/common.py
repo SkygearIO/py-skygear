@@ -113,12 +113,14 @@ class CommonTransport:
         environ = builder.get_environ()
         request = Request(environ, populate_request=False, shallow=False)
         response = func(request)
+        status = 200
         if isinstance(response, Response):
             headers = {}
             for k, v in response.headers:
                 headers[k] = [v]
             body_byte = response.get_data()
             body = base64.b64encode(body_byte).decode('utf-8')
+            status = response.status_code
         elif isinstance(response, str):
             headers = {'Content-Type': ['text/plain; charset=utf-8']}
             body = base64.b64encode(
@@ -130,6 +132,7 @@ class CommonTransport:
              }
             body = encode_base64_json(response).decode('utf-8')
         return {
+            'status': status,
             'header': headers,
             'body': body
         }
