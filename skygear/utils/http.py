@@ -11,22 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .decorators import (
-    hook,
-    handler,
-    op,
-    every,
-    provides,
-    before_save,
-    after_save,
-    before_delete,
-    after_delete,
-)
+from werkzeug.wrappers import BaseResponse
 
-from .utils.db import conn as db_conn
-from .utils.http import Response
 
-__all__ = [hook, handler, op, every, provides,
-           before_save, after_save, before_delete, after_delete,
-           db_conn,
-           Response]
+class Response(BaseResponse):
+    pass

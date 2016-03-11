@@ -31,25 +31,24 @@ class Registry:
     def __init__(self):
         self.func_map = {
             'op': {},
-            'handler': {},
             'hook': {},
             'timer': {},
         }
         self.param_map = {
             'op': [],
-            'handler': {},
+            'handler': [],
             'hook': [],
             'timer': [],
             'provider': [],
         }
+        self.handler = {}
         self.providers = {}
 
     def register(self, kind, name, func, *args, **kwargs):
-        self.func_map[kind][name] = func
         if kind == 'handler':
-            # TODO: param checking
-            self.param_map['handler'][name] = kwargs
-        elif kind == 'hook':
+            return self._register_handler(name, func, kwargs)
+        self.func_map[kind][name] = func
+        if kind == 'hook':
             if kwargs['type'] is None:
                 raise ValueError("type is required for hook")
             if kwargs['trigger'] is None:
@@ -71,6 +70,21 @@ class Registry:
 
         log.debug("Registering %s:%s to skygear!!", kind, name)
 
+    def _register_handler(self, name, func, kwargs):
+        methods = kwargs.get('method', ['GET', 'POST', 'PUT'])
+        if isinstance(methods, str):
+            methods = [methods]
+        self.param_map['handler'].append({
+            'name': name,
+            'methods': methods,
+            'key_required': kwargs.get('key_required', False),
+            'user_required': kwargs.get('user_required', False),
+        })
+        if name not in self.handler:
+            self.handler[name] = {}
+        for m in methods:
+            self.handler[name][m] = func
+
     def register_provider(self, provider_type, provider_id, provider,
                           **kwargs):
         kwargs['type'] = provider_type
@@ -86,5 +100,8 @@ class Registry:
             return self.providers[name]
         else:
             return self.func_map[kind][name]
+
+    def get_handler(self, name, method):
+        return self.handler[name].get(method, None)
 
 _registry = Registry()

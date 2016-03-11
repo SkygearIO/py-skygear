@@ -59,6 +59,8 @@ class ConsoleTransport(CommonTransport):
 
         if target == 'provider':
             output = self.call_provider(context, args[1], args[2], param)
+        elif target == 'handler':
+            output = self.call_handler(context, args[1], param)
         else:
             output = self.call_func(context, target, args[1], param)
 

@@ -17,10 +17,14 @@ import logging
 import os
 from functools import wraps
 
+from werkzeug.test import EnvironBuilder
+from werkzeug.wrappers import Request
+
 from ..error import SkygearException
 from ..registry import get_registry
 from ..utils import db
 from ..utils.context import start_context
+from ..utils.http import Response
 from .encoding import _serialize_exc, deserialize_or_none, serialize_record
 
 
@@ -75,12 +79,9 @@ class CommonTransport:
     @_wrap_result
     def call_func(self, ctx, kind, name, param):
         obj = self._registry.get_obj(kind, name)
-
         with start_context(ctx):
             if kind == 'op':
                 return self.op(obj, param.get('args', {}))
-            elif kind == 'handler':
-                return self.handler(obj)
             elif kind == 'hook':
                 return self.hook(obj, param)
             elif kind == 'timer':
@@ -95,6 +96,47 @@ class CommonTransport:
         with start_context(ctx):
             return self.provider(obj, action, param)
 
+    @_wrap_result
+    def call_handler(self, ctx, name, param):
+        func = self._registry.get_handler(name, param['method'])
+        with start_context(ctx):
+            return self.handler(func, param)
+
+    def handler(self, func, param):
+        builder = EnvironBuilder(
+            method=param['method'],
+            path=param['path'],
+            query_string=param.get('query_string'),
+            headers=param['header'],
+            data=base64.b64decode(param['body'])
+        )
+        environ = builder.get_environ()
+        request = Request(environ, populate_request=False, shallow=False)
+        response = func(request)
+        status = 200
+        if isinstance(response, Response):
+            headers = {}
+            for k, v in response.headers:
+                headers[k] = [v]
+            body_byte = response.get_data()
+            body = base64.b64encode(body_byte).decode('utf-8')
+            status = response.status_code
+        elif isinstance(response, str):
+            headers = {'Content-Type': ['text/plain; charset=utf-8']}
+            body = base64.b64encode(
+                bytes(response, 'utf-8')
+            ).decode('utf-8')
+        else:
+            headers = {
+                'Content-Type': ['application/json']
+             }
+            body = encode_base64_json(response).decode('utf-8')
+        return {
+            'status': status,
+            'header': headers,
+            'body': body
+        }
+
     def op(self, func, param):
         if isinstance(param, list):
             args = param
@@ -106,9 +148,6 @@ class CommonTransport:
             msg = "Unsupported args type '{0}'".format(type(param))
             raise ValueError(msg)
         return func(*args, **kwargs)
-
-    def handler(self, func):
-        raise NotImplemented()
 
     def hook(self, func, param):
         original_record = deserialize_or_none(param.get('original', None))

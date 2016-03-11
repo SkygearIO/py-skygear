@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import base64
 import os
 import unittest
 from unittest.mock import MagicMock, patch
@@ -20,6 +21,7 @@ from ...error import SkygearException
 from ...models import Record, RecordID
 from ...registry import Registry
 from ...utils.context import current_context
+from ...utils.http import Response
 from ..common import CommonTransport
 from ..encoding import deserialize_or_none, serialize_record
 
@@ -116,9 +118,49 @@ class TestCommonTransport(unittest.TestCase):
         self.transport.op(mock, [1, 2])
         mock.assert_called_with(1, 2)
 
-    @unittest.skip('handler is not implemented')
-    def testHandler(self):
-        self.fail()
+    def testHandlerWithStrReturn(self):
+        mock = MagicMock(return_value='Hello')
+        response = self.transport.handler(mock, {
+            'path': '/',
+            'method': 'POST',
+            'header': {'Content-Type': ['text/plain; charset=utf-8']},
+            'body': base64.b64encode(b'rawstream')
+        })
+        assert response['header']['Content-Type'] == \
+            ['text/plain; charset=utf-8']
+        assert response['status'] == 200
+        assert base64.b64decode(response['body']) == b'Hello'
+
+    def testHandlerWithDictReturn(self):
+        mock = MagicMock(return_value={
+            'hello': 'world'
+        })
+        response = self.transport.handler(mock, {
+            'path': '/',
+            'method': 'POST',
+            'header': {'Content-Type': ['text/plain; charset=utf-8']},
+            'body': base64.b64encode(b'rawstream')
+        })
+        assert response['header']['Content-Type'] == ['application/json']
+        assert response['status'] == 200
+        assert base64.b64decode(response['body']) == b'{"hello": "world"}'
+
+    def testHandlerWithResponseReturn(self):
+        mock = MagicMock(return_value=Response(
+            headers={},
+            status=405,
+            response='Method NOT Allowed'
+        ))
+        response = self.transport.handler(mock, {
+            'path': '/',
+            'method': 'POST',
+            'header': {'Content-Type': ['text/plain; charset=utf-8']},
+            'body': base64.b64encode(b'rawstream')
+        })
+        assert response['header']['Content-Type'] == \
+            ['text/plain; charset=utf-8']
+        assert response['status'] == 405
+        assert base64.b64decode(response['body']) == b'Method NOT Allowed'
 
     def testHook(self):
         record_id = RecordID('note', 'note1')
