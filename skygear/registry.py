@@ -46,20 +46,7 @@ class Registry:
 
     def register(self, kind, name, func, *args, **kwargs):
         if kind == 'handler':
-            methods = kwargs.get('method', ['GET', 'POST', 'PUT'])
-            if isinstance(methods, str):
-                methods = [methods]
-            self.param_map['handler'].append({
-                'name': name,
-                'methods': methods,
-                'key_required': kwargs.get('key_required', False),
-                'user_required': kwargs.get('user_required', False),
-            })
-            if name not in self.handler:
-                self.handler[name] = {}
-            for m in methods:
-                self.handler[name][m] = func
-            return
+            return self._register_handler(name, func, kwargs)
         self.func_map[kind][name] = func
         if kind == 'hook':
             if kwargs['type'] is None:
@@ -82,6 +69,21 @@ class Registry:
             raise Exception("Unrecognized transport kind '%d'.".format(kind))
 
         log.debug("Registering %s:%s to skygear!!", kind, name)
+
+    def _register_handler(self, name, func, kwargs):
+        methods = kwargs.get('method', ['GET', 'POST', 'PUT'])
+        if isinstance(methods, str):
+            methods = [methods]
+        self.param_map['handler'].append({
+            'name': name,
+            'methods': methods,
+            'key_required': kwargs.get('key_required', False),
+            'user_required': kwargs.get('user_required', False),
+        })
+        if name not in self.handler:
+            self.handler[name] = {}
+        for m in methods:
+            self.handler[name][m] = func
 
     def register_provider(self, provider_type, provider_id, provider,
                           **kwargs):
