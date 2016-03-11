@@ -46,18 +46,18 @@ class Registry:
 
     def register(self, kind, name, func, *args, **kwargs):
         if kind == 'handler':
-            method = kwargs.get('method', ['GET', 'POST', 'PUT'])
-            if isinstance(method, str):
-                method = [method]
+            methods = kwargs.get('method', ['GET', 'POST', 'PUT'])
+            if isinstance(methods, str):
+                methods = [methods]
             self.param_map['handler'].append({
                 'name': name,
-                'method': method,
+                'methods': methods,
                 'key_required': kwargs.get('key_required', False),
                 'user_required': kwargs.get('user_required', False),
             })
             if name not in self.handler:
                 self.handler[name] = {}
-            for m in method:
+            for m in methods:
                 self.handler[name][m] = func
             return
         self.func_map[kind][name] = func
