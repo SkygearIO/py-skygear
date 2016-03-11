@@ -56,6 +56,7 @@ class ConsoleTransport(CommonTransport):
         param = self.readJSON()
         context = dict_from_base64_environ('SKYGEAR_CONTEXT')
         skyconfig.parse_config(dict_from_base64_environ('SKYGEAR_CONFIG'))
+
         if target == 'provider':
             output = self.call_provider(context, args[1], args[2], param)
         elif target == 'handler':
