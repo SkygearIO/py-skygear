@@ -1,3 +1,9 @@
+## 0.9.0 (2016-03-16)
+
+### Feature
+
+- Implement @skygear.handler #126 #128
+
 ## 0.8.0 (2016-03-09)
 
 ### Features
