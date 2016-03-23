@@ -13,13 +13,14 @@
 # limitations under the License.
 import unittest
 
+from sqlalchemy.schema import Table
 from sqlalchemy.sql import text
 
 from skygear.container import SkygearContainer
 from skygear.utils import db
 
 
-class TestResetPassword(unittest.TestCase):
+class BaseTestCase(unittest.TestCase):
     app_name = 'app+db'
 
     def setUp(self):
@@ -49,6 +50,8 @@ class TestResetPassword(unittest.TestCase):
         with db.conn() as conn:
             conn.execute("DROP TABLE \"app_{0}\".note;".format(self.app_name))
 
+
+class TestResetPassword(BaseTestCase):
     def test_correct_db_context(self):
         with db.conn() as conn:
             result = conn.execute("""
@@ -57,3 +60,19 @@ class TestResetPassword(unittest.TestCase):
             r = result.fetchone()
             assert r['id'] == 'first'
             assert r['content'] == 'Hello World!'
+
+
+class TestReflectTable(BaseTestCase):
+    def test_get_metadata(self):
+        metadata = db._get_metadata()
+        assert db._get_metadata() == metadata
+        assert metadata is not None
+
+    def test_get_table(self):
+        table = db.get_table('note')
+        assert isinstance(table, Table)
+        assert table.c.content is not None
+
+    def test_get_table_nonexistent(self):
+        with self.assertRaises(Exception):
+            db.get_table('something')
