@@ -68,3 +68,9 @@ class TestHookDecorators(unittest.TestCase):
             'hook',
             'skygear.tests.test_decorators.fn', ANY,
             type='note', trigger='beforeSave')
+
+
+def test_fix_handler_path():
+    assert d._fix_handler_path('hello:world') == 'hello/world'
+    assert d._fix_handler_path('hello/world') == 'hello/world'
+    assert d._fix_handler_path('/hello/world/') == 'hello/world'
