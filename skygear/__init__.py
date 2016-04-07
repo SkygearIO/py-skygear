@@ -21,12 +21,15 @@ from .decorators import (
     after_save,
     before_delete,
     after_delete,
+    rest,
 )
 
+from .restful import RestfulRecord, RestfulResource
 from .utils.db import conn as db_conn
 from .utils.http import Response
 
 __all__ = [hook, handler, op, every, provides,
            before_save, after_save, before_delete, after_delete,
+           rest, RestfulRecord, RestfulResource,
            db_conn,
            Response]

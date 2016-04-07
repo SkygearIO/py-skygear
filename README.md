@@ -68,6 +68,10 @@ class FacebookProvider(skygear.providers.BaseAuthProvider):
     def info(self, auth_data):
         return {"auth_data": auth_data}
 
+
+@skygear.rest("/path/to/resource", user_required=True)
+class RestfulNote(skygear.RestfulRecord):
+    record_type = 'note'
 ```
 
 if __name__ == "__main__":

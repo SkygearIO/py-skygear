@@ -140,3 +140,32 @@ def provides(provider_type, provider_id, *args, **kwargs):
                                     *args, **kwargs)
         return klass
     return skygear_provider
+
+
+def _fix_handler_path(name):
+    name = name.replace(':', '/')
+    if name.startswith('/'):
+        name = name[1:]
+    if name.endswith('/'):
+        name = name[:-1]
+    return name
+
+
+def rest(name, *args, **kwargs):
+    name = _fix_handler_path(name)
+
+    def wrapper(klass):
+        if callable(getattr(klass, 'get_allowed_methods', None)):
+            kwargs['method'] = klass.get_allowed_methods()
+        else:
+            kwargs['method'] = ['GET', 'POST', 'PUT', 'DELETE']
+
+        base_name = name if name.startswith('/') else '/' + name
+
+        @handler(name, *args, **kwargs)
+        @handler(name + '/', *args, **kwargs)
+        def call_restful_wraps(request):
+            restful = klass()
+            return restful.handle_request(base_name, request)
+        return klass
+    return wrapper
