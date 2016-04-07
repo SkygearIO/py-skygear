@@ -115,10 +115,46 @@ class RestfulRecord(RestfulResource):
         except ValueError:
             return None
 
+    def _sort_descriptors(self, field, direction):
+        if not field:
+            return []
+
+        if not direction in ['asc', 'desc']:
+            direction = 'asc'
+
+        return [
+                [{'$val': field, '$type': 'keypath'}, direction]
+                ]
+
     def index(self):
+        """
+        List records by querying the database.
+        
+        The resource accepts the following query string parameters:
+        * _page - the page number to return, first page is 1
+        * _perPage - the number of results per page
+        * _sortDir - the sort order, either 'asc' or 'desc'
+        * _sortField - the name of the field to sort
+        """
+        try:
+            limit = int(self.request.values.get('_perPage', 100))
+        except ValueError:
+            limit = 100
+        try:
+            offset = (int(self.request.values.get('_page', 0))-1) * limit
+        except ValueError:
+            offset = 0
+        sort_direction = self.request.values.get('_sortDir', 'asc').lower()
+        sort_field = self.request.values.get('_sortField', None)
+
         return self._send_multi('record:query',
                                 database_id=self.database_id,
-                                record_type=self.record_type)
+                                record_type=self.record_type,
+                                limit=limit,
+                                offset=offset,
+                                sort=self._sort_descriptors(sort_field,
+                                                            sort_direction),
+                                )
 
     def create(self):
         payload = self.get_payload()
