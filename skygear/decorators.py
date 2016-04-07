@@ -167,4 +167,5 @@ def rest(name, *args, **kwargs):
         def call_restful_wraps(request):
             restful = klass()
             return restful.handle_request(base_name, request)
+        return klass
     return wrapper
