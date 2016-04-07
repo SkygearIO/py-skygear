@@ -15,7 +15,7 @@ import json
 import logging
 
 from skygear.container import SkygearContainer
-from skygear.error import BadRequest, SkygearException
+from skygear.error import BadRequest, SkygearException, UnexpectedError
 
 
 log = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ def get_ident(base_name, request):
     path = request.path[len(base_name):]
     if path.startswith('/'):
         path = path[1:]
-    return path.split('/')[0]
+    return path.split('/')[0] or None
 
 
 def has_func(obj, name):
@@ -97,7 +97,7 @@ class RestfulRecord(RestfulResource):
         elif 'result' in result and isinstance(result['result'], list):
             return result['result']
         else:
-            raise SkygearException()
+            raise SkygearException('unexpected result', UnexpectedError)
 
     def _send_single(self, action, **payload):
         token = self._access_token()
@@ -108,11 +108,11 @@ class RestfulRecord(RestfulResource):
         elif 'result' in result and isinstance(result['result'], list) \
                 and len(result['result']) > 0:
             first_result = result['result'][0]
-            if first_result['_type'] == 'error':
+            if first_result.get('_type', None) == 'error':
                 raise SkygearException.from_dict(first_result)
             return first_result
         else:
-            raise SkygearException()
+            raise SkygearException('unexpected result', UnexpectedError)
 
     def _record_id(self, ident):
         return self.record_type + '/' + ident
@@ -132,7 +132,7 @@ class RestfulRecord(RestfulResource):
         if not field:
             return []
 
-        if not direction in ['asc', 'desc']:
+        if direction not in ['asc', 'desc']:
             direction = 'asc'
 
         return [
@@ -142,7 +142,7 @@ class RestfulRecord(RestfulResource):
     def index(self):
         """
         List records by querying the database.
-        
+
         The resource accepts the following query string parameters:
         * _page - the page number to return, first page is 1
         * _perPage - the number of results per page
