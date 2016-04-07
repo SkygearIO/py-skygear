@@ -81,7 +81,10 @@ class RestfulRecord(RestfulResource):
         result = container.send_action(action, payload)
         if 'error' in result:
             raise SkygearException.from_dict(result['error'])
-        return result
+        elif 'result' in result and isinstance(result['result'], list):
+            return result['result']
+        else:
+            raise SkygearException()
 
     def _send_single(self, action, **payload):
         token = self._access_token()
