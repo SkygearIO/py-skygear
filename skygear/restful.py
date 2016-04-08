@@ -139,6 +139,9 @@ class RestfulRecord(RestfulResource):
                 [{'$val': field, '$type': 'keypath'}, direction]
                 ]
 
+    def predicate(self):
+        return None
+
     def index(self):
         """
         List records by querying the database.
@@ -168,6 +171,7 @@ class RestfulRecord(RestfulResource):
                                 sort=self._sort_descriptors(sort_field,
                                                             sort_direction),
                                 count=True,
+                                predicate=self.predicate()
                                 )
 
     def create(self):
