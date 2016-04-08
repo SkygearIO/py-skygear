@@ -95,7 +95,7 @@ class RestfulRecord(RestfulResource):
         if 'error' in result:
             raise SkygearException.from_dict(result['error'])
         elif 'result' in result and isinstance(result['result'], list):
-            return result['result']
+            return result
         else:
             raise SkygearException('unexpected result', UnexpectedError)
 
@@ -139,6 +139,9 @@ class RestfulRecord(RestfulResource):
                 [{'$val': field, '$type': 'keypath'}, direction]
                 ]
 
+    def predicate(self):
+        return None
+
     def index(self):
         """
         List records by querying the database.
@@ -167,6 +170,8 @@ class RestfulRecord(RestfulResource):
                                 offset=offset,
                                 sort=self._sort_descriptors(sort_field,
                                                             sort_direction),
+                                count=True,
+                                predicate=self.predicate()
                                 )
 
     def create(self):
