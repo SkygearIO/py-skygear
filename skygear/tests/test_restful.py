@@ -152,7 +152,7 @@ class TestRestfulResource(unittest.TestCase):
 
     @patch.object(BlankRestfulResource, 'index')
     def test_handle_request_index(self, mock):
-        mock.return_value = {'json': 'this is'}
+        mock.return_value = {'result': {'json': 'this is'}}
         resource = BlankRestfulResource()
         request = create_request(method='GET', path='/hello')
         assert resource.handle_request('/hello', request) == mock.return_value
@@ -261,7 +261,7 @@ class TestRestfulRecord(unittest.TestCase):
     def test_send_multi(self, mock):
         mock.return_value = {'result': [{'data': 'json'}]}
         assert MockRestfulRecord()._send_multi('action', data='hello') \
-            == [{'data': 'json'}]
+            == {'result': [{'data': 'json'}]}
         mock.assert_called_once_with('action', {'data': 'hello'})
 
     @patch('skygear.container.SkygearContainer.send_action')

@@ -95,7 +95,7 @@ class RestfulRecord(RestfulResource):
         if 'error' in result:
             raise SkygearException.from_dict(result['error'])
         elif 'result' in result and isinstance(result['result'], list):
-            return result['result']
+            return result
         else:
             raise SkygearException('unexpected result', UnexpectedError)
 
