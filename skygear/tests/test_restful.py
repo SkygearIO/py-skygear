@@ -218,6 +218,7 @@ class TestRestfulRecord(unittest.TestCase):
             sorts = [[{'$val': 'id', '$type': 'keypath'}, 'desc']]
             mock.assert_called_once_with('record:query', database_id='_public',
                                          record_type='sample',
+                                         count=True,
                                          limit=30, offset=0, sort=sorts)
 
     def test_handle_request_create(self):

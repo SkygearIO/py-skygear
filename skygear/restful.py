@@ -167,6 +167,7 @@ class RestfulRecord(RestfulResource):
                                 offset=offset,
                                 sort=self._sort_descriptors(sort_field,
                                                             sort_direction),
+                                count=True,
                                 )
 
     def create(self):
