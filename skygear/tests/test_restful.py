@@ -186,6 +186,12 @@ class MockRestfulRecord(restful.RestfulRecord):
     def get_payload(self):
         return {'_id': 'sample/1', 'data': 'json'}
 
+    def predicate(self):
+        return []
+
+    def query_options(self):
+        return {'count': True}
+
 
 class TestRestfulRecord(unittest.TestCase):
     def test_access_token_header(self):
@@ -211,16 +217,12 @@ class TestRestfulRecord(unittest.TestCase):
         resource = MockRestfulRecord()
 
         with patch.object(resource, '_send_multi') as mock:
-            query_string = '_page=1&_perPage=30&_sortDir=DESC&_sortField=id'
-            resource.request = create_request(query_string=query_string)
+            resource.request = create_request()
             mock.return_value = [{'data': 'json'}]
             assert resource.index() == [{'data': 'json'}]
-            sorts = [[{'$val': 'id', '$type': 'keypath'}, 'desc']]
             mock.assert_called_once_with('record:query', database_id='_public',
                                          record_type='sample',
-                                         count=True,
-                                         predicate=None,
-                                         limit=30, offset=0, sort=sorts)
+                                         predicate=[], count=True)
 
     def test_handle_request_create(self):
         resource = MockRestfulRecord()
