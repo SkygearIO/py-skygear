@@ -41,7 +41,6 @@ setup(
       url='https://github.com/SkygearIO/py-skygear',
       license='Apache License, Version 2.0',
       install_requires=[
-            'pyzmq>=14.7',
             'psycopg2>=2.6.1',
             'SQLAlchemy>=1.0.8',
             'strict-rfc3339>=0.5',
@@ -51,8 +50,14 @@ setup(
             'ConfigArgParse>=0.10.0',
             'werkzeug>=0.11.0',
       ],
+      extras_require={
+            'zmq': ['pyzmq>=14.7'],
+      },
       cmdclass= {'test': PyTest},
-      tests_require=['pytest'],
+      tests_require=[
+            'skygear[zmq]',
+            'pytest',
+      ],
       entry_points={
           'console_scripts': [
               'py-skygear = skygear.bin:main'
