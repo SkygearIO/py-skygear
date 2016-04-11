@@ -21,23 +21,23 @@ redis:
   - redis_data
 
 app_data:
-  image: oursky/skygear:latest
+  image: quay.io/skygeario/skygear-server:latest
   command: /bin/true
 
 # The Skygear container
 app:
-  image: oursky/skygear:latest
+  image: quay.io/skygeario/skygear-server:latest
   ports:
   - "3000:3000" # Skygear API Endpoint (HTTP)
   - "5555:5555" # Skygear Plugin Endpoint (ZMQ)
   volumes_from:
   - app_data
   volumes:
-  - ./development.ini:/go/src/app/development.ini
+  - ./development.ini:/app/development.ini
   links:
   - db
   - redis
-  command: skygear development.ini
+  command: skygear-server /app/development.ini
   environment:
     # `db` in the following string should match the name of the database
     # container above.
@@ -47,6 +47,7 @@ app:
     APP_NAME: catapiapp
     PGHOST: db
     PGUSER: postgres
+    GODEBUG: netdns=cgo
 
 plugin:
   build: .
