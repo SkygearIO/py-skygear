@@ -13,7 +13,7 @@ RUN ( \
     git clone https://github.com/SkygearIO/py-skygear.git; \
     cd py-skygear; \
     pip install --no-cache-dir -r requirements.txt; \
-    python setup.py install; \
+    pip install ".[zmq]"; \
     rm -rf /tmp/py-skygear; \
     )
 
