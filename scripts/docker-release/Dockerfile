@@ -9,7 +9,7 @@ RUN pip install --upgrade pip && \
     pip install --upgrade setuptools
 
 ADD *.whl /tmp/
-RUN pip install --no-cache-dir /tmp/*.whl
+RUN find /tmp -name "*.whl" -exec pip install --no-cache-dir "{}[zmq]" \;
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
