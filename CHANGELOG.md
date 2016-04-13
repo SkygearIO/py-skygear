@@ -1,3 +1,17 @@
+## 0.10.0 (2016-04-13)
+
+### Features
+- Make pyzmq an optional dependency (refs oursky/py-skygear#129)
+- Support paging and filtering in restful index
+- Implement restful resource (refs oursky/py-skygear#135)
+
+### Bug Fixes
+- Update development.ini in catapi
+- Change docker-compose on the catapi example
+- Remove paging logic from py-skygear
+- Reflect database table using SQLAlchemy
+
+
 ## 0.9.0 (2016-03-16)
 
 ### Feature
@@ -9,7 +23,7 @@
 ### Features
 
 - Automatically import plugin file #125
-    
+
   The plugin source file is now optional. py-skygear will attempt to
   find the plugin source file in the working directory.
 
