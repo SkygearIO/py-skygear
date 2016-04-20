@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from skygear.models import RoleAccessControlEntry
+from skygear.models import PublicAccessControlEntry, RoleAccessControlEntry
 
 from ..encoding import deserialize_record
 
@@ -48,3 +48,19 @@ class TestsDeserializeRecord():
         assert r.id.key == "99D92DBA-74D5-477F-B35E-F735E21B2DD5"
         assert isinstance(r.acl, list)
         assert isinstance(r.acl[0], RoleAccessControlEntry)
+
+    def test_model_with_public_read_acl(self):
+        rdata = {
+            "_id": "note/99D92DBA-74D5-477F-B35E-F735E21B2DD5",
+            "_ownerID": "OWNER _ID",
+            "_access": [{
+                "public": True,
+                "level": "read"
+            }]
+        }
+        r = deserialize_record(rdata)
+        assert r.id.type == "note"
+        assert r.id.key == "99D92DBA-74D5-477F-B35E-F735E21B2DD5"
+        assert isinstance(r.acl, list)
+        assert isinstance(r.acl[0], PublicAccessControlEntry)
+        assert r.acl[0].level == "read"

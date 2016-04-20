@@ -17,9 +17,9 @@ from datetime import datetime
 import strict_rfc3339
 
 from ..error import SkygearException, UnexpectedError
-from ..models import (Asset, DirectAccessControlEntry, Location, Record,
-                      RecordID, Reference, RelationalAccessControlEntry,
-                      RoleAccessControlEntry)
+from ..models import (Asset, DirectAccessControlEntry, Location,
+                      PublicAccessControlEntry, Record, RecordID, Reference,
+                      RelationalAccessControlEntry, RoleAccessControlEntry)
 
 
 def _serialize_exc(e):
@@ -93,12 +93,15 @@ class _RecordDecoder:
         relation = d.get('relation', None)
         role = d.get('role', None)
         user_id = d.get('user_id', None)
+        public = d.get('public', None)
         if user_id is not None:
             return DirectAccessControlEntry(d['user_id'], level)
         elif relation is not None:
             return RelationalAccessControlEntry(relation, level)
         elif role is not None:
             return RoleAccessControlEntry(role, level)
+        elif public is not None:
+            return PublicAccessControlEntry(level)
         else:
             raise ValueError("invalid ace")
 
@@ -175,6 +178,11 @@ class _RecordEncoder:
             return {
                 'level': ace.level,
                 'role': ace.role
+            }
+        elif isinstance(ace, PublicAccessControlEntry):
+            return {
+                'level': ace.level,
+                'public': True
             }
         else:
             raise ValueError('Unknown type of ACE = %s', type(ace))

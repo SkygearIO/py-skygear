@@ -116,6 +116,11 @@ ACCESS_CONTROL_ENTRY_RELATION_FRIEND = 'friend'
 ACCESS_CONTROL_ENTRY_RELATION_FOLLOW = 'follow'
 
 
+class PublicAccessControlEntry(AccessControlEntry):
+    def __init__(self, level):
+        super().__init__(level)
+
+
 class RelationalAccessControlEntry(AccessControlEntry):
     def __init__(self, relation, level):
         super().__init__(level)
