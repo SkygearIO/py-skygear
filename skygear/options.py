@@ -39,7 +39,8 @@ def get_argument_parser():
                     help="Application name of the skygear daemon",
                     env_var='SKYGEAR_APPNAME')
     ap.add_argument('--loglevel', action='store', default='INFO',
-                    help="Log level")
+                    help="Log level",
+                    env_var='SKYGEAR_LOGLEVEL')
     ap.add_argument('--subprocess', dest='subprocess', action='store',
                     nargs='+',
                     metavar=('(init|op|hook|handler|timer)', 'name'),
