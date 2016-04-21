@@ -58,12 +58,11 @@ def load_source_or_exit(source):
 
 
 def run_plugin(options):
-    load_source_or_exit(options.plugin)
-
     SkygearContainer.set_default_app_name(options.appname)
     SkygearContainer.set_default_endpoint(options.skygear_endpoint)
     SkygearContainer.set_default_apikey(options.apikey)
 
+    load_source_or_exit(options.plugin)
     log.debug("Install signal handler for SIGTERM")
     signal.signal(signal.SIGTERM, sigterm_handler)
 
