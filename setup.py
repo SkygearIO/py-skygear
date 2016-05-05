@@ -29,10 +29,6 @@ class PyTest(TestCommand):
         errno = pytest.main(self.test_args)
         sys.exit(errno)
 
-extras_require={
-    'zmq': ['pyzmq>=14.7'],
-}
-
 setup(
       name='skygear',
       version='0.10.0',
@@ -45,20 +41,20 @@ setup(
       url='https://github.com/SkygearIO/py-skygear',
       license='Apache License, Version 2.0',
       install_requires=[
-            'psycopg2>=2.6.1',
-            'SQLAlchemy>=1.0.8',
-            'strict-rfc3339>=0.5',
-            'requests',
-            'websocket-client>=0.32.0',
             'bcrypt>=2.0.0',
             'ConfigArgParse>=0.10.0',
+            'psycopg2>=2.6.1',
+            'pyzmq>=14.7.0',
+            'requests>=2.7.0',
+            'SQLAlchemy>=1.0.8',
+            'strict-rfc3339>=0.5',
+            'websocket-client>=0.32.0',
             'werkzeug>=0.11.0',
       ],
-      extras_require=extras_require,
       cmdclass= {'test': PyTest},
       tests_require=[
             'pytest',
-      ] + extras_require['zmq'],
+      ],
       entry_points={
           'console_scripts': [
               'py-skygear = skygear.bin:main'
