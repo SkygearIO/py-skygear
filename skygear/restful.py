@@ -17,7 +17,6 @@ import logging
 from skygear.container import SkygearContainer
 from skygear.error import BadRequest, SkygearException, UnexpectedError
 
-
 log = logging.getLogger(__name__)
 
 
