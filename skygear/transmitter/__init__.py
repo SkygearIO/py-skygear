@@ -12,8 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from .console import ConsoleTransport
-from .zmq import ZmqTransport
 from .http import HttpTransport
 
+try:
+    from .zmq import ZmqTransport
+except ImportError:
+    from .common import CommonTransport
 
-__all__ = ['ConsoleTransport', 'ZmqTransport', 'HttpTransport']
+    class ZmqTransport(CommonTransport):
+        """A dummy ZmqTransport class to raise a proper exception
+        """
+
+        def __init__(self, addr, context=None, registry=None):
+            raise ImportError(
+                'zmq transport is not installed. '
+                'Please install via `pip install --upgrade skygear[zmq]`')
+
+__all__ = ['ConsoleTransport', 'HttpTransport', 'ZmqTransport']
