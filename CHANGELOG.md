@@ -1,3 +1,28 @@
+## 0.11.0 (2016-05-01)
+
+### Features
+- Set the container default before loading source
+  - Problem:
+    When a user want to send_action to Skygear on bootsrtap, he will try to
+    instantiate a SkygearContianer instance. However the skygear container
+    is not yet loaded the default config from environment variable. It make the
+    developer have to load it from the environment by themselves.
+
+  - Fix:
+    Set the container default before attempting to load the plugin source, when
+    loading the plugin source. Developer got a SkygearContainer with proper
+    defaults.
+- Add Public ACE support
+
+### Bug Fixes
+- Raise exception with proper message if no pyzmq (#13)
+- Make log level respect env SKYGEAR_LOGLEVEL
+
+### Other Notes
+- Update slack notification token (SkygearIO/skygear-server#19)
+- Add Github issue tempalte
+
+
 ## 0.10.0 (2016-04-13)
 
 ### Features
