@@ -1,7 +1,7 @@
 Python plugin runtime for Skygear
 
 [![PyPI](https://img.shields.io/pypi/v/skygear.svg)](https://pypi.python.org/pypi/skygear)
-[![Build Status](https://travis-ci.org/SkygearIO/skygear-SDK-JS.svg)](https://travis-ci.org/SkygearIO/skygear-SDK-JS)
+[![Build Status](https://travis-ci.org/SkygearIO/py-skygear.svg)](https://travis-ci.org/SkygearIO/py-skygear)
 [![License](https://img.shields.io/pypi/l/skygear.svg)](https://pypi.python.org/pypi/skygear)
 
 For usage guideline, please refer to: http://docs.skygear.io/plugin/guide
