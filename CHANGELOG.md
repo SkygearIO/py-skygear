@@ -1,3 +1,11 @@
+## 0.12.0 (2016-05-30)
+
+### Other Notes
+ - Correct the Travis-CI link in README.md
+ - Remove the wrong information at README
+ - Point user to the doc site.
+ - Left development and contribution for advance dev.
+
 ## 0.11.0 (2016-05-01)
 
 ### Features
