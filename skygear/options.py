@@ -55,6 +55,10 @@ def get_argument_parser():
     ap.add_argument('--debug', action='store_true',
                     help='Enable debugging features',
                     env_var='SKYGEAR_DEBUG')
+    ap.add_argument('--collect-assets', metavar='DIST', action='store',
+                    help="Collect static assets to a directory")
+    ap.add_argument('--force-assets', action='store_true',
+                    help="Remove dist folder before proceeding")
     ap.add_argument('plugin', nargs='?')
     return ap
 

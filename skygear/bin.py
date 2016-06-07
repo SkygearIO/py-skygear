@@ -16,6 +16,7 @@ import signal
 import sys
 from importlib.machinery import SourceFileLoader
 
+from . import commands
 from .container import SkygearContainer
 from .options import parse_args
 from .transmitter import ConsoleTransport, HttpTransport, ZmqTransport
@@ -26,7 +27,11 @@ log = logging.getLogger(__name__)
 def main():
     options = parse_args()
     setup_logging(options)
-    run_plugin(options)
+    if options.collect_assets:
+        load_source_or_exit(options.plugin)
+        commands.collect_static_assets()
+    else:
+        run_plugin(options)
 
 
 def load_source_or_exit(source):
