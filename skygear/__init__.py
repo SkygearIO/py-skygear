@@ -22,6 +22,7 @@ from .decorators import (
     before_delete,
     after_delete,
     rest,
+    static_assets,
 )
 
 from .restful import RestfulRecord, RestfulResource
@@ -31,5 +32,6 @@ from .utils.http import Response
 __all__ = [hook, handler, op, every, provides,
            before_save, after_save, before_delete, after_delete,
            rest, RestfulRecord, RestfulResource,
+           static_assets,
            db_conn,
            Response]

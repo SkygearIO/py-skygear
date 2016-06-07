@@ -138,3 +138,13 @@ class TestRegistry(unittest.TestCase):
         assert len(param_map) == 1
         assert param_map[0]['type'] == 'example'
         assert param_map[0]['id'] == 'com.example'
+
+    def test_register_static_assets(self):
+        def fn():
+            pass
+
+        registry = Registry()
+        registry.register_static_assets('admin', fn)
+
+        assert len(registry.static_assets) == 1
+        assert registry.static_assets['admin'] == fn
