@@ -58,3 +58,14 @@ class TestStaticAssetsCollector(unittest.TestCase):
                 self.collector.collect('../hello-world', tmp_dir)
         finally:
             shutil.rmtree(tmp_dir)
+
+
+class StaticAssetsHelperFunction(unittest.TestCase):
+    def test_directory_assets(self):
+        assert assetsutils.directory_assets('hello-world') == \
+            os.path.abspath('hello-world')
+
+    def test_relative_assets(self):
+        expected = os.path.join(os.path.dirname(__file__), 'hello-world')
+        assert assetsutils.relative_assets('hello-world') == \
+            os.path.abspath(expected)
