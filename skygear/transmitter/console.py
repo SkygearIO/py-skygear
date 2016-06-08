@@ -38,13 +38,13 @@ class ConsoleTransport(CommonTransport):
         self.args = self.args
         target = self.args[0]
         if target not in ACCEPTED_TARGETS:
-            print("Only init, op, hook, handler, timer and provider is"
-                  " supported now", file=sys.stderr)
+            log.error("Only init, op, hook, handler, timer and provider is"
+                      " supported now")
             sys.exit(1)
         if target == 'init':
             self.writeJSON(self.init_info())
         elif len(self.args) < 2:
-            print("Missing param for %s", target, file=sys.stderr)
+            log.error("Missing param for %s", target)
             sys.exit(1)
         else:
             try:
