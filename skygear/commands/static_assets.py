@@ -16,14 +16,15 @@ def collect_static_assets():
     if os.path.exists(dist):
         if not options.force_assets:
             log.error('Directory %s already exists. Remove the directory '
-                      'first, or specify -f to clean the directory first.',
+                      'first, or specify --force-assets to discard files in '
+                      'the directory.',
                       dist)
             exit(1)
         collector.clean()
 
     if not _registry.static_assets:
-        log.error('No static assets are declared.')
-        exit(1)
+        log.warn('No static assets are declared.')
+        return collector.dist
 
     for prefix, func in _registry.static_assets.items():
         log.info('Static assets %s', prefix)
