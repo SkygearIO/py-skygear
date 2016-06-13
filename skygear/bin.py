@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
+import os.path
 import signal
 import sys
 from importlib.machinery import SourceFileLoader
@@ -28,7 +29,7 @@ def main():
     options = parse_args()
     setup_logging(options)
     if options.collect_assets:
-        load_source_or_exit(options.plugin)
+        load(options)
         commands.collect_static_assets()
     else:
         run_plugin(options)
@@ -62,12 +63,26 @@ def load_source_or_exit(source):
             sys.exit(1)
 
 
+def load(options):
+    # If the directory `public_html` exists in the current directory,
+    # assume the user want to publish its content as static assets.
+    auto_assets_dir = os.path.abspath('public_html')
+    if os.path.exists(auto_assets_dir):
+        from .decorators import static_assets
+
+        @static_assets('')
+        def auto_assets():
+            return auto_assets_dir
+
+    load_source_or_exit(options.plugin)
+
+
 def run_plugin(options):
     SkygearContainer.set_default_app_name(options.appname)
     SkygearContainer.set_default_endpoint(options.skygear_endpoint)
     SkygearContainer.set_default_apikey(options.apikey)
 
-    load_source_or_exit(options.plugin)
+    load(options)
     log.debug("Install signal handler for SIGTERM")
     signal.signal(signal.SIGTERM, sigterm_handler)
 
