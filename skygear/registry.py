@@ -43,6 +43,7 @@ class Registry:
         }
         self.handler = {}
         self.providers = {}
+        self.static_assets = {}
 
     def register(self, kind, name, func, *args, **kwargs):
         if kind == 'handler':
@@ -91,6 +92,9 @@ class Registry:
         kwargs['id'] = provider_id
         self.param_map['provider'].append(kwargs)
         self.providers[provider_id] = provider
+
+    def register_static_assets(self, prefix, func):
+        self.static_assets[prefix] = func
 
     def func_list(self):
         return self.param_map

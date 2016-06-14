@@ -169,3 +169,17 @@ def rest(name, *args, **kwargs):
             return restful.handle_request(base_name, request)
         return klass
     return wrapper
+
+
+def static_assets(prefix, *args, **kwargs):
+    """
+    This decorator is used to decorate a function that returns
+    information of static assets.
+
+    The decorated function should return the absolute path of the static
+    assets directory.
+    """
+    def wrapper(func):
+        _registry.register_static_assets(prefix, func)
+        return func
+    return wrapper

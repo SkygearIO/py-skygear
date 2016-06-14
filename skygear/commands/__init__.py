@@ -11,27 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .decorators import (
-    hook,
-    handler,
-    op,
-    every,
-    provides,
-    before_save,
-    after_save,
-    before_delete,
-    after_delete,
-    rest,
-    static_assets,
-)
+from .static_assets import collect_static_assets
 
-from .restful import RestfulRecord, RestfulResource
-from .utils.db import conn as db_conn
-from .utils.http import Response
 
-__all__ = [hook, handler, op, every, provides,
-           before_save, after_save, before_delete, after_delete,
-           rest, RestfulRecord, RestfulResource,
-           static_assets,
-           db_conn,
-           Response]
+__all__ = [collect_static_assets]

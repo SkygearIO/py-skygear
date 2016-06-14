@@ -98,3 +98,13 @@ class TestRestDecorator(unittest.TestCase):
             req = Request({})
             registered_func(req)
             handle_request.assert_called_with('/hello/world', req)
+
+
+class TestStaticAssetsDecorator(unittest.TestCase):
+    @patch('skygear.registry.Registry.register_static_assets')
+    def test_register(self, mock):
+        @d.static_assets('/admin')
+        def fn():
+            pass
+
+        mock.assert_called_with('/admin', ANY)
