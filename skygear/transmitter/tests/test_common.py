@@ -21,7 +21,6 @@ from ...error import SkygearException
 from ...models import Record, RecordID
 from ...registry import Registry
 from ...utils.context import current_context
-from ...utils.http import Response
 from ..common import CommonTransport
 from ..encoding import deserialize_or_none, serialize_record
 
@@ -146,21 +145,17 @@ class TestCommonTransport(unittest.TestCase):
         assert base64.b64decode(response['body']) == b'{"hello": "world"}'
 
     def testHandlerWithResponseReturn(self):
-        mock = MagicMock(return_value=Response(
-            headers={},
-            status=405,
-            response='Method NOT Allowed'
-        ))
+        from werkzeug.utils import redirect
+
+        mock = MagicMock(return_value=redirect('https://skygear.io/'))
         response = self.transport.handler(mock, {
             'path': '/',
             'method': 'POST',
             'header': {'Content-Type': ['text/plain; charset=utf-8']},
             'body': base64.b64encode(b'rawstream')
         })
-        assert response['header']['Content-Type'] == \
-            ['text/plain; charset=utf-8']
-        assert response['status'] == 405
-        assert base64.b64decode(response['body']) == b'Method NOT Allowed'
+        assert response['header']['Location'] == ['https://skygear.io/']
+        assert response['status'] == 302
 
     def testHook(self):
         record_id = RecordID('note', 'note1')

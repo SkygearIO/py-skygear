@@ -18,13 +18,12 @@ import os
 from functools import wraps
 
 from werkzeug.test import EnvironBuilder
-from werkzeug.wrappers import Request
+from werkzeug.wrappers import BaseResponse, Request
 
 from ..error import SkygearException
 from ..registry import get_registry
 from ..utils import db
 from ..utils.context import start_context
-from ..utils.http import Response
 from .encoding import _serialize_exc, deserialize_or_none, serialize_record
 
 
@@ -114,7 +113,7 @@ class CommonTransport:
         request = Request(environ, populate_request=False, shallow=False)
         response = func(request)
         status = 200
-        if isinstance(response, Response):
+        if isinstance(response, BaseResponse):
             headers = {}
             for k, v in response.headers:
                 headers[k] = [v]
