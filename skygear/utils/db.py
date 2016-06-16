@@ -77,13 +77,35 @@ def _set_search_path(db):
     db.execute(sql)
 
 
+def _full_table_name(schema_name, name):
+    """
+    Return the full name of a table, which includes the schema name.
+    """
+    return "{}.{}".format(schema_name, name)
+
+
 def get_table(name):
+    """
+    Returns the table object with the specified name from the reflected
+    database.
+
+    An exception is raised if the table does not exist.
+    """
     schema_name = _get_schema_name()
     try:
-        return _get_metadata().tables["{}.{}".format(schema_name, name)]
+        return _get_metadata().tables[_full_table_name(schema_name, name)]
     except KeyError:
         raise Exception("No table of name '{}' exists in schema '{}'.",
                         name, schema_name)
+
+
+def has_table(name):
+    """
+    Returns whether a table with the specified name exists in the reflected
+    database schema.
+    """
+    schema_name = _get_schema_name()
+    return _full_table_name(schema_name, name) in _get_metadata().tables
 
 
 @contextlib.contextmanager

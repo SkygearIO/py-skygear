@@ -76,3 +76,9 @@ class TestReflectTable(BaseTestCase):
     def test_get_table_nonexistent(self):
         with self.assertRaises(Exception):
             db.get_table('something')
+
+    def test_has_table(self):
+        assert db.has_table('note') is True
+
+    def test_has_table_nonexistent(self):
+        assert db.has_table('something') is False
