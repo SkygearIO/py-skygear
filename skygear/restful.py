@@ -13,6 +13,7 @@
 # limitations under the License.
 import json
 import logging
+import uuid
 
 from skygear.container import SkygearContainer
 from skygear.error import BadRequest, SkygearException, UnexpectedError
@@ -151,7 +152,7 @@ class RestfulRecord(RestfulResource):
     def create(self):
         payload = self.get_payload()
         if not payload.get('_id', '').startswith(self.record_type + '/'):
-            raise SkygearException()
+            payload['_id'] = self.record_type + '/' + str(uuid.uuid4())
         return self._send_single('record:save',
                                  database_id=self.database_id,
                                  records=[payload])
