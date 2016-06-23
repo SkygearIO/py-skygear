@@ -107,4 +107,5 @@ class HttpTransport(CommonTransport):
         Start the web server.
         """
         run_simple(self.hostname, self.port, self.dispatch,
+                   threaded=True,
                    use_reloader=self.debug)
