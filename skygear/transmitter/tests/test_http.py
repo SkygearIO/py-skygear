@@ -47,6 +47,7 @@ class TestHttpTransport(unittest.TestCase):
         self.transport.run()
         mocker.assert_called_once_with('127.0.0.1', 8888,
                                        self.transport.dispatch,
+                                       threaded=True,
                                        use_reloader=False)
 
     @patch('skygear.transmitter.http.HttpTransport.init_info')
