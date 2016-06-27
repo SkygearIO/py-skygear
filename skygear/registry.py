@@ -102,7 +102,7 @@ class Registry:
                 subpath = request_path[len(prefix)+1:]
                 return loader(), subpath
         raise KeyError('Unable to find static assets loader with '
-                'request_path "{}"'.format(request_path))
+                       'request_path "{}"'.format(request_path))
 
     def func_list(self):
         return self.param_map

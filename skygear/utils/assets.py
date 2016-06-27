@@ -58,7 +58,7 @@ class DictStaticAssetsLoader(StaticAssetsLoader):
     def copy_into(self, path):
         for filename, content in self._dict.items():
             filepath = os.path.abspath(
-                    os.path.join(dest, _trim_abs_path(filename)))
+                    os.path.join(path, _trim_abs_path(filename)))
             os.makedirs(os.path.dirname(filepath), exist_ok=True)
             with open(filepath, 'wb') as f:
                 f.write(content)
@@ -97,8 +97,7 @@ class PackageStaticAssetsLoader(StaticAssetsLoader):
     """
     def __init__(self, package_name, package_path):
         super().__init__()
-        from pkg_resources import DefaultProvider, ResourceManager, \
-                                  get_provider
+        from pkg_resources import ResourceManager, get_provider
         self.provider = get_provider(package_name)
         self.manager = ResourceManager()
         self.package_path = package_path
@@ -111,7 +110,6 @@ class PackageStaticAssetsLoader(StaticAssetsLoader):
                                                  self.resource_name(name))
 
     def copy_into(self, dest):
-        os.makedirs(dest, exist_ok=True)
         def _walk(subpath=None):
             """
             `_walk` copies files in a subdirectory to the destination. If
@@ -134,6 +132,8 @@ class PackageStaticAssetsLoader(StaticAssetsLoader):
                     print('writing to {}'.format(dest_name))
                     with open(dest_name, 'wb') as f:
                         f.write(self.get_asset(childpath))
+
+        os.makedirs(dest, exist_ok=True)
         _walk()
 
     def exists_asset(self, name):

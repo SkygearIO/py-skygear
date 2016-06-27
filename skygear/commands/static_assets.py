@@ -4,7 +4,7 @@ import os
 from ..assets import CollectorException, StaticAssetsCollector
 from ..options import options
 from ..registry import get_registry
-from ..utils.assets import DirectoryStaticAssetsLoader, StaticAssetsLoader
+from ..utils.assets import StaticAssetsLoader
 
 _registry = get_registry()
 log = logging.getLogger(__name__)
@@ -33,8 +33,8 @@ def collect_static_assets():
             continue
         elif not isinstance(loader, StaticAssetsLoader):
             raise ValueError('Function decorated with static_assets '
-                    'must return a string or '
-                    'an instance of StaticAssetsLoader')
+                             'must return a string or '
+                             'an instance of StaticAssetsLoader')
         try:
             log.info('Static assets %s', prefix)
             collector.collect(prefix, loader)

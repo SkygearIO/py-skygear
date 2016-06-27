@@ -47,7 +47,7 @@ class StaticAssetsCollector:
     def collect(self, prefix, loader):
         if not isinstance(loader, StaticAssetsLoader):
             raise ValueError('The second argument must be an instance '
-                    'of StaticAssetsLoader.')
+                             'of StaticAssetsLoader.')
         prefix_path = self._prefix_path(prefix)
         log.debug('Prefix path is %s', prefix_path)
         loader.copy_into(prefix_path)
@@ -61,8 +61,8 @@ def serve_static_assets(request, basepath):
     Serve static assets with the given request object.
     """
     if not request.path.startswith(basepath):
-        raise ValueError('Request path does not start with basepath ""' \
-                .format(basepath))
+        raise ValueError('Request path does not start with basepath ""'
+                         .format(basepath))
 
     path = request.path[len(basepath):]
     try:

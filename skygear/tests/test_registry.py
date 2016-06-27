@@ -154,6 +154,7 @@ class TestRegistry(unittest.TestCase):
             pass
 
         loader = Loader()
+
         def fn():
             return loader
 

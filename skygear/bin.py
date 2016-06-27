@@ -67,6 +67,8 @@ def load(options):
     from .decorators import static_assets, handler
     from .assets import serve_static_assets
 
+    STATIC_ASSETS_PREFIX = 'static'
+
     # If the directory `public_html` exists in the current directory,
     # assume the user want to publish its content as static assets.
     auto_assets_dir = os.path.abspath('public_html')
@@ -76,7 +78,6 @@ def load(options):
             return auto_assets_dir
 
     # Create handler for serving static assets.
-    STATIC_ASSETS_PREFIX = 'static'
     @handler('{}/'.format(STATIC_ASSETS_PREFIX))
     @handler(STATIC_ASSETS_PREFIX)
     def work(request):
