@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os.path
+import shutil
+import tempfile
 import unittest
 
 from .. import assets as assetsutils
@@ -28,3 +30,32 @@ class StaticAssetsHelperFunction(unittest.TestCase):
         assert isinstance(loader, assetsutils.StaticAssetsLoader)
         expected = os.path.join(os.path.dirname(__file__), 'hello-world')
         assert loader.dirpath == os.path.abspath(expected)
+
+    def test_package_assets(self):
+        loader = assetsutils.package_assets(__name__, 'assets')
+        assert isinstance(loader, assetsutils.PackageStaticAssetsLoader)
+
+
+class TestPackageStaticAssetsLoader(unittest.TestCase):
+    def setUp(self):
+        self.loader = assetsutils.PackageStaticAssetsLoader(__name__, 'assets')
+        self.dist = tempfile.mkdtemp()
+
+    def tearDown(self):
+        if os.path.exists(self.dist):
+            shutil.rmtree(self.dist)
+
+    def test_get_asset(self):
+        content = self.loader.get_asset('content/index.txt')
+        assert content.startswith(b'Hello World!')
+
+    def test_copy_into(self):
+        self.loader.copy_into(self.dist)
+        with open(os.path.join(self.dist, 'content/index.txt'), 'rb') as f:
+            assert f.read().startswith(b'Hello World!')
+
+    def test_exists_asset(self):
+        assert self.loader.exists_asset('content/index.txt') is True
+
+    def test_exists_asset_nonexistent(self):
+        assert self.loader.exists_asset('non-existent') is False

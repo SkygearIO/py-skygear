@@ -91,6 +91,55 @@ class DirectoryStaticAssetsLoader(StaticAssetsLoader):
         return os.path.exists(os.path.join(self.dirpath, name))
 
 
+class PackageStaticAssetsLoader(StaticAssetsLoader):
+    """
+    This class loads static asset from the provided python package.
+    """
+    def __init__(self, package_name, package_path):
+        super().__init__()
+        from pkg_resources import DefaultProvider, ResourceManager, \
+                                  get_provider
+        self.provider = get_provider(package_name)
+        self.manager = ResourceManager()
+        self.package_path = package_path
+
+    def resource_name(self, name):
+        return os.path.join(self.package_path, _trim_abs_path(name))
+
+    def get_asset(self, name):
+        return self.provider.get_resource_string(self.manager,
+                                                 self.resource_name(name))
+
+    def copy_into(self, dest):
+        os.makedirs(dest, exist_ok=True)
+        def _walk(subpath=None):
+            """
+            `_walk` copies files in a subdirectory to the destination. If
+            file is a directory, recursively call `_walk` for the directory.
+
+            If subpath evaluates to False, copy from the `package_path`.
+            """
+            if subpath:
+                resource_dir = self.resource_name(subpath)
+            else:
+                resource_dir = self.package_path
+
+            for filename in self.provider.resource_listdir(resource_dir):
+                childpath = subpath + '/' + filename if subpath else filename
+                dest_name = os.path.abspath(os.path.join(dest, childpath))
+                if self.provider.resource_isdir(self.resource_name(childpath)):
+                    os.mkdir(dest_name)
+                    _walk(childpath)
+                else:
+                    print('writing to {}'.format(dest_name))
+                    with open(dest_name, 'wb') as f:
+                        f.write(self.get_asset(childpath))
+        _walk()
+
+    def exists_asset(self, name):
+        return self.provider.has_resource(self.resource_name(name))
+
+
 def directory_assets(path='static'):
     """
     This helper function returns the absolute path of the static assets
@@ -121,12 +170,5 @@ def package_assets(package_name, path='static'):
     """
     This helper function returns the absolute path of the static assets
     directory by specifying a path relative to a specified package name.
-
-    This helper function is not implemented yet. Calling it will
-    raise the NotImplemented exception.
     """
-    # TODO(cheungpat): This is currently not implemented because a python
-    # package can be installed as a python egg, which is a zip archive. The
-    # static assets are in the zip archive rather than an actual directory in
-    # the file system.
-    raise NotImplemented('package_assets are not implemented yet')
+    return PackageStaticAssetsLoader(package_name, path)
