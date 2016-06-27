@@ -88,10 +88,14 @@ class RestfulRecord(RestfulResource):
     record_type = None
     database_id = '_public'
 
-    def _send_multi(self, action, **payload):
+    @property
+    def container(self):
         token = self._access_token()
         container = SkygearContainer(access_token=token)
-        result = container.send_action(action, payload)
+        return container
+
+    def _send_multi(self, action, **payload):
+        result = self.container.send_action(action, payload)
         if 'error' in result:
             raise SkygearException.from_dict(result['error'])
         elif 'result' in result and isinstance(result['result'], list):
@@ -100,9 +104,7 @@ class RestfulRecord(RestfulResource):
             raise SkygearException('unexpected result', UnexpectedError)
 
     def _send_single(self, action, **payload):
-        token = self._access_token()
-        container = SkygearContainer(access_token=token)
-        result = container.send_action(action, payload)
+        result = self.container.send_action(action, payload)
         if 'error' in result:
             raise SkygearException.from_dict(result['error'])
         elif 'result' in result and isinstance(result['result'], list) \
