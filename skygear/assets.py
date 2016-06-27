@@ -11,14 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os.path
 import logging
+import mimetypes
+import os.path
 import shutil
 
+from werkzeug.exceptions import NotFound
+
+from . import Response
+from .registry import get_registry
 from .utils.assets import StaticAssetsLoader
 
-
 log = logging.getLogger(__name__)
+_registry = get_registry()
 
 
 class CollectorException(Exception):
@@ -49,3 +54,24 @@ class StaticAssetsCollector:
 
     def clean(self):
         shutil.rmtree(self.dist)
+
+
+def serve_static_assets(request, basepath):
+    """
+    Serve static assets with the given request object.
+    """
+    if not request.path.startswith(basepath):
+        raise ValueError('Request path does not start with basepath ""' \
+                .format(basepath))
+
+    path = request.path[len(basepath):]
+    try:
+        loader, subpath = _registry.get_static_assets(path)
+    except KeyError:
+        raise NotFound()
+
+    if not loader.exists_asset(subpath):
+        raise NotFound()
+
+    content_type, _ = mimetypes.guess_type(subpath)
+    return Response(loader.get_asset(subpath), content_type=content_type)

@@ -148,3 +148,18 @@ class TestRegistry(unittest.TestCase):
 
         assert len(registry.static_assets) == 1
         assert registry.static_assets['admin'] == fn
+
+    def test_get_static_assets(self):
+        class Loader:
+            pass
+
+        loader = Loader()
+        def fn():
+            return loader
+
+        registry = Registry()
+        registry.static_assets['admin'] = fn
+        got_loader, subpath = registry.get_static_assets('admin/apple/pie')
+
+        assert got_loader is loader
+        assert subpath == 'apple/pie'

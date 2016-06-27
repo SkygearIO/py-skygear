@@ -15,9 +15,13 @@ import os.path
 import shutil
 import tempfile
 import unittest
+from unittest.mock import patch
+
+from werkzeug.test import EnvironBuilder
+from werkzeug.wrappers import Request
 
 from .. import assets
-from ..utils.assets import DirectoryStaticAssetsLoader
+from ..utils.assets import DictStaticAssetsLoader, DirectoryStaticAssetsLoader
 
 
 class TestStaticAssetsCollector(unittest.TestCase):
@@ -61,3 +65,21 @@ class TestStaticAssetsCollector(unittest.TestCase):
                                        DirectoryStaticAssetsLoader(tmp_dir))
         finally:
             shutil.rmtree(tmp_dir)
+
+
+class TestServeStaticAssets(unittest.TestCase):
+    def setUp(self):
+        assets = {
+                'content/index.html': 'Hello World!'
+                }
+        self.loader = DictStaticAssetsLoader(assets)
+
+    @patch('skygear.registry.Registry.get_static_assets')
+    def test_response(self, mocker):
+        mocker.return_value = (self.loader, 'content/index.html')
+        builder = EnvironBuilder(method='GET',
+                                 path='/static/myloader/content/index.html')
+        request = Request(builder.get_environ())
+        response = assets.serve_static_assets(request, '/static/')
+        assert response.data == b'Hello World!'
+        mocker.assert_called_once_with('myloader/content/index.html')

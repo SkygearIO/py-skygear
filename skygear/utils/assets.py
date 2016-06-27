@@ -40,6 +40,9 @@ class StaticAssetsLoader:
         """
         pass
 
+    def exists_asset(self, name):
+        return False
+
 
 class DictStaticAssetsLoader(StaticAssetsLoader):
     """
@@ -59,6 +62,9 @@ class DictStaticAssetsLoader(StaticAssetsLoader):
             os.makedirs(os.path.dirname(filepath), exist_ok=True)
             with open(filepath, 'wb') as f:
                 f.write(content)
+
+    def exists_asset(self, name):
+        return name in self._dict
 
 
 class DirectoryStaticAssetsLoader(StaticAssetsLoader):
@@ -80,6 +86,9 @@ class DirectoryStaticAssetsLoader(StaticAssetsLoader):
 
     def copy_into(self, dest):
         shutil.copytree(self.dirpath, dest, symlinks=True)
+
+    def exists_asset(self, name):
+        return os.path.exists(os.path.join(self.dirpath, name))
 
 
 def directory_assets(path='static'):
