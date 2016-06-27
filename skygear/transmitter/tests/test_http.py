@@ -100,3 +100,10 @@ class TestHttpTransport(unittest.TestCase):
         resp = self.get_client().post('/timer/john')
         assert resp.status_code == 200
         mocker.assert_called_once_with(ANY, 'timer', 'john', ANY)
+
+    @patch('skygear.transmitter.http.HttpTransport.call_handler')
+    def testHandler(self, mocker):
+        mocker.return_value = {}
+        resp = self.get_client().post('/handler/apple/pie')
+        assert resp.status_code == 200
+        mocker.assert_called_once_with(ANY, 'apple/pie', ANY)
