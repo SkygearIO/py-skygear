@@ -3,7 +3,7 @@ import os
 
 from ..options import options
 from ..registry import get_registry
-from ..utils.assets import CollectorException, StaticAssetsCollector
+from ..assets import CollectorException, StaticAssetsCollector
 
 _registry = get_registry()
 log = logging.getLogger(__name__)

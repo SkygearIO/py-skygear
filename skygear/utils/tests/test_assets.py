@@ -12,52 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os.path
-import shutil
-import tempfile
 import unittest
 
 from .. import assets as assetsutils
-
-
-class TestStaticAssetsCollector(unittest.TestCase):
-    def setUp(self):
-        self.dist = tempfile.mkdtemp()
-        self.collector = assetsutils.StaticAssetsCollector(self.dist)
-
-    def tearDown(self):
-        if os.path.exists(self.dist):
-            shutil.rmtree(self.dist)
-
-    def test_clean(self):
-        self.collector.clean()
-        assert os.path.exists(self.dist) is False
-
-    def test_collect(self):
-        tmp_dir = tempfile.mkdtemp()
-        try:
-            with open(os.path.join(tmp_dir, 'index.txt'), 'w') as f:
-                f.write('Hello World!')
-
-            self.collector.collect('hello-world', tmp_dir)
-        finally:
-            shutil.rmtree(tmp_dir)
-
-        collected_path = os.path.join(self.collector.base_path,
-                                      'hello-world',
-                                      'index.txt')
-        with open(collected_path, 'r') as f:
-            assert f.read() == 'Hello World!'
-
-    def test_collect_incorrect_prefix(self):
-        tmp_dir = tempfile.mkdtemp()
-        try:
-            with open(os.path.join(tmp_dir, 'index.txt'), 'w') as f:
-                f.write('Hello World!')
-
-            with self.assertRaises(assetsutils.CollectorException):
-                self.collector.collect('../hello-world', tmp_dir)
-        finally:
-            shutil.rmtree(tmp_dir)
 
 
 class StaticAssetsHelperFunction(unittest.TestCase):
