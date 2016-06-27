@@ -19,10 +19,12 @@ from .. import assets as assetsutils
 
 class StaticAssetsHelperFunction(unittest.TestCase):
     def test_directory_assets(self):
-        assert assetsutils.directory_assets('hello-world') == \
-            os.path.abspath('hello-world')
+        loader = assetsutils.directory_assets('hello-world')
+        assert isinstance(loader, assetsutils.StaticAssetsLoader)
+        assert loader.dirpath == os.path.abspath('hello-world')
 
     def test_relative_assets(self):
+        loader = assetsutils.relative_assets('hello-world')
+        assert isinstance(loader, assetsutils.StaticAssetsLoader)
         expected = os.path.join(os.path.dirname(__file__), 'hello-world')
-        assert assetsutils.relative_assets('hello-world') == \
-            os.path.abspath(expected)
+        assert loader.dirpath == os.path.abspath(expected)

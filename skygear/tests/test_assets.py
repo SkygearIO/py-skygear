@@ -17,6 +17,7 @@ import tempfile
 import unittest
 
 from .. import assets
+from ..utils.assets import DirectoryStaticAssetsLoader
 
 
 class TestStaticAssetsCollector(unittest.TestCase):
@@ -38,7 +39,8 @@ class TestStaticAssetsCollector(unittest.TestCase):
             with open(os.path.join(tmp_dir, 'index.txt'), 'w') as f:
                 f.write('Hello World!')
 
-            self.collector.collect('hello-world', tmp_dir)
+            self.collector.collect('hello-world',
+                                   DirectoryStaticAssetsLoader(tmp_dir))
         finally:
             shutil.rmtree(tmp_dir)
 
@@ -55,6 +57,7 @@ class TestStaticAssetsCollector(unittest.TestCase):
                 f.write('Hello World!')
 
             with self.assertRaises(assets.CollectorException):
-                self.collector.collect('../hello-world', tmp_dir)
+                self.collector.collect('../hello-world',
+                                       DirectoryStaticAssetsLoader(tmp_dir))
         finally:
             shutil.rmtree(tmp_dir)

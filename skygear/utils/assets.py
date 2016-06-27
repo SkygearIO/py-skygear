@@ -12,8 +12,74 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import inspect
-import os
+import os.path
+import shutil
 
+
+def _trim_abs_path(path):
+    if path.startswith('/'):
+        path = path[1:]
+    if path.startswith('./'):
+        path = path[2:]
+    return path
+
+
+class StaticAssetsLoader:
+    """
+    This loader is a generic class for loading static assets.
+    """
+    def get_asset(self, name):
+        """
+        Get content of a static assets by name.
+        """
+        return None
+
+    def copy_into(self, path):
+        """
+        Copy the content of all static assets into a directory.
+        """
+        pass
+
+
+class DictStaticAssetsLoader(StaticAssetsLoader):
+    """
+    This class loads static asset from a provided dictionary.
+    """
+    def __init__(self, _dict):
+        super().__init__()
+        self._dict = _dict
+
+    def get_asset(self, name):
+        return self._dict.get(name, None)
+
+    def copy_into(self, path):
+        for filename, content in self._dict.items():
+            filepath = os.path.abspath(
+                    os.path.join(dest, _trim_abs_path(filename)))
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            with open(filepath, 'wb') as f:
+                f.write(content)
+
+
+class DirectoryStaticAssetsLoader(StaticAssetsLoader):
+    """
+    This class loads static asset from a provided file system directory.
+    """
+    def __init__(self, dirpath):
+        super().__init__()
+        self._dirpath = os.path.abspath(dirpath)
+
+    @property
+    def dirpath(self):
+        return self._dirpath
+
+    def get_asset(self, path):
+        filename = os.path.join(self.dirpath, path)
+        with open(filename, 'rb') as f:
+            return f.read()
+
+    def copy_into(self, dest):
+        shutil.copytree(self.dirpath, dest, symlinks=True)
 
 
 def directory_assets(path='static'):
@@ -22,7 +88,7 @@ def directory_assets(path='static'):
     directory by specifying a path relative to the current directory,
     or by specifying a absolute path.
     """
-    return os.path.abspath(path)
+    return DirectoryStaticAssetsLoader(path)
 
 
 def relative_assets(path='static', current_file=None):

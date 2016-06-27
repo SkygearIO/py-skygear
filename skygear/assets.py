@@ -15,6 +15,8 @@ import os.path
 import logging
 import shutil
 
+from .utils.assets import StaticAssetsLoader
+
 
 log = logging.getLogger(__name__)
 
@@ -37,10 +39,13 @@ class StaticAssetsCollector:
             raise CollectorException('Prefix {} is incorrect.'.format(prefix))
         return prefix_path
 
-    def collect(self, prefix, path):
+    def collect(self, prefix, loader):
+        if not isinstance(loader, StaticAssetsLoader):
+            raise ValueError('The second argument must be an instance '
+                    'of StaticAssetsLoader.')
         prefix_path = self._prefix_path(prefix)
         log.debug('Prefix path is %s', prefix_path)
-        shutil.copytree(path, prefix_path, symlinks=True)
+        loader.copy_into(prefix_path)
 
     def clean(self):
         shutil.rmtree(self.dist)
