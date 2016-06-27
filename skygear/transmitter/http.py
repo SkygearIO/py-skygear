@@ -13,13 +13,24 @@
 # limitations under the License.
 import json
 
-from werkzeug.routing import Map, Rule
+from werkzeug.routing import BaseConverter, Map, Rule
 from werkzeug.serving import run_simple
 from werkzeug.wrappers import Request, Response
 
 from ..config import parse_config
 from .common import CommonTransport, decode_base64_json
 from .encoding import _serialize_exc
+
+
+class RegexConverter(BaseConverter):
+    """
+    This converter matches URL by regular expression.
+
+    Copied from http://stackoverflow.com/questions/5870188/does-flask-support-regular-expressions-in-its-url-routing  #noqa
+    """
+    def __init__(self, url_map, *items):
+        super(RegexConverter, self).__init__(url_map)
+        self.regex = items[0]
 
 
 class HttpTransport(CommonTransport):
@@ -35,11 +46,11 @@ class HttpTransport(CommonTransport):
         return Map([
             Rule('/init', endpoint='init'),
             Rule('/op/<name>', endpoint='op'),
-            Rule('/handler/<name>', endpoint='handler'),
+            Rule('/handler/<regex(".*"):name>', endpoint='handler'),
             Rule('/hook/<name>', endpoint='hook'),
             Rule('/provider/<name>/<action>', endpoint='provider'),
             Rule('/timer/<name>', endpoint='timer'),
-        ])
+            ], converters={'regex': RegexConverter})
 
     def __init__(self, addr, registry=None, debug=False):
         super().__init__(registry)
