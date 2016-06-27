@@ -19,53 +19,43 @@ import unittest
 from .. import assets as assetsutils
 
 
-class TestStaticAssetsCollector(unittest.TestCase):
+class StaticAssetsHelperFunction(unittest.TestCase):
+    def test_directory_assets(self):
+        loader = assetsutils.directory_assets('hello-world')
+        assert isinstance(loader, assetsutils.StaticAssetsLoader)
+        assert loader.dirpath == os.path.abspath('hello-world')
+
+    def test_relative_assets(self):
+        loader = assetsutils.relative_assets('hello-world')
+        assert isinstance(loader, assetsutils.StaticAssetsLoader)
+        expected = os.path.join(os.path.dirname(__file__), 'hello-world')
+        assert loader.dirpath == os.path.abspath(expected)
+
+    def test_package_assets(self):
+        loader = assetsutils.package_assets(__name__, 'assets')
+        assert isinstance(loader, assetsutils.PackageStaticAssetsLoader)
+
+
+class TestPackageStaticAssetsLoader(unittest.TestCase):
     def setUp(self):
+        self.loader = assetsutils.PackageStaticAssetsLoader(__name__, 'assets')
         self.dist = tempfile.mkdtemp()
-        self.collector = assetsutils.StaticAssetsCollector(self.dist)
 
     def tearDown(self):
         if os.path.exists(self.dist):
             shutil.rmtree(self.dist)
 
-    def test_clean(self):
-        self.collector.clean()
-        assert os.path.exists(self.dist) is False
+    def test_get_asset(self):
+        content = self.loader.get_asset('content/index.txt')
+        assert content.startswith(b'Hello World!')
 
-    def test_collect(self):
-        tmp_dir = tempfile.mkdtemp()
-        try:
-            with open(os.path.join(tmp_dir, 'index.txt'), 'w') as f:
-                f.write('Hello World!')
+    def test_copy_into(self):
+        self.loader.copy_into(self.dist)
+        with open(os.path.join(self.dist, 'content/index.txt'), 'rb') as f:
+            assert f.read().startswith(b'Hello World!')
 
-            self.collector.collect('hello-world', tmp_dir)
-        finally:
-            shutil.rmtree(tmp_dir)
+    def test_exists_asset(self):
+        assert self.loader.exists_asset('content/index.txt') is True
 
-        collected_path = os.path.join(self.collector.base_path,
-                                      'hello-world',
-                                      'index.txt')
-        with open(collected_path, 'r') as f:
-            assert f.read() == 'Hello World!'
-
-    def test_collect_incorrect_prefix(self):
-        tmp_dir = tempfile.mkdtemp()
-        try:
-            with open(os.path.join(tmp_dir, 'index.txt'), 'w') as f:
-                f.write('Hello World!')
-
-            with self.assertRaises(assetsutils.CollectorException):
-                self.collector.collect('../hello-world', tmp_dir)
-        finally:
-            shutil.rmtree(tmp_dir)
-
-
-class StaticAssetsHelperFunction(unittest.TestCase):
-    def test_directory_assets(self):
-        assert assetsutils.directory_assets('hello-world') == \
-            os.path.abspath('hello-world')
-
-    def test_relative_assets(self):
-        expected = os.path.join(os.path.dirname(__file__), 'hello-world')
-        assert assetsutils.relative_assets('hello-world') == \
-            os.path.abspath(expected)
+    def test_exists_asset_nonexistent(self):
+        assert self.loader.exists_asset('non-existent') is False

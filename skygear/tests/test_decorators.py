@@ -18,6 +18,7 @@ from werkzeug.wrappers import Request
 
 from .. import decorators as d
 from ..registry import Registry  # noqa
+from ..utils.assets import DirectoryStaticAssetsLoader
 
 
 class TestHookDecorators(unittest.TestCase):
@@ -105,6 +106,9 @@ class TestStaticAssetsDecorator(unittest.TestCase):
     def test_register(self, mock):
         @d.static_assets('/admin')
         def fn():
-            pass
+            return '/tmp/public'
 
         mock.assert_called_with('/admin', ANY)
+        loader = fn()
+        assert isinstance(loader, DirectoryStaticAssetsLoader)
+        assert loader.dirpath == '/tmp/public'

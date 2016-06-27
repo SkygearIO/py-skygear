@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import datetime
+from functools import wraps
 
 from .registry import get_registry
+from .utils.assets import DirectoryStaticAssetsLoader, StaticAssetsLoader
 
 _registry = get_registry()
 
@@ -180,6 +182,14 @@ def static_assets(prefix, *args, **kwargs):
     assets directory.
     """
     def wrapper(func):
-        _registry.register_static_assets(prefix, func)
-        return func
+        @wraps(func)
+        def wrap_loader():
+            loader = func()
+            if not loader:
+                return None
+            if not isinstance(loader, StaticAssetsLoader):
+                loader = DirectoryStaticAssetsLoader(loader)
+            return loader
+        _registry.register_static_assets(prefix, wrap_loader)
+        return wrap_loader
     return wrapper

@@ -64,15 +64,25 @@ def load_source_or_exit(source):
 
 
 def load(options):
+    from .decorators import static_assets, handler
+    from .assets import serve_static_assets
+
+    STATIC_ASSETS_PREFIX = 'static'
+
     # If the directory `public_html` exists in the current directory,
     # assume the user want to publish its content as static assets.
     auto_assets_dir = os.path.abspath('public_html')
     if os.path.exists(auto_assets_dir):
-        from .decorators import static_assets
-
         @static_assets('')
         def auto_assets():
             return auto_assets_dir
+
+    # Create handler for serving static assets.
+    @handler('{}/'.format(STATIC_ASSETS_PREFIX))
+    @handler(STATIC_ASSETS_PREFIX)
+    def work(request):
+        return serve_static_assets(request,
+                                   '/{}/'.format(STATIC_ASSETS_PREFIX))
 
     load_source_or_exit(options.plugin)
 

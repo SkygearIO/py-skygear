@@ -96,6 +96,14 @@ class Registry:
     def register_static_assets(self, prefix, func):
         self.static_assets[prefix] = func
 
+    def get_static_assets(self, request_path):
+        for prefix, loader in self.static_assets.items():
+            if request_path.startswith(prefix):
+                subpath = request_path[len(prefix)+1:]
+                return loader(), subpath
+        raise KeyError('Unable to find static assets loader with '
+                       'request_path "{}"'.format(request_path))
+
     def func_list(self):
         return self.param_map
 
