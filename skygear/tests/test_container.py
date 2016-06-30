@@ -36,3 +36,13 @@ class TestContainer():
         c = SkygearContainer(endpoint='endpoint', access_token='access-token')
         payload = c._payload('action:work', {})
         assert payload['access_token'] == 'access-token'
+
+    def test_payload_include_all_credentials(self):
+        c = SkygearContainer(endpoint='endpoint',
+                             access_token='access-token',
+                             api_key='api-key',
+                             user_id='user-id')
+        payload = c._payload('action:work', {})
+        assert payload['access_token'] == 'access-token'
+        assert payload['api_key'] == 'api-key'
+        assert payload['_user_id'] == 'user-id'
