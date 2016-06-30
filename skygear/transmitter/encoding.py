@@ -152,6 +152,13 @@ class _RecordEncoder:
         d['_id'] = self.encode_id(record.id)
         d['_ownerID'] = record.owner_id
         d['_access'] = self.encode_acl(record.acl)
+        if record.created_at is not None:
+            # New record don't have following value yet
+            d['_created_at'] = self._encode_datetime(record.created_at)
+            d['_created_by'] = record.created_by
+        if record.updated_at is not None:
+            d['_updated_at'] = self._encode_datetime(record.updated_at)
+            d['_updated_by'] = record.updated_by
         return d
 
     def encode_id(self, id):
@@ -209,11 +216,14 @@ class _RecordEncoder:
         else:
             return v
 
-    def encode_datetime(self, dt):
+    def _encode_datetime(self, dt):
         ts = dt.timestamp()
+        return strict_rfc3339.timestamp_to_rfc3339_utcoffset(ts)
+
+    def encode_datetime(self, dt):
         return {
             '$type': 'date',
-            '$date': strict_rfc3339.timestamp_to_rfc3339_utcoffset(ts),
+            '$date': self._encode_datetime(dt),
         }
 
     def encode_asset(self, asset):

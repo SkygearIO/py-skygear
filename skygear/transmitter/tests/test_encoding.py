@@ -14,7 +14,7 @@
 
 from skygear.models import PublicAccessControlEntry, RoleAccessControlEntry
 
-from ..encoding import deserialize_record
+from ..encoding import deserialize_record, serialize_record
 
 
 class TestsDeserializeRecord():
@@ -64,3 +64,23 @@ class TestsDeserializeRecord():
         assert isinstance(r.acl, list)
         assert isinstance(r.acl[0], PublicAccessControlEntry)
         assert r.acl[0].level == "read"
+
+    def test_serialize_record_back(self):
+        rdata = {
+            "_id": "note/99D92DBA-74D5-477F-B35E-F735E21B2DD5",
+            "_ownerID": "OWNER_ID",
+            "_access": [{
+                "public": True,
+                "level": "read"
+            }],
+            "_created_at": "2014-09-27T17:40:00Z"
+        }
+        r = deserialize_record(rdata)
+        result = serialize_record(r)
+        assert result['_id'] == "note/99D92DBA-74D5-477F-B35E-F735E21B2DD5"
+        assert result['_ownerID'] == "OWNER_ID"
+        assert result['_access'] == [{
+            "public": True,
+            "level": "read"
+        }]
+        assert result['_created_at'] == "2014-09-27T17:40:00Z"
