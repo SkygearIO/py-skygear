@@ -52,7 +52,7 @@ class SkygearContainer(object):
         payload['action'] = action_name
         if self.access_token:
             payload['access_token'] = self.access_token
-        elif self.api_key:
+        if self.api_key:
             payload['api_key'] = self.api_key
         if self.user_id:
             payload['_user_id'] = self.user_id
