@@ -1,3 +1,26 @@
+## 0.13.0 (2016-07-05)
+
+### Features
+
+- Include both api_key and access_token in send_action
+- Provide meta attributes like created_by on serialized_record (SkygearIO/chat#23)
+- Allow RestfulRecord subclass to provide container
+- Implement serving static assets for development (#23)
+- Automatically generate ID for restful record
+- Enable threading in http transport
+- Add function to check if a table exists in schema
+- Declare and collect static assets (#21, #22)
+
+### Bug fixes
+
+- Fix handler name with slashes in http transport (#33, oursky/py-skygear#137)
+- Fix handler returning werkzeug response
+
+### Other notes
+
+- Fix bcrypt version at 2.0.0 because build failing
+- Fix onbuild image not having zmq transport installed
+
 ## 0.12.0 (2016-05-30)
 
 ### Other Notes
