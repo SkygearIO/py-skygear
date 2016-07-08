@@ -1,3 +1,8 @@
+## 0.13.1 (2016-07-08)
+
+### Features
+- Do not serve static assets by default
+
 ## 0.13.0 (2016-07-05)
 
 ### Features
