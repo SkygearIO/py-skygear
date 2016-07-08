@@ -59,6 +59,9 @@ def get_argument_parser():
                     help="Collect static assets to a directory")
     ap.add_argument('--force-assets', action='store_true',
                     help="Remove dist folder before proceeding")
+    ap.add_argument('--serve-static-assets', action='store_true',
+                    env_var='SKYGEAR_SERVE_STATIC_ASSETS',
+                    help="Enable to serve static asset from plugin process")
     ap.add_argument('plugin', nargs='?')
     return ap
 
