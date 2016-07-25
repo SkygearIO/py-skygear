@@ -112,3 +112,18 @@ class TestStaticAssetsDecorator(unittest.TestCase):
         loader = fn()
         assert isinstance(loader, DirectoryStaticAssetsLoader)
         assert loader.dirpath == '/tmp/public'
+
+
+class TestExceptionHandlerDecorator(unittest.TestCase):
+    @patch('skygear.registry.Registry.register_exception_handler')
+    def test_register(self, mock):
+        class SomeException(Exception):
+            pass
+
+        @d.exception_handler(SomeException)
+        def fn(exc):
+            return exc
+
+        mock.assert_called_with(SomeException, ANY)
+        exc = fn(SomeException())
+        assert isinstance(exc, SomeException)

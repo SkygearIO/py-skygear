@@ -193,3 +193,29 @@ def static_assets(prefix, *args, **kwargs):
         _registry.register_static_assets(prefix, wrap_loader)
         return wrap_loader
     return wrapper
+
+
+def exception_handler(klass):
+    """
+    This decorator is used to decorate a function that is called by when
+    exception with the specified class has occurred.
+
+    The decorated function must have one parameter, which is the exception
+    that occurred. The decorated function is expected to return an exception
+    or a result. If the decorated function does not return a value, the
+    original exception is returned instead.
+
+    When an exception handler for a particular exception class already exists,
+    the newly decorated function for the same exception class will override
+    previously registered exception handler. If there are multiple exception
+    handlers, the handler with the most specific exception class will
+    be selected to handle an exception.
+    """
+    def wrapper(func):
+        def wrap(*args, **kwargs):
+            # not called
+            pass
+
+        _registry.register_exception_handler(klass, func)
+        return func
+    return wrapper

@@ -164,3 +164,26 @@ class TestRegistry(unittest.TestCase):
 
         assert got_loader is loader
         assert subpath == 'apple/pie'
+
+    def test_register_exception_handler(self):
+        def fn(exc):
+            pass
+
+        registry = Registry()
+        registry.register_exception_handler(Exception, fn)
+
+        assert len(registry.exception_handlers) == 1
+        assert registry.exception_handlers[Exception] == fn
+
+    def test_get_exception_handler(self):
+        class SomeException(Exception):
+            pass
+
+        def fn(exc):
+            return exc
+
+        registry = Registry()
+        registry.exception_handlers[Exception] = fn
+        handler = registry.get_exception_handler(SomeException)
+
+        assert handler is fn
