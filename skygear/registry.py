@@ -20,6 +20,14 @@ def get_registry():
     return _registry
 
 
+def _iter_class_hierarchy(klass):
+    klasses = [klass]
+    while klasses:
+        cls = klasses.pop()
+        yield cls
+        klasses += list(cls.__bases__)
+
+
 class Registry:
     """Registry holds a mapping of registred functions and their parameters that
     are callable by Skygear plugin system.
@@ -44,6 +52,7 @@ class Registry:
         self.handler = {}
         self.providers = {}
         self.static_assets = {}
+        self.exception_handlers = {}
 
     def register(self, kind, name, func, *args, **kwargs):
         if kind == 'handler':
@@ -115,5 +124,15 @@ class Registry:
 
     def get_handler(self, name, method):
         return self.handler[name].get(method, None)
+
+    def get_exception_handler(self, klass):
+        for cls in _iter_class_hierarchy(klass):
+            if cls in self.exception_handlers:
+                return self.exception_handlers[cls]
+        return None
+
+    def register_exception_handler(self, klass, func):
+        self.exception_handlers[klass] = func
+
 
 _registry = Registry()

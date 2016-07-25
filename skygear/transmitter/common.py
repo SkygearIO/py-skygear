@@ -27,6 +27,9 @@ from ..utils.context import start_context
 from .encoding import _serialize_exc, deserialize_or_none, serialize_record
 
 
+log = logging.getLogger(__name__)
+
+
 def _get_engine():
     return db._get_engine()
 
@@ -36,12 +39,25 @@ def _wrap_result(f):
     def wrapper(self, *args, **kwargs):
         try:
             return dict(result=f(self, *args, **kwargs))
-        except SkygearException as e:
-            return dict(error=e.as_dict())
         except Exception as e:
-            self.logger.exception("Error occurred processing request")
-            return dict(error=_serialize_exc(e).as_dict())
+            handler = get_registry().get_exception_handler(e.__class__)
+            if not handler:
+                handler = handle_exception
+            result = handler(e)
+            if result is None:
+                return dict(error=_serialize_exc(e).as_dict())
+            elif isinstance(result, Exception):
+                return dict(error=_serialize_exc(result).as_dict())
+            else:
+                return result
     return wrapper
+
+
+def handle_exception(exc):
+    if not isinstance(exc, SkygearException):
+        log.exception("Error occurred processing request")
+    return exc
+get_registry().register_exception_handler(Exception, handle_exception)
 
 
 def encode_base64_json(data):
@@ -68,9 +84,8 @@ def dict_from_base64_environ(name):
 
 
 class CommonTransport:
-    def __init__(self, registry=None, logger=None):
+    def __init__(self, registry=None):
         self._registry = registry or get_registry()
-        self.logger = logger or logging.getLogger(__name__)
 
     def init_info(self):
         return self._registry.func_list()

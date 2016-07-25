@@ -23,6 +23,9 @@ from ..models import (Asset, DirectAccessControlEntry, Location,
 
 
 def _serialize_exc(e):
+    if isinstance(e, SkygearException):
+        return e
+
     return SkygearException(
         str(e),
         UnexpectedError,

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import json
+import logging
 
 from werkzeug.routing import BaseConverter, Map, Rule
 from werkzeug.serving import run_simple
@@ -20,6 +21,9 @@ from werkzeug.wrappers import Request, Response
 from ..config import parse_config
 from .common import CommonTransport, decode_base64_json
 from .encoding import _serialize_exc
+
+
+log = logging.getLogger(__name__)
 
 
 class RegexConverter(BaseConverter):
@@ -77,7 +81,7 @@ class HttpTransport(CommonTransport):
         try:
             output = self._dispatch(request)
         except Exception as e:
-            self.logger.exception("exception while handling request")
+            log.exception("exception while handling request")
             output = dict(error=_serialize_exc(e).as_dict())
         return Response(json.dumps(output), mimetype="application/json")
 

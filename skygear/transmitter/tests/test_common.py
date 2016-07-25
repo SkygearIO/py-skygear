@@ -197,3 +197,13 @@ class TestBase64Encoding(unittest.TestCase):
 
     def testDecoding(self):
         assert common.decode_base64_json('e30=') == {}
+
+
+class TestHandleException(unittest.TestCase):
+    def testHandleException(self):
+        exc = Exception()
+        assert common.handle_exception(exc) is exc
+
+    def testHandleSkygearException(self):
+        exc = SkygearException('Error occurred', 1, {'data': 'hello'})
+        assert common.handle_exception(exc) is exc
