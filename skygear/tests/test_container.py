@@ -11,7 +11,39 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from ..container import SkygearContainer
+import datetime
+import unittest
+from unittest.mock import patch
+
+from ..container import SkygearContainer, send_action
+
+
+class TestSendAction(unittest.TestCase):
+    @patch('skygear.container.requests', autospec=True)
+    def test_send_str(self, mock_requests):
+        send_action('http://skygear.dev/', {
+            'key': 'string'
+        })
+        self.assertEqual(len(mock_requests.method_calls), 1)
+        call = mock_requests.method_calls[0]
+        self.assertEqual(call[0], 'post')
+        self.assertEqual(call[1][0], 'http://skygear.dev/')
+        self.assertEqual(call[2]['data'], '{"key": "string"}')
+
+    @patch('skygear.container.requests', autospec=True)
+    def test_send_date(self, mock_requests):
+        dt = datetime.datetime(2014, 9, 27, 17, 40, 0,
+                               tzinfo=datetime.timezone.utc)
+        send_action('http://skygear.dev/', {
+            'print_at': dt
+        })
+        self.assertEqual(len(mock_requests.method_calls), 1)
+        call = mock_requests.method_calls[0]
+        self.assertEqual(call[0], 'post')
+        self.assertEqual(call[1][0], 'http://skygear.dev/')
+        self.assertEqual(
+            call[2]['data'],
+            '{"print_at": "2014-09-27T17:40:00Z"}')
 
 
 class TestContainer():
