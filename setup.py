@@ -35,7 +35,7 @@ extras_require={
 
 setup(
       name='skygear',
-      version='0.13.1',
+      version='0.14.0',
       packages=find_packages(),
       description='Python plugin runtime for Skygear',
       long_description=open(README).read(),
