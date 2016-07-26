@@ -11,18 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import datetime
 import json
 
 import requests
 
+import strict_rfc3339
+
 from . import error
+
+
+class PayloadEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.datetime):
+            ts = obj.timestamp()
+            return strict_rfc3339.timestamp_to_rfc3339_utcoffset(ts)
 
 
 def send_action(url, payload):
     headers = {'Content-type': 'application/json',
                'Accept': 'application/json'}
 
-    return requests.post(url, data=json.dumps(payload), headers=headers).json()
+    _data = json.dumps(payload, cls=PayloadEncoder)
+    return requests.post(url, data=_data, headers=headers).json()
 
 
 class SkygearContainer(object):
