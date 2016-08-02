@@ -48,12 +48,12 @@ services:
     - .:/usr/src/app
     environment:
       DATABASE_URL: postgres://postgres@db/postgres?sslmode=disable
+      API_KEY: changeme
+      MASTER_KEY: secret
+      APP_NAME: _
       PUBSUB_URL: PUBSUB_URL=ws://app:3000/pubsub
       SKYGEAR_ADDRESS: tcp://app:5555
       SKYGEAR_ENDPOINT: http://app:3000
-      SKYGEAR_APIKEY: changeme
-      SKYGEAR_MASTERKEY: secret
-      SKYGEAR_APPNAME: _
 
 volumes:
   redis_data:
