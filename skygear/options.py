@@ -29,38 +29,38 @@ def get_argument_parser():
     ap.add_argument('--apikey', metavar='APIKEY', action='store',
                     default=None,
                     help="API Key of the application",
-                    env_var='SKYGEAR_APIKEY')
+                    env_var='API_KEY')
     ap.add_argument('--masterkey', metavar='MASTERKEY', action='store',
                     default=None,
                     help="Master Key of the application",
-                    env_var='SKYGEAR_MASTERKEY')
+                    env_var='MASTER_KEY')
     ap.add_argument('--appname', metavar='APPNAME', action='store',
                     default='',
                     help="Application name of the skygear daemon",
-                    env_var='SKYGEAR_APPNAME')
+                    env_var='APP_NAME')
     ap.add_argument('--loglevel', action='store', default='INFO',
                     help="Log level",
-                    env_var='SKYGEAR_LOGLEVEL')
+                    env_var='LOG_LEVEL')
     ap.add_argument('--subprocess', dest='subprocess', action='store',
                     nargs='+',
                     metavar=('(init|op|hook|handler|timer)', 'name'),
                     help='Trigger subprocess everytime for debug')
     ap.add_argument('--http', action='store_true',
                     help='Trigger http web server',
-                    env_var='SKYGEAR_HTTP')
+                    env_var='HTTP')
     ap.add_argument('--http-addr', metavar='HTTP_ADDR', action='store',
                     default='0.0.0.0:8000',
                     help='Address where htp web server listen to',
-                    env_var='SKYGEAR_HTTP_ADDR')
+                    env_var='HTTP_ADDR')
     ap.add_argument('--debug', action='store_true',
                     help='Enable debugging features',
-                    env_var='SKYGEAR_DEBUG')
+                    env_var='DEBUG')
     ap.add_argument('--collect-assets', metavar='DIST', action='store',
                     help="Collect static assets to a directory")
     ap.add_argument('--force-assets', action='store_true',
                     help="Remove dist folder before proceeding")
     ap.add_argument('--serve-static-assets', action='store_true',
-                    env_var='SKYGEAR_SERVE_STATIC_ASSETS',
+                    env_var='SERVE_STATIC_ASSETS',
                     help="Enable to serve static asset from plugin process")
     ap.add_argument('plugin', nargs='?')
     return ap
