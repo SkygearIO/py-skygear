@@ -8,8 +8,6 @@ db:
   image: mdillon/postgis:9.4
   volumes_from:
   - db_data
-  ports:
-  - "5432:5432"
 
 redis_data:
   image: redis:3.0
@@ -32,21 +30,22 @@ app:
   - "5555:5555" # Skygear Plugin Endpoint (ZMQ)
   volumes_from:
   - app_data
-  volumes:
-  - ./development.ini:/app/development.ini
   links:
   - db
   - redis
-  command: skygear-server /app/development.ini
+  command: skygear-server
   environment:
     # `db` in the following string should match the name of the database
     # container above.
     DATABASE_URL: postgresql://postgres:@db/postgres?sslmode=disable
-    DB_IMPL_NAME: pq
     API_KEY: changeme
+    MASTER_KEY: secret
     APP_NAME: catapiapp
-    PGHOST: db
-    PGUSER: postgres
+    DEV_MODE: 'YES'
+    PLUGINS: CATAPI
+    CATAPI_TRANSPORT: zmq
+    CATAPI_PATH: python
+    CATAPI_ARGS: tcp://*:5555
     GODEBUG: netdns=cgo
 
 plugin:
@@ -61,5 +60,6 @@ plugin:
     PUBSUB_URL: PUBSUB_URL=ws://app:3000/pubsub
     SKYGEAR_ADDRESS: tcp://app:5555
     SKYGEAR_ENDPOINT: http://app:3000
-    SKYGEAR_APIKEY: changeme
-    SKYGEAR_APPNAME: catapiapp
+    API_KEY: changeme
+    MASTER_KEY: secret
+    APP_NAME: catapiapp
