@@ -1,3 +1,11 @@
+## 0.15.0 (2016-08-17)
+
+### Other Notes
+
+- Update postgres to 9.5 (#45)
+- Update catapi docker-compose to embrace env var config
+- Remove the SKYGEAR prefix in envvar (#27)
+
 ## 0.14.0 (2016-07-26)
 
 ### Features
