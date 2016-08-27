@@ -1,13 +1,14 @@
 language: python
 
-sudo: false
-
 python:
   - '3.4'
   - '3.5'
 
 addons:
   postgresql: "9.4"
+
+services:
+  - docker
 
 cache:
   directories:
@@ -16,10 +17,6 @@ cache:
 env:
   global:
     - DATABASE_URL=postgresql://postgres:@localhost/skygear_test?sslmode=disable
-    # BINTRAY_API_KEY
-    - secure: "kPKu+JglznjCxltWBqr+pnJAbYF9blaZ7T/4ZkWkq5HOG200lvmfue6L2gIOwer3VaAiPJhJ3l1PTlGFHSVcSuqcbJBhmxTzCUVWa2WeyWyxPU73lrK0QjaLu/ekKhYtDYPU65W2fi6VH7SQPtXhRiLNd6fjTL5MM86PR14JW371YCgXhgWBcPJvGjSZmJxoGgUPPMWyPiyAm9l439fPfvNBPrfpVzG+J3qk343uXv67BJaxn6WzhKfrxLNSrE9rxZJLNUASQql5YQr5ko6OLry3lrRIkQ1ObpOIGrku7AUEYddinq/S2hiPh2pxjYT9jLvHRZ0l4T+ovJg1Is7CPq92yqzvsb11VhN7LvsxBnsN8YMIfh4yglDamxlvep2tmV2K+DentufQlql+QyIwgqR0B5PNWBxevxqTKUHLgj6BJs9tUeu3Ma2yQq0dVTu4yKLPs0KUHlfcuN4x39sHfeWVHpHH0PvXBbjwLZovFPcPFLYdpKbdWMcZVKxD3RjuqxSzehDz8eyWTKAxuqiguLHNZ7WiXuDVm1UKDmd6sl36YCaqL9ourDMOsm4A9U9+kg8H5zdiO5Bk4nmh+P1qGhooJALaJG7fLzosDjieCc3sgTtHyk0iEmVvTgHa1KaPXfmOfq7FTQn3m3iw8/PE2mMhUt2sAzI5Qhvc7NK/0TU="
-    # QUAY_IO_ACCESS_TOKEN
-    - secure: "Cn4BHFb129fQd3m7ZirMM4nIPhWr1N3jK8RQmdcqjweA/YnPj7z4L7t96vNbVO+wnkElht8g9X+Y7ogvdsfT9Hb5/rze+yWSmOCeHeY98x3y+es5iKaPbaH9m+Di0JTVxPK9QPqOBunLrhUemb4/2TnTq+NELPj9opwuysDkXVkJQSh7Hm7RIRPNFxJ/0QJnzquLfePKCjhJa4LPRhCwtVaBz7XtGD6N+jFQMUIlQn5aJVof4S8LA07DHxgUZ0Lcfgw/Q6MmKpTpkJRf2OsBemKD8EFjooA/LxgGONESrbxKF1LPfDb/goQGfJILAgcVgdXfzvwuiG3azAbhCUi3QRsOWTFAxo6FDESYfGVHoHAd8tti4bqqFXUgckyvquKVZTyGqIuTJfvouaFEWlr0NzmQ4O46BFc7O3tb9Ed0Jk3Wj4RYBMZyy23O2FmIKlndl88QUwOysGF5bpMcIGiB0LVCMfbRLUnal90OV31gIHEkJGEeLUkOHuKOFJ8h/I5sywbgpRNhE20Qfb05XFTu8MQNyIyWagahEgY8FJZ1qjoOvSSjxU+Yw+qto8nT4vdKlF9ofrfSDV3JJ0inKMR0tReqHQkDM2DTooUlmVHXLuOuSU+8JY94Ke6Rjb/Caw7JimloN8lDCFUc1QMKtB0RgX1NBly6iBW9nD4YvpVa/i0="
 
 before_install:
   - pip install --upgrade pip
@@ -42,18 +39,22 @@ script:
   - coverage report -m --omit *tests*
 
 before_deploy:
-  - ./scripts/build-dist.sh
+  - scripts/fix-setup-version.sh
+  - make build
 
 deploy:
-  - provider: script
-    script: ./scripts/upload-dist.sh
+  - provider: releases
+    api-key: "$GITHUB_RELEASE_TOKEN"
+    file:
+      - "dist/*.whl"
     skip_cleanup: true
+    file_glob: true
     on:
       repo: SkygearIO/py-skygear
-      all_branches: true
+      tags: true
       python: 3.4
   - provider: script
-    script: ./scripts/trigger-quay-io.sh
+    script: ./scripts/deploy.sh
     skip_cleanup: true
     on:
       repo: SkygearIO/py-skygear
