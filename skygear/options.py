@@ -62,6 +62,10 @@ def get_argument_parser():
     ap.add_argument('--serve-static-assets', action='store_true',
                     env_var='SERVE_STATIC_ASSETS',
                     help="Enable to serve static asset from plugin process")
+    ap.add_argument('--pubsub-url', action='store', default=None,
+                    env_var='PUBSUB_URL',
+                    help="The URL of the pubsub server, should start with "
+                         "ws:// or wss:// and include the path")
     ap.add_argument('plugin', nargs='?')
     return ap
 
