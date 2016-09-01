@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import json
-import logging
-import os
 from urllib.parse import urlparse, urlunparse
 
 from websocket import create_connection
@@ -36,14 +34,8 @@ def publish(channel, data):
 
 
 def _get_default_pubsub_url():
-    if os.getenv('PUBSUB_URL', None):
-        logger = logging.getLogger(__name__)
-        logger.info('Environment variable PUBSUB_URL ("{0}") is deprecated, '
-                    'but this setting is honored anyway. To remove this '
-                    'message, remove PUBSUB_URL from environment and make '
-                    'sure you specify skygear endpoint and API key.'
-                    .format(os.getenv('PUBSUB_URL')))
-        return os.getenv('PUBSUB_URL')
+    if options.pubsub_url:
+        return options.pubsub_url
 
     parsed_endpoint = urlparse(options.skygear_endpoint)
 
