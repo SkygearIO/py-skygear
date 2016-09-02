@@ -1,3 +1,14 @@
+## 0.16.0 (2016-09-02)
+
+### Bug Fixes
+
+- Fix local static asset not serve correctly during development (#50)
+
+### Other Notes
+
+- Un-deprecate PUBSUB_URL (#52)
+- Revamp release process
+
 ## 0.15.0 (2016-08-17)
 
 ### Other Notes
