@@ -46,6 +46,7 @@ app:
     CATAPI_TRANSPORT: zmq
     CATAPI_PATH: python
     CATAPI_ARGS: tcp://*:5555
+    LOG_LEVEL_PLUGIN: DEBUG
     GODEBUG: netdns=cgo
 
 plugin:
@@ -63,3 +64,6 @@ plugin:
     API_KEY: changeme
     MASTER_KEY: secret
     APP_NAME: catapiapp
+    DEBUG: 'true'
+    SERVE_STATIC_ASSETS: 'true'
+    LOG_LEVEL: DEBUG
