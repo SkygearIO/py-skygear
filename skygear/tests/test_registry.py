@@ -163,6 +163,22 @@ class TestRegistry(unittest.TestCase):
         got_loader, subpath = registry.get_static_assets('admin/apple/pie')
 
         assert got_loader is loader
+        assert subpath == '/apple/pie'
+
+    def test_get_static_assets_with_traling(self):
+        class Loader:
+            pass
+
+        loader = Loader()
+
+        def fn():
+            return loader
+
+        registry = Registry()
+        registry.static_assets['admin/'] = fn
+        got_loader, subpath = registry.get_static_assets('admin/apple/pie')
+
+        assert got_loader is loader
         assert subpath == 'apple/pie'
 
     def test_register_exception_handler(self):

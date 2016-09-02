@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import inspect
+import logging
 import os.path
 import shutil
+
+log = logging.getLogger(__name__)
 
 
 def _trim_abs_path(path):
@@ -88,7 +91,9 @@ class DirectoryStaticAssetsLoader(StaticAssetsLoader):
         shutil.copytree(self.dirpath, dest, symlinks=True)
 
     def exists_asset(self, name):
-        return os.path.exists(os.path.join(self.dirpath, name))
+        full_path = os.path.join(self.dirpath, name)
+        log.debug('Checking asset exist {}'.format(full_path))
+        return os.path.exists(full_path)
 
 
 class PackageStaticAssetsLoader(StaticAssetsLoader):
