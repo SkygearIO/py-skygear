@@ -70,7 +70,7 @@ def serve_static_assets(request, basepath):
     except KeyError:
         raise NotFound()
 
-    if subpath[0] == os.sep:
+    if subpath and subpath[0] == '/':
         subpath = subpath[1:]
 
     if not loader.exists_asset(subpath):
