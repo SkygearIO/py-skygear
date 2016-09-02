@@ -13,7 +13,7 @@
 # limitations under the License.
 import logging
 import mimetypes
-import os.path
+import os
 import shutil
 
 from werkzeug.exceptions import NotFound
@@ -70,7 +70,11 @@ def serve_static_assets(request, basepath):
     except KeyError:
         raise NotFound()
 
+    if subpath[0] == os.sep:
+        subpath = subpath[1:]
+
     if not loader.exists_asset(subpath):
+        log.debug('Asset not found: {}'.format(subpath))
         raise NotFound()
 
     content_type, _ = mimetypes.guess_type(subpath)

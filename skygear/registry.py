@@ -108,7 +108,7 @@ class Registry:
     def get_static_assets(self, request_path):
         for prefix, loader in self.static_assets.items():
             if request_path.startswith(prefix):
-                subpath = request_path[len(prefix)+1:]
+                subpath = request_path[len(prefix):]
                 return loader(), subpath
         raise KeyError('Unable to find static assets loader with '
                        'request_path "{}"'.format(request_path))
