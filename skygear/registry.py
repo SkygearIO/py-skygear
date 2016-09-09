@@ -114,11 +114,11 @@ class Registry:
     def func_list(self):
         return self.param_map
 
-    def get_obj(self, kind, name):
-        if kind == 'provider':
-            return self.providers[name]
-        else:
-            return self.func_map[kind][name]
+    def get_func(self, kind, name):
+        return self.func_map[kind][name]
+
+    def get_provider(self, name):
+        return self.providers[name]
 
     def get_handler(self, name, method):
         return self.handler[name].get(method, None)
