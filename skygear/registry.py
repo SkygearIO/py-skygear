@@ -54,6 +54,22 @@ class Registry:
         self.static_assets = {}
         self.exception_handlers = {}
 
+    def _add_param(self, kind, param):
+        """
+        Add a param dict to the registry. If the param already exist
+        in the registry, the existing param will be removed. An param
+        is a dictionary containing info of the declared extension point.
+        """
+        param_list = self.param_map[kind]
+
+        # Check existing param. Remove it if the param has the same name
+        # as the to-be-added param.
+        for i in range(len(param_list)):
+            if param_list[i].get('name') == param.get('name'):
+                del param_list[i]
+                break
+        param_list.append(param)
+
     def register(self, kind, name, func, *args, **kwargs):
         self.func_map[kind][name] = func
         if kind == 'hook':
@@ -62,17 +78,17 @@ class Registry:
             if kwargs['trigger'] is None:
                 raise ValueError("trigger is required for hook")
             kwargs['name'] = name
-            self.param_map['hook'].append(kwargs)
+            self._add_param('hook', kwargs)
         elif kind == 'op':
-            self.param_map['op'].append({
+            self._add_param('op', {
                 'name': name,
                 'auth_required': kwargs.get('auth_required',
                                             kwargs.get('key_required', False)),
                 'user_required': kwargs.get('user_required', False),
-                })
+            })
         elif kind == 'timer':
             kwargs['name'] = name
-            self.param_map['timer'].append(kwargs)
+            self._add_param('timer', kwargs)
         else:
             raise Exception("Unrecognized transport kind '%d'.".format(kind))
 
@@ -82,7 +98,7 @@ class Registry:
         methods = kwargs.get('method', ['GET', 'POST', 'PUT'])
         if isinstance(methods, str):
             methods = [methods]
-        self.param_map['handler'].append({
+        self._add_param('handler', {
             'name': name,
             'methods': methods,
             'key_required': kwargs.get('key_required', False),
@@ -97,7 +113,7 @@ class Registry:
                           **kwargs):
         kwargs['type'] = provider_type
         kwargs['id'] = provider_id
-        self.param_map['provider'].append(kwargs)
+        self._add_param('provider', kwargs)
         self.providers[provider_id] = provider
 
     def register_static_assets(self, prefix, func):

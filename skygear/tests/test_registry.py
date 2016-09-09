@@ -203,3 +203,22 @@ class TestRegistry(unittest.TestCase):
         handler = registry.get_exception_handler(SomeException)
 
         assert handler is fn
+
+    def test_register_twice(self):
+        def fn1():
+            return True
+
+        def fn2():
+            return False
+
+        registry = Registry()
+        registry.register('op', 'plugin:action', fn1, auth_required=True)
+        assert registry.func_map['op']['plugin:action'] == fn1
+        assert registry.param_map['op'][0]['auth_required'] is True
+
+        registry.register('op', 'plugin:action', fn2, auth_required=False)
+
+        assert len(registry.func_map['op']) == 1
+        assert registry.func_map['op']['plugin:action'] == fn2
+        assert len(registry.param_map['op']) == 1
+        assert registry.param_map['op'][0]['auth_required'] is False
