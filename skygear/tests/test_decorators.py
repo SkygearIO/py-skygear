@@ -80,7 +80,7 @@ def test_fix_handler_path():
 
 
 class TestRestDecorator(unittest.TestCase):
-    @patch('skygear.registry.Registry.register')
+    @patch('skygear.registry.Registry.register_handler')
     def test_register(self, mock):
         @d.rest('/hello/world', user_required=True)
         class HelloWorld:
@@ -88,13 +88,13 @@ class TestRestDecorator(unittest.TestCase):
                 pass
 
         mock.assert_has_calls([
-            call('handler', 'hello/world/', ANY, method=ANY,
+            call('hello/world/', ANY, method=ANY,
                  user_required=True),
-            call('handler', 'hello/world', ANY, method=ANY,
+            call('hello/world', ANY, method=ANY,
                  user_required=True),
             ])
 
-        registered_func = mock.call_args[0][2]
+        registered_func = mock.call_args[0][1]
         with patch.object(HelloWorld, 'handle_request') as handle_request:
             req = Request({})
             registered_func(req)

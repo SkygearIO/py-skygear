@@ -27,7 +27,7 @@ class TestRegistry(unittest.TestCase):
             'user_required': True,
         }
         registry = Registry()
-        registry.register('handler', 'plugin:handler', handler, **kwargs)
+        registry.register_handler('plugin:handler', handler, **kwargs)
 
         assert len(registry.handler) == 1
         assert registry.get_handler('plugin:handler', 'GET') == handler
@@ -49,7 +49,7 @@ class TestRegistry(unittest.TestCase):
             'method': 'PUT',
         }
         registry = Registry()
-        registry.register('handler', 'plugin:handler', handler, **kwargs)
+        registry.register_handler('plugin:handler', handler, **kwargs)
 
         assert len(registry.handler) == 1
         assert registry.get_handler('plugin:handler', 'GET') is None

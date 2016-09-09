@@ -55,8 +55,6 @@ class Registry:
         self.exception_handlers = {}
 
     def register(self, kind, name, func, *args, **kwargs):
-        if kind == 'handler':
-            return self._register_handler(name, func, kwargs)
         self.func_map[kind][name] = func
         if kind == 'hook':
             if kwargs['type'] is None:
@@ -80,7 +78,7 @@ class Registry:
 
         log.debug("Registering %s:%s to skygear!!", kind, name)
 
-    def _register_handler(self, name, func, kwargs):
+    def register_handler(self, name, func, *args, **kwargs):
         methods = kwargs.get('method', ['GET', 'POST', 'PUT'])
         if isinstance(methods, str):
             methods = [methods]
