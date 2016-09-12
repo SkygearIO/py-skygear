@@ -50,7 +50,7 @@ def every(interval, name=None, *args, **kwargs):
 
 def handler(name, *args, **kwargs):
     def skygear_handler(func):
-        _registry.register("handler", name, func, *args, **kwargs)
+        _registry.register_handler(name, func, *args, **kwargs)
         return func
     return skygear_handler
 

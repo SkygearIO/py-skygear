@@ -40,14 +40,14 @@ class TestCommonTransport(unittest.TestCase):
         mocker.return_value = {'op': []}
         assert self.transport.init_info() == mocker.return_value
 
-    @patch('skygear.registry.Registry.get_obj')
+    @patch('skygear.registry.Registry.get_func')
     def testCallFuncGetCorrectObject(self, mocker):
         mocker.return_value = MagicMock()
         self.transport.call_func(self.ctx, 'timer', 'name', {})
         mocker.assert_called_once_with('timer', 'name')
         mocker.return_value.assert_called_once_with()
 
-    @patch('skygear.registry.Registry.get_obj')
+    @patch('skygear.registry.Registry.get_func')
     def testCallFuncContext(self, mocker):
         def assertState(expectedState):
             def func():
@@ -59,20 +59,20 @@ class TestCommonTransport(unittest.TestCase):
         mocker.return_value.assert_called_once_with()
         assert 'state' not in current_context()
 
-    @patch('skygear.registry.Registry.get_obj')
+    @patch('skygear.registry.Registry.get_func')
     def testCallFuncResult(self, mocker):
         mocker.return_value = MagicMock(return_value={'data': 'hello'})
         result = self.transport.call_func(self.ctx, 'timer', 'name', {})
         assert result['result'] == {'data': 'hello'}
 
-    @patch('skygear.registry.Registry.get_obj')
+    @patch('skygear.registry.Registry.get_provider')
     def testCallProviderGetCorrectObject(self, mocker):
         mocker.return_value = MagicMock()
         self.transport.call_provider(self.ctx, 'name', 'action', {})
-        mocker.assert_called_once_with('provider', 'name')
+        mocker.assert_called_once_with('name')
         mocker.return_value.handle_action.assert_called_once_with('action', {})
 
-    @patch('skygear.registry.Registry.get_obj')
+    @patch('skygear.registry.Registry.get_provider')
     def testCallProviderContext(self, mocker):
         def assertState(expectedState):
             def func():
@@ -84,7 +84,7 @@ class TestCommonTransport(unittest.TestCase):
         mocker.return_value.handle_action.assert_called_once_with('action', {})
         assert 'state' not in current_context()
 
-    @patch('skygear.registry.Registry.get_obj')
+    @patch('skygear.registry.Registry.get_provider')
     def testCallProviderResult(self, mocker):
         provider_mock = MagicMock()
         provider_mock.handle_action.return_value = {'data': 'hello'}
@@ -92,14 +92,14 @@ class TestCommonTransport(unittest.TestCase):
         result = self.transport.call_provider(self.ctx, 'name', 'action', {})
         assert result['result'] == {'data': 'hello'}
 
-    @patch('skygear.registry.Registry.get_obj')
+    @patch('skygear.registry.Registry.get_func')
     def testCallFuncGenericException(self, mocker):
         exc = Exception('Error occurred')
         mocker.return_value = MagicMock(side_effect=exc)
         result = self.transport.call_func(self.ctx, 'timer', 'name', {})
         assert result['error']['message'] == 'Error occurred'
 
-    @patch('skygear.registry.Registry.get_obj')
+    @patch('skygear.registry.Registry.get_func')
     def testCallFuncSkygearException(self, mocker):
         exc = SkygearException('Error occurred', 1, {'data': 'hello'})
         mocker.return_value = MagicMock(side_effect=exc)
