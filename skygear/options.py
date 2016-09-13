@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
+
 import configargparse as argparse
 
 options = argparse.Namespace()
@@ -66,11 +68,29 @@ def get_argument_parser():
                     env_var='PUBSUB_URL',
                     help="The URL of the pubsub server, should start with "
                          "ws:// or wss:// and include the path")
-    ap.add_argument('plugin', nargs='?')
+    ap.add_argument('modules', nargs='*', default=[])  # env_var: LOAD_MODULES
     return ap
+
+
+def _parse_load_modules_envvar(val):
+    if not val:
+        return []
+
+    if ':' in val:
+        return val.split(':')
+    elif ',' in val:
+        return val.split(',')
+    else:
+        return val.split(' ')
 
 
 def parse_args():
     global options
     options = get_argument_parser().parse_args(namespace=options)
+
+    # configargparse does not support env_var for positional argument,
+    # therefore the LOAD_MODULES env_var is loaded manually.
+    if not options.modules:
+        options.modules = _parse_load_modules_envvar(os.getenv('LOAD_MODULES'))
+
     return options

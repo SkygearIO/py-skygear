@@ -15,10 +15,10 @@ import logging
 import os.path
 import signal
 import sys
-from importlib.machinery import SourceFileLoader
 
 from . import commands
 from .container import SkygearContainer
+from .importutil import LoadException, load_modules
 from .options import parse_args
 from .transmitter import ConsoleTransport, HttpTransport, ZmqTransport
 
@@ -33,34 +33,6 @@ def main():
         commands.collect_static_assets()
     else:
         run_plugin(options)
-
-
-def load_source_or_exit(source):
-    """
-    Load the specified source file.
-
-    If the source file evaluates to False, this function will attempt
-    to load __init__.py followed by plugin.py, the first found source
-    will be loaded.
-
-    If no source is found, this function will exit the program.
-    """
-    if source:
-        try:
-            SourceFileLoader('plugin', source).load_module()
-        except FileNotFoundError:
-            log.error("File not found: {0}".format(source))
-            sys.exit(1)
-    else:
-        for x in ['__init__.py', 'plugin.py']:
-            try:
-                SourceFileLoader('plugin', x).load_module()
-                break
-            except FileNotFoundError:
-                pass
-        else:
-            log.error("Unable to find __init__.py or plugin.py.")
-            sys.exit(1)
 
 
 def load(options):
@@ -86,7 +58,11 @@ def load(options):
             return serve_static_assets(request,
                                        '/{}/'.format(STATIC_ASSETS_PREFIX))
 
-    load_source_or_exit(options.plugin)
+    try:
+        load_modules(options.modules)
+    except LoadException as ex:
+        log.error(str(ex))
+        sys.exit(1)
 
 
 def run_plugin(options):
