@@ -92,7 +92,7 @@ class CommonTransport:
 
     @_wrap_result
     def call_func(self, ctx, kind, name, param):
-        obj = self._registry.get_obj(kind, name)
+        obj = self._registry.get_func(kind, name)
         with start_context(ctx):
             if kind == 'op':
                 return self.op(obj, param.get('args', {}))
@@ -105,7 +105,7 @@ class CommonTransport:
 
     @_wrap_result
     def call_provider(self, ctx, name, action, param):
-        obj = self._registry.get_obj('provider', name)
+        obj = self._registry.get_provider(name)
 
         with start_context(ctx):
             return self.provider(obj, action, param)

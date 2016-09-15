@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
+from collections import defaultdict
 
 log = logging.getLogger(__name__)
 
@@ -49,58 +50,102 @@ class Registry:
             'timer': [],
             'provider': [],
         }
-        self.handler = {}
+        self.handler = defaultdict(dict)
         self.providers = {}
         self.static_assets = {}
         self.exception_handlers = {}
 
-    def register(self, kind, name, func, *args, **kwargs):
-        if kind == 'handler':
-            return self._register_handler(name, func, kwargs)
-        self.func_map[kind][name] = func
-        if kind == 'hook':
-            if kwargs['type'] is None:
-                raise ValueError("type is required for hook")
-            if kwargs['trigger'] is None:
-                raise ValueError("trigger is required for hook")
-            kwargs['name'] = name
-            self.param_map['hook'].append(kwargs)
-        elif kind == 'op':
-            self.param_map['op'].append({
-                'name': name,
-                'auth_required': kwargs.get('auth_required',
-                                            kwargs.get('key_required', False)),
-                'user_required': kwargs.get('user_required', False),
-                })
-        elif kind == 'timer':
-            kwargs['name'] = name
-            self.param_map['timer'].append(kwargs)
-        else:
-            raise Exception("Unrecognized transport kind '%d'.".format(kind))
+    def _add_param(self, kind, param):
+        """
+        Add a param dict to the registry. If the param already exist
+        in the registry, the existing param will be removed. An param
+        is a dictionary containing info of the declared extension point.
+        """
+        param_list = self.param_map[kind]
 
-        log.debug("Registering %s:%s to skygear!!", kind, name)
+        # Check existing param. Remove it if the param has the same name
+        # as the to-be-added param.
+        for i in range(len(param_list)):
+            if param_list[i].get('name') == param.get('name'):
+                del param_list[i]
+                break
+        param_list.append(param)
 
-    def _register_handler(self, name, func, kwargs):
+    def register_hook(self, name, func, *args, **kwargs):
+        if kwargs['type'] is None:
+            raise ValueError("type is required for hook")
+        if kwargs['trigger'] is None:
+            raise ValueError("trigger is required for hook")
+        kwargs['name'] = name
+
+        if name in self.func_map['hook']:
+            log.warn("Replacing previously registered hook '%s'.", name)
+
+        self.func_map['hook'][name] = func
+        self._add_param('hook', kwargs)
+
+        log.debug("Registered hook '%s' to skygear!", name)
+
+    def register_op(self, name, func, *args, **kwargs):
+        self.func_map['op'][name] = func
+
+        if name in self.func_map['op']:
+            log.warn("Replacing previously registered lambda '%s'.", name)
+
+        self._add_param('op', {
+            'name': name,
+            'auth_required': kwargs.get('auth_required',
+                                        kwargs.get('key_required', False)),
+            'user_required': kwargs.get('user_required', False),
+        })
+
+        log.debug("Registered lambda '%s' to skygear!", name)
+
+    def register_timer(self, name, func, *args, **kwargs):
+        kwargs['name'] = name
+
+        if name in self.func_map['op']:
+            log.warn("Replacing previously registered timer '%s'.", name)
+
+        self.func_map['timer'][name] = func
+        self._add_param('timer', kwargs)
+
+        log.debug("Registered timer '%s' to skygear!", name)
+
+    def register_handler(self, name, func, *args, **kwargs):
         methods = kwargs.get('method', ['GET', 'POST', 'PUT'])
         if isinstance(methods, str):
             methods = [methods]
-        self.param_map['handler'].append({
+
+        for m in methods:
+            if m in self.handler[name]:
+                log.warn("Replacing previously registered handler '%s' (%s).",
+                         name, m)
+            self.handler[name][m] = func
+        self._add_param('handler', {
             'name': name,
             'methods': methods,
             'key_required': kwargs.get('key_required', False),
             'user_required': kwargs.get('user_required', False),
         })
-        if name not in self.handler:
-            self.handler[name] = {}
-        for m in methods:
-            self.handler[name][m] = func
+
+        log.debug("Registered handler '%s' (%s) to skygear!",
+                  name,
+                  ', '.join(methods))
 
     def register_provider(self, provider_type, provider_id, provider,
                           **kwargs):
         kwargs['type'] = provider_type
         kwargs['id'] = provider_id
-        self.param_map['provider'].append(kwargs)
+
+        if provider_id in self.providers:
+            log.warn("Replacing previously registered provider '%s'.",
+                     provider_id)
+
         self.providers[provider_id] = provider
+        self._add_param('provider', kwargs)
+
+        log.debug("Registered provider '%s' to skygear!", provider_id)
 
     def register_static_assets(self, prefix, func):
         self.static_assets[prefix] = func
@@ -116,11 +161,11 @@ class Registry:
     def func_list(self):
         return self.param_map
 
-    def get_obj(self, kind, name):
-        if kind == 'provider':
-            return self.providers[name]
-        else:
-            return self.func_map[kind][name]
+    def get_func(self, kind, name):
+        return self.func_map[kind][name]
+
+    def get_provider(self, name):
+        return self.providers[name]
 
     def get_handler(self, name, method):
         return self.handler[name].get(method, None)
