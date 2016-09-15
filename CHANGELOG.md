@@ -1,3 +1,9 @@
+## 0.17.0 (2016-09-15)
+
+### Features
+
+- Load more than one cloudcode entry points (#57)
+
 ## 0.16.0 (2016-09-02)
 
 ### Bug Fixes
