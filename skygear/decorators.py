@@ -22,7 +22,7 @@ _registry = get_registry()
 
 def op(name, *args, **kwargs):
     def our_op(func):
-        _registry.register("op", name, func, *args, **kwargs)
+        _registry.register_op(name, func, *args, **kwargs)
         return func
     return our_op
 
@@ -43,7 +43,7 @@ def every(interval, name=None, *args, **kwargs):
         name = kwargs.pop('name', None) or \
             func.__module__ + "." + func.__name__
 
-        _registry.register("timer", name, func, *args, **kwargs)
+        _registry.register_timer(name, func, *args, **kwargs)
         return func
     return our_every
 
@@ -67,7 +67,7 @@ def hook(trigger, *args, **kwargs):
         name = kwargs.pop('name', None) or \
             func.__module__ + "." + func.__name__
 
-        _registry.register("hook", name, hook_func, *args, **kwargs)
+        _registry.register_hook(name, hook_func, *args, **kwargs)
         return func
 
     return skygear_hook
@@ -81,7 +81,7 @@ def register_save_hook(func, *args, **kwargs):
     name = kwargs.pop('name', None) or \
         func.__module__ + "." + func.__name__
 
-    _registry.register("hook", name, hook_func, *args, **kwargs)
+    _registry.register_hook(name, hook_func, *args, **kwargs)
 
 
 def register_delete_hook(func, *args, **kwargs):
@@ -92,7 +92,7 @@ def register_delete_hook(func, *args, **kwargs):
     name = kwargs.pop('name', None) or \
         func.__module__ + "." + func.__name__
 
-    _registry.register("hook", name, hook_func, *args, **kwargs)
+    _registry.register_hook(name, hook_func, *args, **kwargs)
 
 
 def before_save(type_, *args, **kwargs):

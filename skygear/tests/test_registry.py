@@ -41,6 +41,34 @@ class TestRegistry(unittest.TestCase):
         assert param_map[0]['key_required'] is True
         assert param_map[0]['user_required'] is True
 
+    def test_register_handler_twice(self):
+        def handler1():
+            pass
+
+        def handler2():
+            pass
+
+        kwargs = {
+            'method': ['GET', 'POST'],
+            'key_required': True,
+            'user_required': True,
+        }
+        registry = Registry()
+        registry.register_handler('plugin:handler', handler1, **kwargs)
+        registry.register_handler('plugin:handler', handler2, **kwargs)
+
+        assert len(registry.handler) == 1
+        assert registry.get_handler('plugin:handler', 'GET') == handler2
+        assert registry.get_handler('plugin:handler', 'POST') == handler2
+        assert registry.get_handler('plugin:handler', 'PUT') is None
+
+        param_map = registry.param_map['handler']
+        assert len(param_map) == 1
+        assert param_map[0]['name'] == 'plugin:handler'
+        assert 'POST' in param_map[0]['methods']
+        assert param_map[0]['key_required'] is True
+        assert param_map[0]['user_required'] is True
+
     def test_register_handler_with_one_str_method(self):
         def handler():
             pass
@@ -72,7 +100,7 @@ class TestRegistry(unittest.TestCase):
                 'user_required': True,
                 }
         registry = Registry()
-        registry.register('op', 'plugin:action', fn, **kwargs)
+        registry.register_op('plugin:action', fn, **kwargs)
 
         func_map = registry.func_map['op']
         assert len(func_map) == 1
@@ -93,11 +121,36 @@ class TestRegistry(unittest.TestCase):
                 'trigger': 'beforeSave',
                 }
         registry = Registry()
-        registry.register('hook', 'hook_name', fn, **kwargs)
+        registry.register_hook('hook_name', fn, **kwargs)
 
         func_map = registry.func_map['hook']
         assert len(func_map) == 1
         assert func_map['hook_name'] == fn
+
+        param_map = registry.param_map['hook']
+        assert len(param_map) == 1
+        assert param_map[0]['name'] == 'hook_name'
+        assert param_map[0]['type'] == 'note'
+        assert param_map[0]['trigger'] == 'beforeSave'
+
+    def test_register_hook_twice(self):
+        def fn1():
+            pass
+
+        def fn2():
+            pass
+
+        kwargs = {
+                'type': 'note',
+                'trigger': 'beforeSave',
+                }
+        registry = Registry()
+        registry.register_hook('hook_name', fn1, **kwargs)
+        registry.register_hook('hook_name', fn2, **kwargs)
+
+        func_map = registry.func_map['hook']
+        assert len(func_map) == 1
+        assert func_map['hook_name'] == fn2
 
         param_map = registry.param_map['hook']
         assert len(param_map) == 1
@@ -110,11 +163,30 @@ class TestRegistry(unittest.TestCase):
             pass
 
         registry = Registry()
-        registry.register('timer', 'timer_name', fn)
+        registry.register_timer('timer_name', fn)
 
         func_map = registry.func_map['timer']
         assert len(func_map) == 1
         assert func_map['timer_name'] == fn
+
+        param_map = registry.param_map['timer']
+        assert len(param_map) == 1
+        assert param_map[0]['name'] == 'timer_name'
+
+    def test_register_timer_twice(self):
+        def fn1():
+            pass
+
+        def fn2():
+            pass
+
+        registry = Registry()
+        registry.register_timer('timer_name', fn1)
+        registry.register_timer('timer_name', fn2)
+
+        func_map = registry.func_map['timer']
+        assert len(func_map) == 1
+        assert func_map['timer_name'] == fn2
 
         param_map = registry.param_map['timer']
         assert len(param_map) == 1
@@ -204,7 +276,16 @@ class TestRegistry(unittest.TestCase):
 
         assert handler is fn
 
-    def test_register_twice(self):
+    def test_register_lambda(self):
+        def fn():
+            return True
+
+        registry = Registry()
+        registry.register_op('plugin:action', fn, auth_required=True)
+        assert registry.func_map['op']['plugin:action'] == fn
+        assert registry.param_map['op'][0]['auth_required'] is True
+
+    def test_register_lambda_twice(self):
         def fn1():
             return True
 
@@ -212,11 +293,8 @@ class TestRegistry(unittest.TestCase):
             return False
 
         registry = Registry()
-        registry.register('op', 'plugin:action', fn1, auth_required=True)
-        assert registry.func_map['op']['plugin:action'] == fn1
-        assert registry.param_map['op'][0]['auth_required'] is True
-
-        registry.register('op', 'plugin:action', fn2, auth_required=False)
+        registry.register_op('plugin:action', fn1, auth_required=True)
+        registry.register_op('plugin:action', fn2, auth_required=False)
 
         assert len(registry.func_map['op']) == 1
         assert registry.func_map['op']['plugin:action'] == fn2

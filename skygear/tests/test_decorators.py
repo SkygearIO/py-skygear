@@ -21,54 +21,70 @@ from ..registry import Registry  # noqa
 from ..utils.assets import DirectoryStaticAssetsLoader
 
 
+class TestOpDecorators(unittest.TestCase):
+    @patch('skygear.registry.Registry.register_op')
+    def test_register(self, mocker):
+        @d.op('do:something')
+        def fn():
+            pass
+        mocker.assert_called_with(
+            'do:something', ANY)
+
+
+class TestTimerDecorators(unittest.TestCase):
+    @patch('skygear.registry.Registry.register_timer')
+    def test_register(self, mocker):
+        @d.every('* * * * * *')
+        def fn():
+            pass
+        mocker.assert_called_with(
+            'skygear.tests.test_decorators.fn', ANY,
+            spec='* * * * * *')
+
+
 class TestHookDecorators(unittest.TestCase):
-    @patch('skygear.registry.Registry.register')
+    @patch('skygear.registry.Registry.register_hook')
     def test_before_save(self, mocker):
         @d.before_save('note')
         def fn():
             pass
         mocker.assert_called_with(
-            'hook',
             'skygear.tests.test_decorators.fn', ANY,
             type='note', trigger='beforeSave')
 
-    @patch('skygear.registry.Registry.register')
+    @patch('skygear.registry.Registry.register_hook')
     def test_after_save(self, mocker):
         @d.after_save('note')
         def fn():
             pass
         mocker.assert_called_with(
-            'hook',
             'skygear.tests.test_decorators.fn', ANY,
             type='note', trigger='afterSave')
 
-    @patch('skygear.registry.Registry.register')
+    @patch('skygear.registry.Registry.register_hook')
     def test_before_delete(self, mocker):
         @d.before_delete('note')
         def fn():
             pass
         mocker.assert_called_with(
-            'hook',
             'skygear.tests.test_decorators.fn', ANY,
             type='note', trigger='beforeDelete')
 
-    @patch('skygear.registry.Registry.register')
+    @patch('skygear.registry.Registry.register_hook')
     def test_after_delete(self, mocker):
         @d.after_delete('note')
         def fn():
             pass
         mocker.assert_called_with(
-            'hook',
             'skygear.tests.test_decorators.fn', ANY,
             type='note', trigger='afterDelete')
 
-    @patch('skygear.registry.Registry.register')
+    @patch('skygear.registry.Registry.register_hook')
     def test_hook(self, mocker):
         @d.hook('beforeSave', type="note")
         def fn():
             pass
         mocker.assert_called_with(
-            'hook',
             'skygear.tests.test_decorators.fn', ANY,
             type='note', trigger='beforeSave')
 
