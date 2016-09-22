@@ -52,14 +52,14 @@ deploy:
     on:
       repo: SkygearIO/py-skygear
       tags: true
-      python: 3.4
+      python: 3.5
   - provider: script
     script: ./scripts/deploy.sh
     skip_cleanup: true
     on:
       repo: SkygearIO/py-skygear
       all_branches: true
-      python: 3.4
+      python: 3.5
 
 notifications:
   slack:
