@@ -20,6 +20,7 @@ from . import commands
 from .container import SkygearContainer
 from .importutil import LoadException, load_modules
 from .options import parse_args
+from .settings import parse_all as parse_all_settings
 from .transmitter import ConsoleTransport, HttpTransport, ZmqTransport
 
 log = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ def main():
     setup_logging(options)
     if options.collect_assets:
         load(options)
+        parse_all_settings()
         commands.collect_static_assets()
     else:
         run_plugin(options)
@@ -71,6 +73,7 @@ def run_plugin(options):
     SkygearContainer.set_default_apikey(options.apikey)
 
     load(options)
+    parse_all_settings()
     log.debug("Install signal handler for SIGTERM")
     signal.signal(signal.SIGTERM, sigterm_handler)
 
