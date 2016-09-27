@@ -39,3 +39,7 @@ docker-push-version:
 	docker tag $(IMAGE_NAME)-onbuild $(DOCKER_REGISTRY)$(DOCKER_ORG_NAME)/$(DOCKER_IMAGE):$(PUSH_DOCKER_TAG)-onbuild
 	docker push $(DOCKER_REGISTRY)$(DOCKER_ORG_NAME)/$(DOCKER_IMAGE):$(PUSH_DOCKER_TAG)-onbuild
 
+	@if [ "latest" = "$(PUSH_DOCKER_TAG)" ]; then\
+		docker tag $(IMAGE_NAME)-onbuild $(DOCKER_REGISTRY)$(DOCKER_ORG_NAME)/$(DOCKER_IMAGE):onbuild;\
+		docker push $(DOCKER_REGISTRY)$(DOCKER_ORG_NAME)/$(DOCKER_IMAGE):onbuild;\
+	fi
