@@ -18,7 +18,7 @@ from unittest.mock import ANY, patch
 from werkzeug.test import Client
 from werkzeug.wrappers import BaseResponse
 
-from ... import config as skyconfig
+from ... import skyconfig
 from ...registry import Registry
 from ..common import encode_base64_json
 from ..http import HttpTransport
@@ -28,7 +28,7 @@ def headers_with_context(data):
     return {'X-Skygear-Plugin-Context': encode_base64_json(data)}
 
 
-@patch('skygear.config.config', skyconfig.Configuration())
+@patch('skygear.skyconfig.config', skyconfig.Configuration())
 class TestHttpTransport(unittest.TestCase):
     def get_app(self):
         return self.transport.dispatch
