@@ -18,7 +18,7 @@ from random import randint
 
 import zmq
 
-from ..config import parse_config
+from .. import skyconfig
 from .common import CommonTransport
 
 log = logging.getLogger(__name__)
@@ -144,7 +144,7 @@ class ZmqTransport(CommonTransport):
         kind = req['kind']
         param = req.get('param')
         if kind == 'init':
-            parse_config(param.get('config') or {})
+            skyconfig.parse_config(param.get('config') or {})
             return self.init_info()
 
         name = req['name']

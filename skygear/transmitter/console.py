@@ -15,8 +15,8 @@ import json
 import logging
 import sys
 
-from .. import config as skyconfig
 from .. import error as skyerr
+from .. import skyconfig
 from .common import CommonTransport, dict_from_base64_environ
 
 log = logging.getLogger(__name__)

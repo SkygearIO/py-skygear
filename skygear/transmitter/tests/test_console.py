@@ -17,7 +17,7 @@ import os
 import unittest
 from unittest.mock import ANY, patch
 
-from ... import config as skyconfig
+from ... import skyconfig
 from ...registry import Registry
 from ..common import encode_base64_json
 from ..console import ConsoleTransport
@@ -30,7 +30,7 @@ def environ_dict(context, config):
             }
 
 
-@patch('skygear.config.config', skyconfig.Configuration())
+@patch('skygear.skyconfig.config', skyconfig.Configuration())
 class TestConsoleTransport(unittest.TestCase):
     def exec(self, args, data):
         out = io.StringIO()
