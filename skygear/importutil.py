@@ -15,6 +15,9 @@ import importlib
 import os
 from importlib.machinery import SourceFileLoader
 
+from .settings import settings as module_settings
+from .settings.module import _config_module, add_module
+
 
 class LoadException(Exception):
     pass
@@ -60,12 +63,17 @@ def load_module(path):
     - Else, treat path as the name of the package to load.
     """
     if os.path.isfile(path):
-        SourceFileLoader(guess_package_name(path), path).load_module()
+        package_name = guess_package_name(path)
+        loaded = SourceFileLoader(package_name, path).load_module()
+        add_module(package_name, loaded)
     elif os.path.isdir(path):
+        package_name = guess_package_name(path)
         loadpath = os.path.join(path, '__init__.py')
-        SourceFileLoader(guess_package_name(path), loadpath).load_module()
+        loaded = SourceFileLoader(package_name, loadpath).load_module()
+        add_module(package_name, loaded)
     else:
-        importlib.import_module(path)
+        imported = importlib.import_module(path)
+        _config_module(imported, module_settings)
 
 
 def load_default_module():

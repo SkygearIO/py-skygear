@@ -14,6 +14,7 @@
 from argparse import Namespace
 
 from .parser import SettingsParser
+from .module import _config_module, get_module
 
 
 _parsers = {}
@@ -53,4 +54,15 @@ def parse_all():
     return settings
 
 
-__all__ = [Namespace, SettingsParser, settings, add_parser, parse_all]
+def config_module(name):
+    global settings
+    module = get_module(name)
+    _config_module(module, settings)
+
+
+__all__ = [
+    Namespace,
+    SettingsParser, settings,
+    config_module,
+    add_parser, parse_all
+]

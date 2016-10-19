@@ -29,10 +29,12 @@ from .decorators import (
 from .restful import RestfulRecord, RestfulResource
 from .utils.db import conn as db_conn
 from .utils.http import Response
+from .settings import config_module as config
 
 __all__ = [hook, handler, op, every, provides,
            before_save, after_save, before_delete, after_delete,
            rest, RestfulRecord, RestfulResource,
            static_assets, exception_handler,
+           config,
            db_conn,
            Response]

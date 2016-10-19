@@ -22,7 +22,6 @@ from .. import skyconfig
 from .common import CommonTransport, decode_base64_json
 from .encoding import _serialize_exc
 
-
 log = logging.getLogger(__name__)
 
 
