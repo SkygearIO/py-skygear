@@ -16,9 +16,9 @@
 loaded_modules = {}
 
 
-def _config_module(module, settings):
+def _config_module(module, settings, *args, **kwargs):
     try:
-        module.includeme(settings)
+        module.includeme(settings, *args, **kwargs)
     except AttributeError as e:
         msg = "Module {} does not implement function includeme"\
             .format(module.__name__)

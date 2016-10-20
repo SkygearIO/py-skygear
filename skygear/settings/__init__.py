@@ -54,10 +54,10 @@ def parse_all():
     return settings
 
 
-def config_module(name):
+def config_module(name, *args, **kwargs):
     global settings
     module = get_module(name)
-    _config_module(module, settings)
+    _config_module(module, settings, *args, **kwargs)
 
 
 __all__ = [
