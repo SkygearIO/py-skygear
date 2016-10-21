@@ -13,17 +13,17 @@
 # limitations under the License.
 from unittest.mock import patch
 
-from .. import config
+from .. import skyconfig
 
 
 class TestParseConfig():
     def test_simple_dict(self):
-        ns = config.Configuration()
-        assert config._parse_config({'hello': 'world'}, ns) == ns
+        ns = skyconfig.Configuration()
+        assert skyconfig._parse_config({'hello': 'world'}, ns) == ns
         assert ns.hello == 'world'
 
     def test_complex_dict(self):
-        ns = config.Configuration()
+        ns = skyconfig.Configuration()
         data = {
                 'hello': 'world',
                 'bye': {
@@ -31,15 +31,15 @@ class TestParseConfig():
                     'pie': {'fruit': False},
                     }
                 }
-        assert config._parse_config(data, ns) == ns
+        assert skyconfig._parse_config(data, ns) == ns
         assert ns.hello == 'world'
-        assert isinstance(ns.bye, config.Configuration)
-        assert isinstance(ns.bye.apple, config.Configuration)
-        assert isinstance(ns.bye.pie, config.Configuration)
+        assert isinstance(ns.bye, skyconfig.Configuration)
+        assert isinstance(ns.bye.apple, skyconfig.Configuration)
+        assert isinstance(ns.bye.pie, skyconfig.Configuration)
         assert ns.bye.apple.fruit is True
         assert ns.bye.pie.fruit is False
 
-    @patch('skygear.config.config', config.Configuration())
+    @patch('skygear.skyconfig.config', skyconfig.Configuration())
     def test_parse_config(self):
-        assert config.parse_config({'hello': 'world'}) == config.config
-        assert config.config.hello == 'world'
+        assert skyconfig.parse_config({'hello': 'world'}) == skyconfig.config
+        assert skyconfig.config.hello == 'world'

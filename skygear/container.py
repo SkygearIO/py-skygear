@@ -15,7 +15,6 @@ import datetime
 import json
 
 import requests
-
 import strict_rfc3339
 
 from . import error
