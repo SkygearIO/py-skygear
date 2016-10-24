@@ -61,7 +61,7 @@ def config_module(name, *args, **kwargs):
     not already imported in boot time, will try to import as normal package
     and config it.
 
-    It config_module don't import another copy of the module if it already
+    config_module will not import another copy of the module if it was already
     loaded at boot time.
     """
     global settings
