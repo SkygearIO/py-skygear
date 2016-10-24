@@ -13,8 +13,8 @@
 # limitations under the License.
 import json
 import logging
-import time
 import threading
+import time
 from random import randint
 
 import zmq
@@ -63,7 +63,8 @@ class Worker(threading.Thread, CommonTransport):
     """
     Worker is a Paranoid-Pirate worker described in the zguide:
     Related RFC: https://rfc.zeromq.org/spec:6/PPP
-    refs: http://zguide.zeromq.org/py:all#Robust-Reliable-Queuing-Paranoid-Pirate-Pattern
+    refs:
+    http://zguide.zeromq.org/py:all#Robust-Reliable-Queuing-Paranoid-Pirate-Pattern
     """
     def __init__(self, z_context, addr, stopper, registry=None):
         threading.Thread.__init__(self)
@@ -71,7 +72,6 @@ class Worker(threading.Thread, CommonTransport):
         self.addr = addr
         self.z_context = z_context
         self.stopper = stopper
-        self.identity = "%04X-%04X" % (randint(0, 0x10000), randint(0, 0x10000))
 
     def run(self):
         """
@@ -97,7 +97,8 @@ class Worker(threading.Thread, CommonTransport):
                 #  - 1-part HEARTBEAT -> heartbeat
                 frames = worker.recv_multipart()
                 if not frames:
-                    log.warn('Invalid message: %s, assuming socket dead', frames)
+                    log.warn(
+                        'Invalid message: %s, assuming socket dead', frames)
                     return
 
                 if len(frames) == 3:
@@ -177,7 +178,7 @@ class ZmqTransport(CommonTransport):
 
         self._addr = addr
         self._context = context
-        self._threading = threading 
+        self._threading = threading
         self.threads = []
 
     def run(self):
@@ -192,4 +193,3 @@ class ZmqTransport(CommonTransport):
         except KeyboardInterrupt:
             log.info('Shuting down all worker')
             stopper.set()
-
