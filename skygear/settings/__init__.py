@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import importlib
 from argparse import Namespace
 
 from .parser import SettingsParser
@@ -55,8 +56,19 @@ def parse_all():
 
 
 def config_module(name, *args, **kwargs):
+    """
+    Try to config the already imported module on boot time. If the package is
+    not already imported in boot time, will try to import as normal package
+    and config it.
+
+    config_module will not import another copy of the module if it was already
+    loaded at boot time.
+    """
     global settings
-    module = get_module(name)
+    try:
+        module = get_module(name)
+    except NameError:
+        module = importlib.import_module(name)
     _config_module(module, settings, *args, **kwargs)
 
 
