@@ -183,13 +183,12 @@ class ZmqTransport(CommonTransport):
 
     def run(self):
         stopper = threading.Event()
-        for i in range(0, self._threading):
+        for i in range(self._threading):
             t = Worker(self._context, self._addr, stopper)
             self.threads.append(t)
             t.start()
         try:
-            while 1:
-                time.sleep(HEARTBEAT_INTERVAL)
+            t.join()
         except KeyboardInterrupt:
             log.info('Shutting down all worker')
             stopper.set()
