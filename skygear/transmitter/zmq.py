@@ -166,7 +166,7 @@ class Worker(threading.Thread, CommonTransport):
 class ZmqTransport(CommonTransport):
     """
     ZmqTransport will start the working thread which run it own zmq socket.
-    Since the zmq socket is not thread safe, the worker will responabile for
+    Since the zmq socket is not thread safe, the worker will be responabile for
     doing their own heartbeat to the keep alive. To skygear-server it just
     like multiple worker process.
     """
@@ -191,5 +191,5 @@ class ZmqTransport(CommonTransport):
             while 1:
                 time.sleep(HEARTBEAT_INTERVAL)
         except KeyboardInterrupt:
-            log.info('Shuting down all worker')
+            log.info('Shutting down all worker')
             stopper.set()
