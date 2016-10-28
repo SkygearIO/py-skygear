@@ -69,7 +69,7 @@ class TestZmq(unittest.TestCase):
 
 def dead_router(count):
     """
-    This router will set malformat frame that crash the worker
+    This router will send malformed frame that crash the worker
     """
     context = zmq.Context()
     router = context.socket(zmq.ROUTER)
@@ -86,12 +86,3 @@ def dead_router(count):
         router.send_multipart(frames)
         i = i + 1
     router.close()
-
-
-class ErrorWorker(object):
-    def __init__(self):
-        pass
-
-    def __call__(self, addr, context, poller):
-        print('call')
-        raise KeyboardInterrupt
