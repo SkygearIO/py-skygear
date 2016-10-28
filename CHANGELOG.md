@@ -1,3 +1,17 @@
+## 0.18.0 (2016-10-28)
+
+### Features
+
+- Make the zmq transmitter open worker thread (#72)
+- Provide skygear.config for loading and config of plugin (#70)
+- Add settings utility (#62)
+- Override previously defined extension points (#58)
+
+### Other Notes
+
+- Push Docker image as `onbuild` also (#66)
+- Update to use py3.5 as default release version (#63)
+
 ## 0.17.0 (2016-09-15)
 
 ### Features
