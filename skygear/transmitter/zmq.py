@@ -13,6 +13,7 @@
 # limitations under the License.
 import json
 import logging
+import threading
 import time
 from random import randint
 
@@ -45,10 +46,12 @@ PPP_READY = b'\x01'
 PPP_HEARTBEAT = b'\x02'
 PPP_SHUTDOWN = b'\x03'
 
+PREFIX = randint(0, 0x10000)
+
 
 def worker_socket(addr, context, poller):
     worker = context.socket(zmq.DEALER)
-    identity = "%04X-%04X" % (randint(0, 0x10000), randint(0, 0x10000))
+    identity = "%04X-%04X" % (PREFIX, randint(0, 0x10000))
     worker.setsockopt_string(zmq.IDENTITY, identity)
     poller.register(worker, zmq.POLLIN)
     worker.connect(addr)
@@ -56,30 +59,25 @@ def worker_socket(addr, context, poller):
     return worker
 
 
-class ZmqTransport(CommonTransport):
-    """ZmqTransport implements the Paranoid-Pirate worker described in the zguide:
+class Worker(threading.Thread, CommonTransport):
+    """
+    Worker is a Paranoid-Pirate worker described in the zguide:
+    Related RFC: https://rfc.zeromq.org/spec:6/PPP
+    refs:
     http://zguide.zeromq.org/py:all#Robust-Reliable-Queuing-Paranoid-Pirate-Pattern
     """
-
-    def __init__(self, addr, context=None, registry=None):
-        super().__init__(registry)
-        if context is None:
-            context = zmq.Context()
-
-        self._addr = addr
-        self._context = context
+    def __init__(self, z_context, addr, stopper, registry=None):
+        threading.Thread.__init__(self)
+        CommonTransport.__init__(self, registry)
+        self.addr = addr
+        self.z_context = z_context
+        self.stopper = stopper
 
     def run(self):
-        try:
-            self._run()
-        except KeyboardInterrupt:
-            if self._worker:
-                self._worker.send(PPP_SHUTDOWN)
-
-    # the majority of this function is taken from:
-    # http://zguide.zeromq.org/py:ppworker
-    def _run(self):
-        context = self._context
+        """
+        The majority of this function is taken from:
+        http://zguide.zeromq.org/py:ppworker
+        """
         poller = zmq.Poller()
 
         liveness = HEARTBEAT_LIVENESS
@@ -87,8 +85,8 @@ class ZmqTransport(CommonTransport):
 
         heartbeat_at = time.time() + HEARTBEAT_INTERVAL
 
-        worker = worker_socket(self._addr, context, poller)
-        self._worker = worker
+        worker = worker_socket(self.addr, self.z_context, poller)
+
         while True:
             socks = dict(poller.poll(HEARTBEAT_INTERVAL * 1000))
 
@@ -99,14 +97,14 @@ class ZmqTransport(CommonTransport):
                 #  - 1-part HEARTBEAT -> heartbeat
                 frames = worker.recv_multipart()
                 if not frames:
-                    break
+                    log.warn(
+                        'Invalid message: %s, assuming socket dead', frames)
+                    return
 
                 if len(frames) == 3:
                     client, empty, message = frames
                     assert empty == b''
 
-                    log.debug('Recv message')
-                    log.debug(message)
                     response = self.handle_message(message)
                     worker.send_multipart([
                         client,
@@ -132,12 +130,17 @@ class ZmqTransport(CommonTransport):
                     poller.unregister(worker)
                     worker.setsockopt(zmq.LINGER, 0)
                     worker.close()
-                    worker = worker_socket(self._addr, context, poller)
-                    self._worker = worker
+                    worker = worker_socket(self.addr, self.z_context, poller)
                     liveness = HEARTBEAT_LIVENESS
             if time.time() > heartbeat_at:
                 heartbeat_at = time.time() + HEARTBEAT_INTERVAL
                 worker.send(PPP_HEARTBEAT)
+            if self.stopper.is_set():
+                worker.send(PPP_SHUTDOWN)
+                poller.unregister(worker)
+                worker.setsockopt(zmq.LINGER, 0)
+                worker.close()
+                return
 
     @_encoded
     def handle_message(self, req):
@@ -158,3 +161,57 @@ class ZmqTransport(CommonTransport):
             return self.call_handler(ctx, name, param)
         else:
             return self.call_func(ctx, kind, name, param)
+
+
+class ZmqTransport(CommonTransport):
+    """
+    ZmqTransport will start the working thread which run it own zmq socket.
+    Since the zmq socket is not thread safe, the worker will be responabile for
+    doing their own heartbeat to the keep alive. To skygear-server it just
+    like multiple worker process.
+    """
+
+    def __init__(self, addr, context=None, registry=None, threading=4):
+        super().__init__(registry)
+        if context is None:
+            context = zmq.Context()
+
+        self._addr = addr
+        self._context = context
+        self._threading = threading
+        self.threads = []
+
+    def run(self):
+        self.start()
+        try:
+            self.maintain_workers_count()
+        except KeyboardInterrupt:
+            log.info('Shutting down all worker')
+            self.stop()
+
+    def start(self):
+        self.stopper = threading.Event()
+        for i in range(self._threading):
+            t = Worker(self._context, self._addr, self.stopper)
+            self.threads.append(t)
+            t.start()
+
+    def maintain_workers_count(self):
+        i = 0
+        while True:
+            t = self.threads[i]
+            t.join(HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS)
+            if not t.is_alive():
+                log.warn(
+                    'Worker Thread dead, starting a new one')
+                new_t = Worker(self._context, self._addr, self.stopper)
+                self.threads[i] = new_t
+                new_t.start()
+            i = i + 1
+            if i >= self._threading:
+                i = 0
+            if self.stopper.is_set():
+                return
+
+    def stop(self):
+        self.stopper.set()
