@@ -182,13 +182,36 @@ class ZmqTransport(CommonTransport):
         self.threads = []
 
     def run(self):
-        stopper = threading.Event()
-        for i in range(self._threading):
-            t = Worker(self._context, self._addr, stopper)
-            self.threads.append(t)
-            t.start()
+        self.start()
         try:
-            t.join()
+            self.maintain_workers_count()
         except KeyboardInterrupt:
             log.info('Shutting down all worker')
-            stopper.set()
+            self.stop()
+
+    def start(self):
+        self.stopper = threading.Event()
+        for i in range(self._threading):
+            t = Worker(self._context, self._addr, self.stopper)
+            self.threads.append(t)
+            t.start()
+
+    def maintain_workers_count(self):
+        i = 0
+        while True:
+            t = self.threads[i]
+            t.join(HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS)
+            if not t.is_alive():
+                log.warn(
+                    'Worker Thread dead, starting a new one')
+                new_t = Worker(self._context, self._addr, self.stopper)
+                self.threads[i] = new_t
+                new_t.start()
+            i = i + 1
+            if i >= self._threading:
+                i = 0
+            if self.stopper.is_set():
+                return
+
+    def stop(self):
+        self.stopper.set()
