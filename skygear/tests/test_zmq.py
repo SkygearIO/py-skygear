@@ -17,7 +17,8 @@ import unittest
 
 import zmq
 
-from ..transmitter.zmq import HEARTBEAT_INTERVAL, ZmqTransport
+from ..transmitter.zmq import (HEARTBEAT_INTERVAL, HEARTBEAT_LIVENESS,
+                               ZmqTransport)
 
 ZMQ_ADDR = 'tcp://0.0.0.0:12345'
 
@@ -62,8 +63,10 @@ class TestZmq(unittest.TestCase):
         liveness = [_t.is_alive() for _t in transport.threads]
         self.assertEqual(liveness, [True, True, True])
         transport.stop()
-        time.sleep(HEARTBEAT_INTERVAL)
+        time.sleep(HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS)
         self.assertEqual(transport_t.is_alive(), False)
+        liveness = [_t.is_alive() for _t in transport.threads]
+        self.assertEqual(liveness, [False, False, False])
         self.assertEqual(t.is_alive(), False)
 
 

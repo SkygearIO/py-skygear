@@ -201,6 +201,10 @@ class ZmqTransport(CommonTransport):
         while True:
             t = self.threads[i]
             t.join(HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS)
+            if self.stopper.is_set():
+                log.info(
+                    'Workers is shutting down, stop maintain workers loop')
+                return
             if not t.is_alive():
                 log.warn(
                     'Worker Thread dead, starting a new one')
@@ -210,8 +214,6 @@ class ZmqTransport(CommonTransport):
             i = i + 1
             if i >= self._threading:
                 i = 0
-            if self.stopper.is_set():
-                return
 
     def stop(self):
         self.stopper.set()
