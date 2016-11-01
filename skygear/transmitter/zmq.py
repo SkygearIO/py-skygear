@@ -203,7 +203,7 @@ class ZmqTransport(CommonTransport):
             t.join(HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS)
             if self.stopper.is_set():
                 log.info(
-                    'Workers is shutting down, stop maintain workers loop')
+                    'Workers are shutting down, stop maintain workers loop')
                 return
             if not t.is_alive():
                 log.warn(
