@@ -20,65 +20,72 @@ import zmq
 from ..transmitter.zmq import (HEARTBEAT_INTERVAL, HEARTBEAT_LIVENESS,
                                ZmqTransport)
 
-ZMQ_ADDR = 'tcp://0.0.0.0:12345'
-
 
 class TestZmq(unittest.TestCase):
     def test_numebr_of_thread_startup(self):
-        transport = ZmqTransport(ZMQ_ADDR, threading=5)
+        context = zmq.Context()
+        transport = ZmqTransport('tcp://0.0.0.0:12345',
+                                 context=context,
+                                 threading=5)
         transport.start()
         self.assertEqual(len(transport.threads), 5)
         for t in transport.threads:
             self.assertEqual(t.is_alive(), True)
         transport.stop()
-        time.sleep(HEARTBEAT_INTERVAL * 2)
         for t in transport.threads:
             self.assertEqual(t.is_alive(), False)
+        context.destroy()
 
     def test_worker_dead(self):
-        t = threading.Thread(target=dead_router, args=(3,), daemon=True)
+        context = zmq.Context()
+        t = threading.Thread(target=dead_router,
+                             args=(context, 'tcp://0.0.0.0:23456', 3,))
         t.start()
-        transport = ZmqTransport(ZMQ_ADDR, threading=3)
+        transport = ZmqTransport('tcp://0.0.0.0:23456',
+                                 context=context,
+                                 threading=3)
         transport.start()
         alive_threads = [_t for _t in transport.threads if _t.is_alive()]
         self.assertEqual(len(alive_threads), 3)
-        time.sleep(HEARTBEAT_INTERVAL * 5)
+        transport.stop()
+        time.sleep(HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS * 2)
         alive_threads = [_t for _t in transport.threads if _t.is_alive()]
         self.assertEqual(len(alive_threads), 0)
-        transport.stop()
-        self.assertEqual(t.is_alive(), False)
+        t.join()
+        context.destroy()
 
     def test_maintain_worker_count(self):
-        t = threading.Thread(target=dead_router, args=(3,), daemon=True)
+        context = zmq.Context()
+        t = threading.Thread(target=dead_router,
+                             args=(context, 'tcp://0.0.0.0:34567', 3,))
         t.start()
-        transport = ZmqTransport(ZMQ_ADDR, threading=3)
+        transport = ZmqTransport('tcp://0.0.0.0:34567',
+                                 context=context,
+                                 threading=3)
         transport.start()
         transport_t = threading.Thread(
-            target=transport.maintain_workers_count,
-            daemon=True)
+            target=transport.maintain_workers_count)
         transport_t.start()
         alive_threads = [_t for _t in transport.threads if _t.is_alive()]
         self.assertEqual(len(alive_threads), 3)
-        time.sleep(HEARTBEAT_INTERVAL * 3)
+        time.sleep(HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS * 2)
         alive_threads = [_t for _t in transport.threads if _t.is_alive()]
         self.assertEqual(len(alive_threads), 3)
         transport.stop()
-        time.sleep(HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS)
+        transport_t.join()
         self.assertEqual(transport_t.is_alive(), False)
         alive_threads = [_t for _t in transport.threads if _t.is_alive()]
         self.assertEqual(len(alive_threads), 0)
-        self.assertEqual(t.is_alive(), False)
+        t.join()
+        context.destroy()
 
 
-def dead_router(count):
+def dead_router(context, addr, count):
     """
     This router will send malformed frame that crash the worker
     """
-    context = zmq.Context()
     router = context.socket(zmq.ROUTER)
-    router.bind(ZMQ_ADDR)
-    poller = zmq.Poller()
-    poller.register(router, zmq.POLLIN)
+    router.bind(addr)
     i = 0
     while i < count:
         router.poll()

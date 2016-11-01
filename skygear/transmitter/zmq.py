@@ -217,3 +217,5 @@ class ZmqTransport(CommonTransport):
 
     def stop(self):
         self.stopper.set()
+        for t in self.threads:
+            t.join()
