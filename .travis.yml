@@ -35,7 +35,7 @@ before_script:
 script:
   - pylama skygear
   - coverage run --source skygear setup.py test
-  - python "`which lizard`" skygear -C 10 -W .lizard -w -i 0
+  - lizard skygear -C 10 -W .lizard -w -i 0
   - coverage report -m --omit *tests*
 
 before_deploy:
