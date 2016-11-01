@@ -45,12 +45,11 @@ class TestZmq(unittest.TestCase):
                                  context=context,
                                  threading=3)
         transport.start()
-        alive_threads = [_t for _t in transport.threads if _t.is_alive()]
-        self.assertEqual(len(alive_threads), 3)
         transport.stop()
         time.sleep(HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS * 2)
         alive_threads = [_t for _t in transport.threads if _t.is_alive()]
         self.assertEqual(len(alive_threads), 0)
+        self.assertEqual(transport.thread_opened, 3)
         t.join()
         context.destroy()
 
@@ -66,8 +65,6 @@ class TestZmq(unittest.TestCase):
         transport_t = threading.Thread(
             target=transport.maintain_workers_count)
         transport_t.start()
-        alive_threads = [_t for _t in transport.threads if _t.is_alive()]
-        self.assertEqual(len(alive_threads), 3)
         time.sleep(HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS * 2)
         alive_threads = [_t for _t in transport.threads if _t.is_alive()]
         self.assertEqual(len(alive_threads), 3)
@@ -76,9 +73,9 @@ class TestZmq(unittest.TestCase):
         self.assertEqual(transport_t.is_alive(), False)
         alive_threads = [_t for _t in transport.threads if _t.is_alive()]
         self.assertEqual(len(alive_threads), 0)
+        self.assertEqual(transport.thread_opened, 6)
         t.join()
         context.destroy()
-
 
 def dead_router(context, addr, count):
     """
