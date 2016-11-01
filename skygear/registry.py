@@ -42,12 +42,14 @@ class Registry:
             'op': {},
             'hook': {},
             'timer': {},
+            'event': {},
         }
         self.param_map = {
             'op': [],
             'handler': [],
             'hook': [],
             'timer': [],
+            'event': [],
             'provider': [],
         }
         self.handler = defaultdict(dict)
@@ -79,19 +81,28 @@ class Registry:
         kwargs['name'] = name
 
         if name in self.func_map['hook']:
-            log.warn("Replacing previously registered hook '%s'.", name)
+            log.warning("Replacing previously registered hook '%s'.", name)
 
         self.func_map['hook'][name] = func
         self._add_param('hook', kwargs)
 
         log.debug("Registered hook '%s' to skygear!", name)
 
+    def register_event(self, name, func, *args, **kwargs):
+        if name in self.func_map['event']:
+            log.warning("Replacing previously registered event handler '%s'",
+                        name)
+
+        self.func_map['event'][name] = func
+        self._add_param('event', {
+            'name': name
+        })
+
     def register_op(self, name, func, *args, **kwargs):
-        self.func_map['op'][name] = func
-
         if name in self.func_map['op']:
-            log.warn("Replacing previously registered lambda '%s'.", name)
+            log.warning("Replacing previously registered lambda '%s'.", name)
 
+        self.func_map['op'][name] = func
         self._add_param('op', {
             'name': name,
             'auth_required': kwargs.get('auth_required',
@@ -105,7 +116,7 @@ class Registry:
         kwargs['name'] = name
 
         if name in self.func_map['op']:
-            log.warn("Replacing previously registered timer '%s'.", name)
+            log.warning("Replacing previously registered timer '%s'.", name)
 
         self.func_map['timer'][name] = func
         self._add_param('timer', kwargs)
@@ -119,8 +130,11 @@ class Registry:
 
         for m in methods:
             if m in self.handler[name]:
-                log.warn("Replacing previously registered handler '%s' (%s).",
-                         name, m)
+                log.warning(
+                    "Replacing previously registered handler '%s' (%s).",
+                    name,
+                    m
+                )
             self.handler[name][m] = func
         self._add_param('handler', {
             'name': name,
@@ -139,8 +153,8 @@ class Registry:
         kwargs['id'] = provider_id
 
         if provider_id in self.providers:
-            log.warn("Replacing previously registered provider '%s'.",
-                     provider_id)
+            log.warning("Replacing previously registered provider '%s'.",
+                        provider_id)
 
         self.providers[provider_id] = provider
         self._add_param('provider', kwargs)
