@@ -40,11 +40,11 @@ class TestZmq(unittest.TestCase):
         t.start()
         transport = ZmqTransport(ZMQ_ADDR, threading=3)
         transport.start()
-        liveness = [_t.is_alive() for _t in transport.threads]
-        self.assertEqual(liveness, [True, True, True])
+        alive_threads = [_t for _t in transport.threads if _t.is_alive()]
+        self.assertEqual(len(alive_threads), 3)
         time.sleep(HEARTBEAT_INTERVAL * 5)
-        liveness = [_t.is_alive() for _t in transport.threads]
-        self.assertEqual(liveness, [False, False, False])
+        alive_threads = [_t for _t in transport.threads if _t.is_alive()]
+        self.assertEqual(len(alive_threads), 0)
         transport.stop()
         self.assertEqual(t.is_alive(), False)
 
@@ -57,16 +57,16 @@ class TestZmq(unittest.TestCase):
             target=transport.maintain_workers_count,
             daemon=True)
         transport_t.start()
-        liveness = [_t.is_alive() for _t in transport.threads]
-        self.assertEqual(liveness, [True, True, True])
+        alive_threads = [_t for _t in transport.threads if _t.is_alive()]
+        self.assertEqual(len(alive_threads), 3)
         time.sleep(HEARTBEAT_INTERVAL * 3)
-        liveness = [_t.is_alive() for _t in transport.threads]
-        self.assertEqual(liveness, [True, True, True])
+        alive_threads = [_t for _t in transport.threads if _t.is_alive()]
+        self.assertEqual(len(alive_threads), 3)
         transport.stop()
         time.sleep(HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS)
         self.assertEqual(transport_t.is_alive(), False)
-        liveness = [_t.is_alive() for _t in transport.threads]
-        self.assertEqual(liveness, [False, False, False])
+        alive_threads = [_t for _t in transport.threads if _t.is_alive()]
+        self.assertEqual(len(alive_threads), 0)
         self.assertEqual(t.is_alive(), False)
 
 
