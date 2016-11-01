@@ -76,14 +76,15 @@ class HttpTransport(CommonTransport):
         if kind == 'init':
             skyconfig.parse_config(param.get('config', {}))
             return self.init_info()
+        elif kind == 'provider':
+            action = param.pop('action')
+            return self.call_provider(ctx, name, action, param)
+        elif kind == 'handler':
+            return self.call_handler(ctx, name, param)
+        elif kind == 'event':
+            return self.call_event_func(name, param)
         else:
-            if kind == 'provider':
-                action = param.pop('action')
-                return self.call_provider(ctx, name, action, param)
-            elif kind == 'handler':
-                return self.call_handler(ctx, name, param)
-            else:
-                return self.call_func(ctx, kind, name, param)
+            return self.call_func(ctx, kind, name, param)
 
     def read_request(self, request):
         """
@@ -95,12 +96,10 @@ class HttpTransport(CommonTransport):
         request_data = request.get_data(as_text=True)
         req = json.loads(request_data) if request_data else {}
 
-        kind = req['kind']
-        param = req.get('param')
-
+        kind = req.get('kind')
         name = req.get('name')
-
-        ctx = req.get('context') or {}
+        param = req.get('param', {})
+        ctx = req.get('context', {})
 
         return kind, name, ctx, param
 

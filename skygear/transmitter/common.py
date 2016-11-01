@@ -103,6 +103,14 @@ class CommonTransport:
                 raise SkygearException("unknown plugin extension point")
 
     @_wrap_result
+    def call_event_func(self, name, param):
+        try:
+            event_func = self._registry.get_func('event', name)
+            return self.event(event_func, param)
+        except KeyError as e:
+            log.warning('Missing event func named "{}"'.format(name))
+
+    @_wrap_result
     def call_provider(self, ctx, name, action, param):
         obj = self._registry.get_provider(name)
 
@@ -176,6 +184,12 @@ class CommonTransport:
 
     def timer(self, func):
         return func()
+
+    def event(self, func, data):
+        if not isinstance(data, dict):
+            msg = "Unsupported args type '{0}'".format(type(data))
+            raise ValueError(msg)
+        return func(**data)
 
     def provider(self, provider, action, data):
         return provider.handle_action(action, data)

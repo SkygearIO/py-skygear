@@ -22,7 +22,15 @@ from .common import CommonTransport, dict_from_base64_environ
 log = logging.getLogger(__name__)
 
 
-ACCEPTED_TARGETS = ['init', 'op', 'hook', 'handler', 'timer', 'provider']
+ACCEPTED_TARGETS = [
+    'init',
+    'op',
+    'hook',
+    'handler',
+    'timer',
+    'event',
+    'provider'
+]
 
 
 class ConsoleTransport(CommonTransport):
@@ -38,8 +46,8 @@ class ConsoleTransport(CommonTransport):
         self.args = self.args
         target = self.args[0]
         if target not in ACCEPTED_TARGETS:
-            log.error("Only init, op, hook, handler, timer and provider is"
-                      " supported now")
+            log.error("Only {} is supported now"
+                      .format(", ".join(ACCEPTED_TARGETS)))
             sys.exit(1)
         if target == 'init':
             self.writeJSON(self.init_info())
@@ -61,6 +69,8 @@ class ConsoleTransport(CommonTransport):
             output = self.call_provider(context, args[1], args[2], param)
         elif target == 'handler':
             output = self.call_handler(context, args[1], param)
+        elif target == 'event':
+            output = self.call_event_func(args[1], param)
         else:
             output = self.call_func(context, target, args[1], param)
 

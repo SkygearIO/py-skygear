@@ -92,6 +92,17 @@ class TestHttpTransport(unittest.TestCase):
         assert resp.status_code == 200
         mocker.assert_called_once_with(ANY, 'op', 'john', ANY)
 
+    @patch('skygear.transmitter.http.HttpTransport.call_event_func')
+    def testEvent(self, mocker):
+        mocker.return_value = {}
+        data = {
+            'kind': 'event',
+            'name': 'funny'
+        }
+        resp = self.get_client().post('/', data=json.dumps(data))
+        assert resp.status_code == 200
+        mocker.assert_called_once_with('funny', ANY)
+
     @patch('skygear.transmitter.http.HttpTransport.call_func')
     def testHook(self, mocker):
         mocker.return_value = {}

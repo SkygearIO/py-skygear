@@ -145,20 +145,22 @@ class Worker(threading.Thread, CommonTransport):
     @_encoded
     def handle_message(self, req):
         kind = req['kind']
-        param = req.get('param')
+
         if kind == 'init':
             skyconfig.parse_config(param.get('config') or {})
             return self.init_info()
 
-        name = req['name']
-
-        ctx = req.get('context') or {}
+        name = req.get('name')
+        param = req.get('param', {})
+        ctx = req.get('context', {})
 
         if kind == 'provider':
             action = param.pop('action')
             return self.call_provider(ctx, name, action, param)
         elif kind == 'handler':
             return self.call_handler(ctx, name, param)
+        elif kind == 'event':
+            return self.call_event_func(name, param)
         else:
             return self.call_func(ctx, kind, name, param)
 

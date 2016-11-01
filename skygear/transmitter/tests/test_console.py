@@ -82,6 +82,13 @@ class TestConsoleTransport(unittest.TestCase):
         mocker.assert_called_once_with(ANY, 'op', 'john', {'data': 'bye'})
         assert output == mocker.return_value
 
+    @patch('skygear.transmitter.console.ConsoleTransport.call_event_func')
+    def testEvent(self, mocker):
+        mocker.return_value = {"data": "okay-event"}
+        output = self.exec(['event', 'okay'], {'data': 'haha'})
+        mocker.assert_called_once_with('okay', {'data': 'haha'})
+        assert output == mocker.return_value
+
     @patch('skygear.transmitter.console.ConsoleTransport.call_func')
     def testHook(self, mocker):
         mocker.return_value = {}
