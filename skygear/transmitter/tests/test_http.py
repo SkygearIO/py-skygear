@@ -53,8 +53,12 @@ class TestHttpTransport(unittest.TestCase):
     @patch('skygear.transmitter.http.HttpTransport.init_info')
     def testInitInfo(self, mocker):
         mocker.return_value = {'data': 'hello'}
-        request_data = json.dumps({'config': {'hello': 'world'}})
-        resp = self.get_client().post('/init', data=request_data)
+        data = {
+            'kind': 'init',
+            'name': '',
+            'param': {'config': {'hello': 'world'}}
+        }
+        resp = self.get_client().post('/', data=json.dumps(data))
         assert resp.status_code == 200
         mocker.assert_called_once_with()
         assert json.loads(resp.get_data(as_text=True)) == mocker.return_value
@@ -63,10 +67,15 @@ class TestHttpTransport(unittest.TestCase):
     @patch('skygear.transmitter.http.HttpTransport.call_func')
     def testCallFuncWithData(self, mocker):
         mocker.return_value = {'data': 'hello'}
-        request_data = json.dumps({'data': 'bye'})
-        headers = headers_with_context({'context': 'happy'})
-        resp = self.get_client().post('/timer/name', data=request_data,
-                                      headers=headers)
+        data = {
+            'context': {'context': 'happy'},
+            'kind': 'timer',
+            'name': 'name',
+            'param': {
+                'data': 'bye'
+            }
+        }
+        resp = self.get_client().post('/', data=json.dumps(data))
         assert resp.status_code == 200
         mocker.assert_called_once_with({'context': 'happy'}, 'timer', 'name',
                                        {'data': 'bye'})
@@ -75,21 +84,36 @@ class TestHttpTransport(unittest.TestCase):
     @patch('skygear.transmitter.http.HttpTransport.call_func')
     def testOp(self, mocker):
         mocker.return_value = {}
-        resp = self.get_client().post('/op/john')
+        data = {
+            'kind': 'op',
+            'name': 'john'
+        }
+        resp = self.get_client().post('/', data=json.dumps(data))
         assert resp.status_code == 200
         mocker.assert_called_once_with(ANY, 'op', 'john', ANY)
 
     @patch('skygear.transmitter.http.HttpTransport.call_func')
     def testHook(self, mocker):
         mocker.return_value = {}
-        resp = self.get_client().post('/hook/john')
+        data = {
+            'kind': 'hook',
+            'name': 'john'
+        }
+        resp = self.get_client().post('/', data=json.dumps(data))
         assert resp.status_code == 200
         mocker.assert_called_once_with(ANY, 'hook', 'john', ANY)
 
     @patch('skygear.transmitter.http.HttpTransport.call_provider')
     def testProvider(self, mocker):
         mocker.return_value = {}
-        resp = self.get_client().post('/provider/john/work')
+        data = {
+            'kind': 'provider',
+            'name': 'john',
+            'param': {
+                'action': 'work'
+            }
+        }
+        resp = self.get_client().post('/', data=json.dumps(data))
         assert resp.status_code == 200
         mocker.assert_called_once_with(ANY, 'john', 'work', ANY)
         args, kwargs = mocker.call_args
@@ -97,13 +121,21 @@ class TestHttpTransport(unittest.TestCase):
     @patch('skygear.transmitter.http.HttpTransport.call_func')
     def testTimer(self, mocker):
         mocker.return_value = {}
-        resp = self.get_client().post('/timer/john')
+        data = {
+            'kind': 'timer',
+            'name': 'john'
+        }
+        resp = self.get_client().post('/', data=json.dumps(data))
         assert resp.status_code == 200
         mocker.assert_called_once_with(ANY, 'timer', 'john', ANY)
 
     @patch('skygear.transmitter.http.HttpTransport.call_handler')
     def testHandler(self, mocker):
         mocker.return_value = {}
-        resp = self.get_client().post('/handler/apple/pie')
+        data = {
+            'kind': 'handler',
+            'name': 'apple/pie'
+        }
+        resp = self.get_client().post('/', data=json.dumps(data))
         assert resp.status_code == 200
         mocker.assert_called_once_with(ANY, 'apple/pie', ANY)

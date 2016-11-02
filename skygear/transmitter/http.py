@@ -14,26 +14,15 @@
 import json
 import logging
 
-from werkzeug.routing import BaseConverter, Map, Rule
+from werkzeug.routing import Map, Rule
 from werkzeug.serving import run_simple
 from werkzeug.wrappers import Request, Response
 
 from .. import skyconfig
-from .common import CommonTransport, decode_base64_json
+from .common import CommonTransport
 from .encoding import _serialize_exc
 
 log = logging.getLogger(__name__)
-
-
-class RegexConverter(BaseConverter):
-    """
-    This converter matches URL by regular expression.
-
-    Copied from http://stackoverflow.com/questions/5870188/does-flask-support-regular-expressions-in-its-url-routing  #noqa
-    """
-    def __init__(self, url_map, *items):
-        super(RegexConverter, self).__init__(url_map)
-        self.regex = items[0]
 
 
 class HttpTransport(CommonTransport):
@@ -47,13 +36,8 @@ class HttpTransport(CommonTransport):
         Returns a URL routing map.
         """
         return Map([
-            Rule('/init', endpoint='init'),
-            Rule('/op/<name>', endpoint='op'),
-            Rule('/handler/<regex(".*"):name>', endpoint='handler'),
-            Rule('/hook/<name>', endpoint='hook'),
-            Rule('/provider/<name>/<action>', endpoint='provider'),
-            Rule('/timer/<name>', endpoint='timer'),
-            ], converters={'regex': RegexConverter})
+            Rule('/', endpoint='_'),
+            ])
 
     def __init__(self, addr, registry=None, debug=False):
         super().__init__(registry)
@@ -88,33 +72,37 @@ class HttpTransport(CommonTransport):
         """
         Dispatches request to a plugin extension point function.
         """
-        endpoint, values, context, param = self.read_request(request)
-        if endpoint == 'init':
+        kind, name, ctx, param = self.read_request(request)
+        if kind == 'init':
             skyconfig.parse_config(param.get('config', {}))
             return self.init_info()
         else:
-            if endpoint == 'provider':
-                return self.call_provider(context, values['name'],
-                                          values['action'], param)
-            elif endpoint == 'handler':
-                return self.call_handler(context, values['name'], param)
+            if kind == 'provider':
+                action = param.pop('action')
+                return self.call_provider(ctx, name, action, param)
+            elif kind == 'handler':
+                return self.call_handler(ctx, name, param)
             else:
-                return self.call_func(context, endpoint, values['name'], param)
+                return self.call_func(ctx, kind, name, param)
 
     def read_request(self, request):
         """
         Reads and returns HTTP request.
         """
         adapter = self.url_map.bind_to_environ(request.environ)
-        endpoint, values = adapter.match()
+        _, values = adapter.match()
 
         request_data = request.get_data(as_text=True)
-        param = json.loads(request_data) if request_data else {}
+        req = json.loads(request_data) if request_data else {}
 
-        context_data = request.headers.get('X-Skygear-Plugin-Context')
-        context = decode_base64_json(context_data) if context_data else {}
+        kind = req['kind']
+        param = req.get('param')
 
-        return endpoint, values, context, param
+        name = req.get('name')
+
+        ctx = req.get('context') or {}
+
+        return kind, name, ctx, param
 
     def run(self):
         """
