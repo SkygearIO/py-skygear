@@ -17,8 +17,8 @@ import unittest
 
 import zmq
 
-from ..transmitter.zmq import (HEARTBEAT_INTERVAL, HEARTBEAT_LIVENESS,
-                               ZmqTransport)
+from ...transmitter.zmq import (HEARTBEAT_INTERVAL, HEARTBEAT_LIVENESS,
+                                ZmqTransport)
 
 
 class TestZmq(unittest.TestCase):
