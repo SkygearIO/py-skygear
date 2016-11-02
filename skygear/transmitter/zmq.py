@@ -180,7 +180,7 @@ class ZmqTransport(CommonTransport):
         self._context = context
         self._threading = threading
         self.threads = []
-        self.thread_opened = 0
+        self.threads_opened = 0
 
     def run(self):
         self.start()
@@ -196,7 +196,7 @@ class ZmqTransport(CommonTransport):
             t = Worker(self._context, self._addr, self.stopper)
             self.threads.append(t)
             t.start()
-            self.thread_opened = self.thread_opened + 1
+            self.threads_opened = self.threads_opened + 1
 
     def maintain_workers_count(self):
         i = 0
@@ -213,7 +213,7 @@ class ZmqTransport(CommonTransport):
                 new_t = Worker(self._context, self._addr, self.stopper)
                 self.threads[i] = new_t
                 new_t.start()
-                self.thread_opened = self.thread_opened + 1
+                self.threads_opened = self.threads_opened + 1
             i = i + 1
             if i >= self._threading:
                 i = 0
