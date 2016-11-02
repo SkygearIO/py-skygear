@@ -41,7 +41,7 @@ def load(options):
     # If the directory `public_html` exists in the current directory,
     # assume the user want to publish its content as static assets.
     auto_assets_dir = os.path.abspath('public_html')
-    if os.path.exists(auto_assets_dir):
+    if os.path.exists(auto_assets_dir) and not options.ignore_public_html:
         from .decorators import static_assets
 
         @static_assets('')

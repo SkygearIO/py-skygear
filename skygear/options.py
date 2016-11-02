@@ -68,6 +68,9 @@ def get_argument_parser():
                     env_var='PUBSUB_URL',
                     help="The URL of the pubsub server, should start with "
                          "ws:// or wss:// and include the path")
+    ap.add_argument('--ignore-public-html', action='store_true',
+                    env_var='IGNORE_PUBLIC_HTML',
+                    help="Ignore public_html directory for static assets.")
     ap.add_argument('modules', nargs='*', default=[])  # env_var: LOAD_MODULES
     return ap
 
