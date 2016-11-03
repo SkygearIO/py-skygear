@@ -19,7 +19,6 @@ from random import randint
 
 import zmq
 
-from .. import skyconfig
 from .common import CommonTransport
 
 log = logging.getLogger(__name__)
@@ -144,11 +143,10 @@ class Worker(threading.Thread, CommonTransport):
 
     @_encoded
     def handle_message(self, req):
-        kind = req['kind']
-
+        kind = req.get('kind')
         if kind == 'init':
-            skyconfig.parse_config(param.get('config') or {})
-            return self.init_info()
+            raise Exception('Init trigger is deprecated, '
+                            'use init event instead')
 
         name = req.get('name')
         param = req.get('param', {})

@@ -18,7 +18,6 @@ from werkzeug.routing import Map, Rule
 from werkzeug.serving import run_simple
 from werkzeug.wrappers import Request, Response
 
-from .. import skyconfig
 from .common import CommonTransport
 from .encoding import _serialize_exc
 
@@ -74,8 +73,8 @@ class HttpTransport(CommonTransport):
         """
         kind, name, ctx, param = self.read_request(request)
         if kind == 'init':
-            skyconfig.parse_config(param.get('config', {}))
-            return self.init_info()
+            raise Exception('Init trigger is deprecated, '
+                            'use init event instead')
         elif kind == 'provider':
             action = param.pop('action')
             return self.call_provider(ctx, name, action, param)

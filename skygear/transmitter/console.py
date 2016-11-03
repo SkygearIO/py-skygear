@@ -45,12 +45,16 @@ class ConsoleTransport(CommonTransport):
     def run(self):
         self.args = self.args
         target = self.args[0]
+
         if target not in ACCEPTED_TARGETS:
             log.error("Only {} is supported now"
                       .format(", ".join(ACCEPTED_TARGETS)))
             sys.exit(1)
+
         if target == 'init':
-            self.writeJSON(self.init_info())
+            log.error("Init trigger is deprecated, "
+                      "use init event instead")
+            sys.exit(1)
         elif len(self.args) < 2:
             log.error("Missing param for %s", target)
             sys.exit(1)
