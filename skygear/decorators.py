@@ -27,6 +27,13 @@ def op(name, *args, **kwargs):
     return our_op
 
 
+def event(name, *args, **kwargs):
+    def skygear_event(func):
+        _registry.register_event(name, func, *args, **kwargs)
+        return func
+    return skygear_event
+
+
 def every(interval, name=None, *args, **kwargs):
     if isinstance(interval, datetime.timedelta):
         interval = "@every {0}s".format(interval.total_seconds())

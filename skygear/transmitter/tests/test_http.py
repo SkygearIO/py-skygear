@@ -50,20 +50,6 @@ class TestHttpTransport(unittest.TestCase):
                                        threaded=True,
                                        use_reloader=False)
 
-    @patch('skygear.transmitter.http.HttpTransport.init_info')
-    def testInitInfo(self, mocker):
-        mocker.return_value = {'data': 'hello'}
-        data = {
-            'kind': 'init',
-            'name': '',
-            'param': {'config': {'hello': 'world'}}
-        }
-        resp = self.get_client().post('/', data=json.dumps(data))
-        assert resp.status_code == 200
-        mocker.assert_called_once_with()
-        assert json.loads(resp.get_data(as_text=True)) == mocker.return_value
-        assert skyconfig.config.hello == 'world'
-
     @patch('skygear.transmitter.http.HttpTransport.call_func')
     def testCallFuncWithData(self, mocker):
         mocker.return_value = {'data': 'hello'}
@@ -91,6 +77,36 @@ class TestHttpTransport(unittest.TestCase):
         resp = self.get_client().post('/', data=json.dumps(data))
         assert resp.status_code == 200
         mocker.assert_called_once_with(ANY, 'op', 'john', ANY)
+
+    @patch('skygear.transmitter.http.HttpTransport.call_event_func')
+    def testEvent(self, mocker):
+        mocker.return_value = {}
+        data = {
+            'kind': 'event',
+            'name': 'funny'
+        }
+        resp = self.get_client().post('/', data=json.dumps(data))
+        assert resp.status_code == 200
+        mocker.assert_called_once_with('funny', ANY)
+
+    @patch('skygear.transmitter.http.HttpTransport.init_info')
+    def testInitEvent(self, mocker):
+        mocker.return_value = {'data': 'hello'}
+        data = {
+            'kind': 'event',
+            'name': 'init',
+            'param': {
+                'config': {'hello': 'world'}
+            }
+        }
+        resp = self.get_client().post('/', data=json.dumps(data))
+
+        assert resp.status_code == 200
+        mocker.assert_called_once_with()
+
+        resp_data = json.loads(resp.get_data(as_text=True))
+        assert resp_data.get('result') == mocker.return_value
+        assert skyconfig.config.hello == 'world'
 
     @patch('skygear.transmitter.http.HttpTransport.call_func')
     def testHook(self, mocker):

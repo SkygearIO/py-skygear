@@ -41,13 +41,6 @@ class TestConsoleTransport(unittest.TestCase):
         out.seek(0)
         return json.loads(out.read())
 
-    @patch('skygear.transmitter.console.ConsoleTransport.init_info')
-    def testInitInfo(self, mocker):
-        mocker.return_value = {'data': 'hello'}
-        output = self.exec(['init'], "")
-        mocker.assert_called_once_with()
-        assert output == mocker.return_value
-
     @patch.dict(os.environ, environ_dict({'context': 'happy'},
                                          {'hello': 'bye'}))
     @patch('skygear.transmitter.console.ConsoleTransport.call_func')
@@ -81,6 +74,20 @@ class TestConsoleTransport(unittest.TestCase):
         output = self.exec(['op', 'john'], {'data': 'bye'})
         mocker.assert_called_once_with(ANY, 'op', 'john', {'data': 'bye'})
         assert output == mocker.return_value
+
+    @patch('skygear.transmitter.console.ConsoleTransport.call_event_func')
+    def testEvent(self, mocker):
+        mocker.return_value = {"data": "okay-event"}
+        output = self.exec(['event', 'okay'], {'data': 'haha'})
+        mocker.assert_called_once_with('okay', {'data': 'haha'})
+        assert output == mocker.return_value
+
+    @patch('skygear.transmitter.console.ConsoleTransport.init_info')
+    def testInitEvent(self, mocker):
+        mocker.return_value = {'data': 'hello'}
+        output = self.exec(['event', 'init'], '')
+        mocker.assert_called_once_with()
+        assert output.get('result') == mocker.return_value
 
     @patch('skygear.transmitter.console.ConsoleTransport.call_func')
     def testHook(self, mocker):

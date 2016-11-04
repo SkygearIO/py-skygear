@@ -112,6 +112,21 @@ class TestRegistry(unittest.TestCase):
         assert param_map[0]['auth_required'] is True
         assert param_map[0]['user_required'] is True
 
+    def test_register_event(self):
+        def fn():
+            pass
+
+        registry = Registry()
+        registry.register_event('plugin:event:foo', fn)
+
+        func_map = registry.func_map['event']
+        assert len(func_map) == 1
+        assert func_map['plugin:event:foo'] == fn
+
+        param_map = registry.param_map['event']
+        assert len(param_map) == 1
+        assert param_map[0]['name'] == 'plugin:event:foo'
+
     def test_register_hook(self):
         def fn():
             pass
