@@ -8,26 +8,19 @@ services:
     ports:
     - "5432:5432"
 
-  redis:
-    image: redis:3.0
-    volumes:
-    - redis_data:/data
-
   app:
     image: quay.io/skygeario/skygear-server:canary
     ports:
     - "3000:3000"
     volumes:
     - app_data:/go/src/app/data
-    links:
+    depends_on:
     - db
-    - redis
     command: skygear-server --http
     environment:
       # `db` in the following string should match the name of the database
       # container above.
       DATABASE_URL: postgresql://postgres:@db/postgres?sslmode=disable
-      REDISTEST: redis://redis:6379
       API_KEY: changeme
       MASTER_KEY: secret
       APP_NAME: _
@@ -51,7 +44,7 @@ services:
       API_KEY: changeme
       MASTER_KEY: secret
       APP_NAME: _
-      PUBSUB_URL: PUBSUB_URL=ws://app:3000/pubsub
+      PUBSUB_URL: ws://app:3000/pubsub
       SKYGEAR_ADDRESS: tcp://app:5555
       SKYGEAR_ENDPOINT: http://app:3000
 
