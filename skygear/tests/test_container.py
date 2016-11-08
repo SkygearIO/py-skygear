@@ -50,12 +50,14 @@ class TestContainer():
     def test_payload_include_action(self):
         c = SkygearContainer(endpoint='endpoint', access_token='access-token')
         payload = c._payload('action:work', {'data': 'hello world'})
+        assert payload['_from_plugin']
         assert payload['action'] == 'action:work'
         assert payload['data'] == 'hello world'
 
     def test_payload_include_api_key(self):
         c = SkygearContainer(endpoint='endpoint', api_key='api-key')
         payload = c._payload('action:work', {})
+        assert payload['_from_plugin']
         assert payload['api_key'] == 'api-key'
 
     def test_payload_include_user_id(self):
@@ -63,10 +65,12 @@ class TestContainer():
                              user_id='user-id')
         payload = c._payload('action:work', {})
         assert payload['_user_id'] == 'user-id'
+        assert payload['_from_plugin']
 
     def test_payload_include_access_token(self):
         c = SkygearContainer(endpoint='endpoint', access_token='access-token')
         payload = c._payload('action:work', {})
+        assert payload['_from_plugin']
         assert payload['access_token'] == 'access-token'
 
     def test_payload_include_all_credentials(self):
@@ -78,3 +82,4 @@ class TestContainer():
         assert payload['access_token'] == 'access-token'
         assert payload['api_key'] == 'api-key'
         assert payload['_user_id'] == 'user-id'
+        assert payload['_from_plugin']

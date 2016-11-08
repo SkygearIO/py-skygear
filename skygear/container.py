@@ -60,6 +60,7 @@ class SkygearContainer(object):
     def _payload(self, action_name, params):
         payload = params.copy() if isinstance(params, dict) else {}
         payload['action'] = action_name
+        payload['_from_plugin'] = True
         if self.access_token:
             payload['access_token'] = self.access_token
         if self.api_key:
