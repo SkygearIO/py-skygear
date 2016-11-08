@@ -57,7 +57,6 @@ def handle_exception(exc):
     if not isinstance(exc, SkygearException):
         log.exception("Error occurred processing request")
     return exc
-get_registry().register_exception_handler(Exception, handle_exception)
 
 
 def encode_base64_json(data):
@@ -205,3 +204,6 @@ class CommonTransport:
 
     def run(self):
         raise NotImplemented()
+
+
+get_registry().register_exception_handler(Exception, handle_exception)
