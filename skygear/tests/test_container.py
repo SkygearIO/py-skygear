@@ -49,24 +49,24 @@ class TestSendAction(unittest.TestCase):
 class TestContainer():
     def test_payload_include_action(self):
         c = SkygearContainer(endpoint='endpoint', access_token='access-token')
-        payload = c._payload('action:work', {'data': 'hello world'})
+        payload = c._payload('action:work', {'data': 'hello world'}, False)
         assert payload['action'] == 'action:work'
         assert payload['data'] == 'hello world'
 
     def test_payload_include_api_key(self):
         c = SkygearContainer(endpoint='endpoint', api_key='api-key')
-        payload = c._payload('action:work', {})
+        payload = c._payload('action:work', {}, False)
         assert payload['api_key'] == 'api-key'
 
     def test_payload_include_user_id(self):
         c = SkygearContainer(endpoint='endpoint', api_key='api-key',
                              user_id='user-id')
-        payload = c._payload('action:work', {})
+        payload = c._payload('action:work', {}, False)
         assert payload['_user_id'] == 'user-id'
 
     def test_payload_include_access_token(self):
         c = SkygearContainer(endpoint='endpoint', access_token='access-token')
-        payload = c._payload('action:work', {})
+        payload = c._payload('action:work', {}, False)
         assert payload['access_token'] == 'access-token'
 
     def test_payload_include_all_credentials(self):
@@ -74,7 +74,16 @@ class TestContainer():
                              access_token='access-token',
                              api_key='api-key',
                              user_id='user-id')
-        payload = c._payload('action:work', {})
+        payload = c._payload('action:work', {}, False)
         assert payload['access_token'] == 'access-token'
         assert payload['api_key'] == 'api-key'
         assert payload['_user_id'] == 'user-id'
+
+    def test_plugin_request_payload(self):
+        c = SkygearContainer(endpoint='endpoint',
+                             access_token='access-token',
+                             api_key='master-key')
+        payload = c._payload('action:work', {}, True)
+        assert payload['access_token'] == 'access-token'
+        assert payload['api_key'] == 'master-key'
+        assert payload['_from_plugin']

@@ -57,7 +57,7 @@ class SkygearContainer(object):
         endpoint = endpoint[:-1] if endpoint[-1] == '/' else endpoint
         return endpoint + '/' + action_name.replace(':', '/')
 
-    def _payload(self, action_name, params):
+    def _payload(self, action_name, params, plugin_request):
         payload = params.copy() if isinstance(params, dict) else {}
         payload['action'] = action_name
         if self.access_token:
@@ -66,6 +66,8 @@ class SkygearContainer(object):
             payload['api_key'] = self.api_key
         if self.user_id:
             payload['_user_id'] = self.user_id
+        if plugin_request:
+            payload['_from_plugin'] = True
         return payload
 
     @classmethod
@@ -84,9 +86,9 @@ class SkygearContainer(object):
     def set_default_apikey(cls, api_key):
         cls.api_key = api_key
 
-    def send_action(self, action_name, params):
+    def send_action(self, action_name, params, plugin_request=False):
         resp = send_action(self._request_url(action_name),
-                           self._payload(action_name, params))
+                           self._payload(action_name, params, plugin_request))
         if 'error' in resp:
             raise error.SkygearException.from_dict(resp['error'])
 

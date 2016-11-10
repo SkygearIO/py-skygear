@@ -30,6 +30,8 @@ PartialOperationFailure = 116
 UndefinedOperation = 117
 PluginUnavailable = 118
 PluginTimeout = 119
+RecordQueryInvalid = 120
+PluginInitializing = 121
 
 UnexpectedError = 10000
 
