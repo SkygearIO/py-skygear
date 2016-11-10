@@ -1,3 +1,26 @@
+## 0.19.0 (2016-11-10)
+
+### Incompatible changes
+
+- The protocol for plugin transport is updated. Skygear Server and cloud code
+  in previous versions cannot be used with this version.
+
+### Features
+
+- Support for plugin only request during initialization (SkygearIO/skygear-server#219)
+- Support plugin event (#79)
+- Add ignore-public-html option
+
+### Bug Fixes
+
+- Fix zmq stopping bug on maintains_worker_count (#80)
+
+### Other Notes
+
+- Fix various issues with docker compose and Makefile
+- Handle http plugin request encoded in request body (#82)
+- Check opened worker count instead of current active worker
+
 ## 0.18.0 (2016-10-28)
 
 ### Features
