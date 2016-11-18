@@ -188,6 +188,11 @@ def static_assets(prefix, *args, **kwargs):
     The decorated function should return the absolute path of the static
     assets directory.
     """
+
+    # Assets collector expects the prefix to not start with '/', which
+    # means an absolute path instead of a relative one.
+    prefix = prefix.lstrip('/') if prefix else ''
+
     def wrapper(func):
         @wraps(func)
         def wrap_loader():

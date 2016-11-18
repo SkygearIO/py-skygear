@@ -120,14 +120,22 @@ class TestRestDecorator(unittest.TestCase):
 class TestStaticAssetsDecorator(unittest.TestCase):
     @patch('skygear.registry.Registry.register_static_assets')
     def test_register(self, mock):
+        @d.static_assets('admin')
+        def fn():
+            return '/tmp/public'
+
+        mock.assert_called_with('admin', ANY)
+        loader = fn()
+        assert isinstance(loader, DirectoryStaticAssetsLoader)
+        assert loader.dirpath == '/tmp/public'
+
+    @patch('skygear.registry.Registry.register_static_assets')
+    def test_register_with_slash(self, mock):
         @d.static_assets('/admin')
         def fn():
             return '/tmp/public'
 
-        mock.assert_called_with('/admin', ANY)
-        loader = fn()
-        assert isinstance(loader, DirectoryStaticAssetsLoader)
-        assert loader.dirpath == '/tmp/public'
+        mock.assert_called_with('admin', ANY)
 
 
 class TestExceptionHandlerDecorator(unittest.TestCase):

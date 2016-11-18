@@ -41,7 +41,9 @@ class StaticAssetsCollector:
     def _prefix_path(self, prefix):
         prefix_path = os.path.abspath(os.path.join(self.base_path, prefix))
         if not prefix_path.startswith(self.base_path):
-            raise CollectorException('Prefix {} is incorrect.'.format(prefix))
+            raise CollectorException(
+                'Prefix {} (absolute path {}) does not reside in'
+                ' base path {}.'.format(prefix, prefix_path, self.base_path))
         return prefix_path
 
     def collect(self, prefix, loader):
