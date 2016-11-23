@@ -15,7 +15,7 @@ import os
 
 import configargparse as argparse
 
-# options is the plugins options read from argv or os.environ
+# `options` is the py-skygear options read from argv or os.environ.
 options = argparse.Namespace()
 
 

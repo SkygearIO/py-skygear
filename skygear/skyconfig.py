@@ -18,7 +18,8 @@ class Configuration(argparse.Namespace):
     pass
 
 
-# config is the configuration from skygear-server.
+# `config` is the configuration obtained from skygear-server during plugin init
+# process.
 config = Configuration()
 
 
