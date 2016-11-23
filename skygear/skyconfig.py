@@ -18,6 +18,7 @@ class Configuration(argparse.Namespace):
     pass
 
 
+# config is the configuration from skygear-server.
 config = Configuration()
 
 
