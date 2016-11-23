@@ -19,6 +19,31 @@ from .module import _config_module, get_module
 
 
 _parsers = {}
+"""
+`settings` is namespaced settings for plugins. Following is an example of how
+a plugin developer can register settings and query back the value.
+
+
+Declaring the required settings:
+```
+from skygear.settings import SettingsParser, add_parser
+
+parser = SettingsParser('SKYGEAR_CMS')
+parser.add_setting('prefix', default='cms')
+parser.add_setting('static_assets_prefix', default='/static/:prefix/')
+
+add_parser('cms', parser)
+```
+
+The settings module will read the environment and set the value. For example,
+os.environ `SKYGEAR_CMS_PREFIX` will be available as follows:
+
+```
+from skygear.settings import settings
+
+settings.cms.prefix
+```
+"""
 settings = Namespace()
 
 
