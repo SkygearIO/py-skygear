@@ -61,6 +61,12 @@ def load_module(path):
     - If path is a directory, load the file as a python package. The directory
       must contains `__init__.py`
     - Else, treat path as the name of the package to load.
+
+    For file, we assume it is cloud code and have no `includeme` function.
+
+    For directory or package, we regards it is explicit imported module, so we
+    will config the module once loaded. i.e. calling the `includeme` function
+    of the module.
     """
     if os.path.isfile(path):
         package_name = guess_package_name(path)
@@ -71,6 +77,7 @@ def load_module(path):
         loadpath = os.path.join(path, '__init__.py')
         loaded = SourceFileLoader(package_name, loadpath).load_module()
         add_module(package_name, loaded)
+        _config_module(loaded, module_settings)
     else:
         imported = importlib.import_module(path)
         _config_module(imported, module_settings)
