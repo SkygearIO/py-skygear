@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from skygear.models import PublicAccessControlEntry, RoleAccessControlEntry
+from skygear.models import (PublicAccessControlEntry, Record, RecordID,
+                            RoleAccessControlEntry, UnknownValue)
 
 from ..encoding import deserialize_record, serialize_record
 
@@ -25,6 +26,7 @@ class TestsDeserializeRecord():
             "_ownerID": "OWNER_ID",
             "content": "Hello World!",
             "noteOrder": 1,
+            "money": {"$type": "unknown", "$underlying_type": "money"},
             }
         r = deserialize_record(rdata)
         assert r.id.type == "note"
@@ -33,6 +35,7 @@ class TestsDeserializeRecord():
         assert r['content'] == "Hello World!"
         assert r['noteOrder'] == 1
         assert r.owner_id == "OWNER_ID"
+        assert r['money'].underlyingType == "money"
 
     def test_model_with_acl(self):
         rdata = {
@@ -84,3 +87,25 @@ class TestsDeserializeRecord():
             "level": "read"
         }]
         assert result['_created_at'] == "2014-09-27T17:40:00Z"
+
+
+class TestsSerializeRecord():
+    def test_normal(self):
+        r = Record(
+            id=RecordID('note', '99D92DBA-74D5-477F-B35E-F735E21B2DD5'),
+            owner_id='OWNER_ID',
+            acl=None,
+            data={
+                  "content": "Hello World!",
+                  "noteOrder": 1,
+                  "money": UnknownValue("money"),
+                  })
+        rdata = serialize_record(r)
+        assert rdata == {
+            "_access": None,
+            "_id": "note/99D92DBA-74D5-477F-B35E-F735E21B2DD5",
+            "_ownerID": "OWNER_ID",
+            "content": "Hello World!",
+            "noteOrder": 1,
+            "money": {'$type': 'unknown', '$underlying_type': 'money'},
+        }
