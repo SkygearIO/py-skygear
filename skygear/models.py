@@ -173,3 +173,16 @@ class Reference:
         if recordID is None:
             raise ValueError('Reference.recordID cannot be None')
         self._recordID = recordID
+
+
+class UnknownValue:
+    def __init__(self, underlyingType):
+        self.underlyingType = underlyingType
+
+    @property
+    def underlyingType(self):
+        return self._underlyingType
+
+    @underlyingType.setter
+    def underlyingType(self, underlyingType):
+        self._underlyingType = underlyingType
