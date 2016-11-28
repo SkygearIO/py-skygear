@@ -19,7 +19,8 @@ import strict_rfc3339
 from ..error import SkygearException, UnexpectedError
 from ..models import (Asset, DirectAccessControlEntry, Location,
                       PublicAccessControlEntry, Record, RecordID, Reference,
-                      RelationalAccessControlEntry, RoleAccessControlEntry)
+                      RelationalAccessControlEntry, RoleAccessControlEntry,
+                      UnknownValue)
 
 
 def _serialize_exc(e):
@@ -125,6 +126,8 @@ class _RecordDecoder:
                 return self.decode_location(v)
             elif type_ == 'ref':
                 return self.decode_ref(v)
+            elif type_ == 'unknown':
+                return self.decode_unknown_value(v)
             else:
                 return self.decode_dict(v)
         elif isinstance(v, list):
@@ -147,6 +150,9 @@ class _RecordDecoder:
 
     def decode_ref(self, d):
         return Reference(self.decode_id(d['$id']))
+
+    def decode_unknown_value(self, d):
+        return UnknownValue(d['$underlying_type'])
 
 
 class _RecordEncoder:
@@ -216,6 +222,8 @@ class _RecordEncoder:
             return self.encode_location(v)
         elif isinstance(v, Reference):
             return self.encode_ref(v)
+        elif isinstance(v, UnknownValue):
+            return self.encode_unknown_value(v)
         else:
             return v
 
@@ -247,3 +255,11 @@ class _RecordEncoder:
             '$type': 'ref',
             '$id': self.encode_id(ref.recordID),
         }
+
+    def encode_unknown_value(self, unknown_value):
+        data = {
+            '$type': 'unknown',
+        }
+        if unknown_value.underlyingType:
+            data['$underlying_type'] = unknown_value.underlyingType
+        return data
