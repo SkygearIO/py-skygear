@@ -16,7 +16,6 @@ import logging
 import sys
 
 from .. import error as skyerr
-from .. import skyconfig
 from .common import CommonTransport, dict_from_base64_environ
 
 log = logging.getLogger(__name__)
@@ -41,6 +40,9 @@ class ConsoleTransport(CommonTransport):
 
         self.input = stdin
         self.output = stdout
+
+    def init_event_handler(self, **data):
+        return self._registry.func_list()
 
     def run(self):
         self.args = self.args
@@ -67,7 +69,6 @@ class ConsoleTransport(CommonTransport):
     def handle_command(self, target, args):
         param = self.readJSON()
         context = dict_from_base64_environ('SKYGEAR_CONTEXT')
-        skyconfig.parse_config(dict_from_base64_environ('SKYGEAR_CONFIG'))
 
         if target == 'provider':
             output = self.call_provider(context, args[1], args[2], param)

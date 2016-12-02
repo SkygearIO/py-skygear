@@ -17,39 +17,34 @@ import os
 import unittest
 from unittest.mock import ANY, patch
 
-from ... import skyconfig
 from ...registry import Registry
 from ..common import encode_base64_json
 from ..console import ConsoleTransport
 
 
-def environ_dict(context, config):
-    return {
-            'SKYGEAR_CONTEXT': encode_base64_json(context).decode('utf-8'),
-            'SKYGEAR_CONFIG': encode_base64_json(config).decode('utf-8')
-            }
+def environ_dict(context):
+    return {'SKYGEAR_CONTEXT': encode_base64_json(context).decode('utf-8')}
 
 
-@patch('skygear.skyconfig.config', skyconfig.Configuration())
 class TestConsoleTransport(unittest.TestCase):
-    def exec(self, args, data):
+    def exec(self, args, data, registry=None):
         out = io.StringIO()
         data = data if isinstance(data, str) else json.dumps(data)
-        transport = ConsoleTransport(args, stdin=io.StringIO(data), stdout=out,
-                                     registry=Registry())
+        transport = ConsoleTransport(args,
+                                     stdin=io.StringIO(data),
+                                     stdout=out,
+                                     registry=registry or Registry())
         transport.run()
         out.seek(0)
         return json.loads(out.read())
 
-    @patch.dict(os.environ, environ_dict({'context': 'happy'},
-                                         {'hello': 'bye'}))
+    @patch.dict(os.environ, environ_dict({'context': 'happy'}))
     @patch('skygear.transmitter.console.ConsoleTransport.call_func')
     def testCallFuncWithData(self, mocker):
         mocker.return_value = {'data': 'hello'}
         output = self.exec(['timer', 'name'], {'data': 'bye'})
         mocker.assert_called_once_with({'context': 'happy'}, 'timer', 'name',
                                        {'data': 'bye'})
-        assert skyconfig.config.hello == 'bye'
         assert output == mocker.return_value
 
     @patch('skygear.transmitter.console.ConsoleTransport.call_func')
@@ -82,11 +77,11 @@ class TestConsoleTransport(unittest.TestCase):
         mocker.assert_called_once_with('okay', {'data': 'haha'})
         assert output == mocker.return_value
 
-    @patch('skygear.transmitter.console.ConsoleTransport.init_info')
+    @patch('skygear.transmitter.console.ConsoleTransport.init_event_handler')
     def testInitEvent(self, mocker):
         mocker.return_value = {'data': 'hello'}
-        output = self.exec(['event', 'init'], '')
-        mocker.assert_called_once_with()
+        output = self.exec(['event', 'init'], {'config': {'hello': 'world'}})
+        mocker.assert_called_once_with(config={'hello': 'world'})
         assert output.get('result') == mocker.return_value
 
     @patch('skygear.transmitter.console.ConsoleTransport.call_func')

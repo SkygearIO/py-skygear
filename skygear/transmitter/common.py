@@ -20,7 +20,6 @@ from functools import wraps
 from werkzeug.test import EnvironBuilder
 from werkzeug.wrappers import BaseResponse, Request
 
-from .. import skyconfig
 from ..error import SkygearException
 from ..registry import get_registry
 from ..utils import db
@@ -87,12 +86,8 @@ class CommonTransport:
         self._registry = registry or get_registry()
         self.register_init_event()
 
-    def init_info(self):
-        return self._registry.func_list()
-
     def init_event_handler(self, **data):
-        skyconfig.parse_config(data.get('config', {}))
-        return self.init_info()
+        return self._registry.func_list()
 
     def register_init_event(self):
         self._registry.register_event('init', self.init_event_handler)
