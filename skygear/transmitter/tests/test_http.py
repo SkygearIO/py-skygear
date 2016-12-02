@@ -18,7 +18,6 @@ from unittest.mock import ANY, patch
 from werkzeug.test import Client
 from werkzeug.wrappers import BaseResponse
 
-from ... import skyconfig
 from ...registry import Registry
 from ..common import encode_base64_json
 from ..http import HttpTransport
@@ -28,13 +27,12 @@ def headers_with_context(data):
     return {'X-Skygear-Plugin-Context': encode_base64_json(data)}
 
 
-@patch('skygear.skyconfig.config', skyconfig.Configuration())
 class TestHttpTransport(unittest.TestCase):
     def get_app(self):
         return self.transport.dispatch
 
-    def get_client(self):
-        return Client(self.get_app(), BaseResponse)
+    def get_client(self, dispatcher=None):
+        return Client(dispatcher or self.get_app(), BaseResponse)
 
     def setUp(self):
         self.transport = HttpTransport('127.0.0.1:8888', Registry())
@@ -89,7 +87,7 @@ class TestHttpTransport(unittest.TestCase):
         assert resp.status_code == 200
         mocker.assert_called_once_with('funny', ANY)
 
-    @patch('skygear.transmitter.http.HttpTransport.init_info')
+    @patch('skygear.transmitter.http.HttpTransport.init_event_handler')
     def testInitEvent(self, mocker):
         mocker.return_value = {'data': 'hello'}
         data = {
@@ -99,14 +97,15 @@ class TestHttpTransport(unittest.TestCase):
                 'config': {'hello': 'world'}
             }
         }
-        resp = self.get_client().post('/', data=json.dumps(data))
+        transport = HttpTransport('127.0.0.1:8888', Registry())
+        client = self.get_client(transport.dispatch)
+        resp = client.post('/', data=json.dumps(data))
 
         assert resp.status_code == 200
-        mocker.assert_called_once_with()
+        mocker.assert_called_once_with(config={'hello': 'world'})
 
         resp_data = json.loads(resp.get_data(as_text=True))
         assert resp_data.get('result') == mocker.return_value
-        assert skyconfig.config.hello == 'world'
 
     @patch('skygear.transmitter.http.HttpTransport.call_func')
     def testHook(self, mocker):

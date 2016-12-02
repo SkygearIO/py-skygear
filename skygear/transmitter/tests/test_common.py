@@ -35,11 +35,6 @@ class TestCommonTransport(unittest.TestCase):
         self.registry = None
         self.transport = None
 
-    @patch('skygear.registry.Registry.func_list')
-    def testInitInfo(self, mocker):
-        mocker.return_value = {'op': []}
-        assert self.transport.init_info() == mocker.return_value
-
     @patch('skygear.registry.Registry.get_func')
     def testCallFuncGetCorrectObject(self, mocker):
         mocker.return_value = MagicMock()
