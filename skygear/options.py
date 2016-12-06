@@ -19,16 +19,7 @@ import configargparse as argparse
 options = argparse.Namespace()
 
 
-def get_argument_parser():
-    ap = argparse.ArgumentParser(description='Skygear Plugin runner')
-    ap.add_argument('--skygear-address', metavar='ADDR', action='store',
-                    default='tcp://127.0.0.1:5555',
-                    help="Binds to this socket for skygear",
-                    env_var='SKYGEAR_ADDRESS')
-    ap.add_argument('--skygear-endpoint', metavar='ENDPOINT', action='store',
-                    default='http://127.0.0.1:3000',
-                    help="Send to this addres for skygear handlers",
-                    env_var='SKYGEAR_ENDPOINT')
+def add_app_arguments(ap: argparse.ArgumentParser):
     ap.add_argument('--apikey', metavar='APIKEY', action='store',
                     default=None,
                     help="API Key of the application",
@@ -41,9 +32,37 @@ def get_argument_parser():
                     default='',
                     help="Application name of the skygear daemon",
                     env_var='APP_NAME')
-    ap.add_argument('--loglevel', action='store', default='INFO',
-                    help="Log level",
-                    env_var='LOG_LEVEL')
+
+
+def add_skygear_arguments(ap: argparse.ArgumentParser):
+    ap.add_argument('--skygear-address', metavar='ADDR', action='store',
+                    default='tcp://127.0.0.1:5555',
+                    help="Binds to this socket for skygear",
+                    env_var='SKYGEAR_ADDRESS')
+    ap.add_argument('--skygear-endpoint', metavar='ENDPOINT', action='store',
+                    default='http://127.0.0.1:3000',
+                    help="Send to this addres for skygear handlers",
+                    env_var='SKYGEAR_ENDPOINT')
+    ap.add_argument('--pubsub-url', action='store', default=None,
+                    env_var='PUBSUB_URL',
+                    help="The URL of the pubsub server, should start with "
+                         "ws:// or wss:// and include the path")
+
+
+def add_static_asset_arguments(ap: argparse.ArgumentParser):
+    ap.add_argument('--collect-assets', metavar='DIST', action='store',
+                    help="Collect static assets to a directory")
+    ap.add_argument('--force-assets', action='store_true',
+                    help="Remove dist folder before proceeding")
+    ap.add_argument('--serve-static-assets', action='store_true',
+                    env_var='SERVE_STATIC_ASSETS',
+                    help="Enable to serve static asset from plugin process")
+    ap.add_argument('--ignore-public-html', action='store_true',
+                    env_var='IGNORE_PUBLIC_HTML',
+                    help="Ignore public_html directory for static assets.")
+
+
+def add_plugin_arguments(ap: argparse.ArgumentParser):
     ap.add_argument('--subprocess', dest='subprocess', action='store',
                     nargs='+',
                     metavar=('(init|op|hook|handler|timer)', 'name'),
@@ -55,24 +74,29 @@ def get_argument_parser():
                     default='0.0.0.0:8000',
                     help='Address where htp web server listen to',
                     env_var='HTTP_ADDR')
+    ap.add_argument('modules', nargs='*', default=[])  # env_var: LOAD_MODULES
+
+
+def add_logging_arguments(ap: argparse.ArgumentParser):
+    ap.add_argument('--loglevel', action='store', default='INFO',
+                    help="Log level",
+                    env_var='LOG_LEVEL')
+
+
+def add_debug_arguments(ap: argparse.ArgumentParser):
     ap.add_argument('--debug', action='store_true',
                     help='Enable debugging features',
                     env_var='DEBUG')
-    ap.add_argument('--collect-assets', metavar='DIST', action='store',
-                    help="Collect static assets to a directory")
-    ap.add_argument('--force-assets', action='store_true',
-                    help="Remove dist folder before proceeding")
-    ap.add_argument('--serve-static-assets', action='store_true',
-                    env_var='SERVE_STATIC_ASSETS',
-                    help="Enable to serve static asset from plugin process")
-    ap.add_argument('--pubsub-url', action='store', default=None,
-                    env_var='PUBSUB_URL',
-                    help="The URL of the pubsub server, should start with "
-                         "ws:// or wss:// and include the path")
-    ap.add_argument('--ignore-public-html', action='store_true',
-                    env_var='IGNORE_PUBLIC_HTML',
-                    help="Ignore public_html directory for static assets.")
-    ap.add_argument('modules', nargs='*', default=[])  # env_var: LOAD_MODULES
+
+
+def get_argument_parser():
+    ap = argparse.ArgumentParser(description='Skygear Plugin runner')
+    add_app_arguments(ap)
+    add_skygear_arguments(ap)
+    add_plugin_arguments(ap)
+    add_static_asset_arguments(ap)
+    add_logging_arguments(ap)
+    add_debug_arguments(ap)
     return ap
 
 
