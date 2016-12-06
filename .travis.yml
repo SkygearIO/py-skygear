@@ -5,7 +5,7 @@ python:
   - '3.5'
 
 addons:
-  postgresql: "9.4"
+  postgresql: "9.5"
 
 services:
   - docker
@@ -24,6 +24,7 @@ before_install:
   - pip install isort
   - pip install lizard
   - pip install coverage
+  - sudo apt-get install -y postgresql-9.5-postgis-2.3
 
 install:
   - pip install -r requirements.txt
