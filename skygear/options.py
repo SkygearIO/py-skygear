@@ -77,6 +77,58 @@ def add_plugin_arguments(ap: argparse.ArgumentParser):
     ap.add_argument('modules', nargs='*', default=[])  # env_var: LOAD_MODULES
 
 
+def add_fs_asset_store_arguments(ap: argparse.ArgumentParser):
+    ap.add_argument('--asset-store-url-prefix', action='store',
+                    metavar='PREFIX', env_var='ASSET_STORE_URL_PREFIX',
+                    help='URL prefix of fs asset store (Only applicable for fs \
+                          asset store')
+    ap.add_argument('--asset-store-secret', action='store', metavar='PATH',
+                    env_var='ASSET_STORE_SECRET',
+                    help='Secret for signing assets on fs asset store')
+
+
+def add_s3_asset_store_arguments(ap: argparse.ArgumentParser):
+    ap.add_argument('--asset-store-access-key', action='store', metavar='KEY',
+                    env_var='ASSET_STORE_ACCESS_KEY',
+                    help='Access key for s3 asset store')
+    ap.add_argument('--asset-store-secret-key', action='store',
+                    metavar='SECRET', env_var='ASSET_STORE_SECRET_KEY',
+                    help='Secret key for s3 asset store')
+    ap.add_argument('--asset-store-region', action='store', metavar='REGION',
+                    env_var='ASSET_STORE_REGION',
+                    help='Region for s3 asset store')
+    ap.add_argument('--asset-store-bucket', action='store', metavar='BUCKET',
+                    env_var='ASSET_STORE_BUCKET',
+                    help='Bucket name for s3 asset store')
+
+
+def add_cloud_asset_store_arguments(ap: argparse.ArgumentParser):
+    ap.add_argument('--cloud-asset-host', action='store', metavar='HOST',
+                    env_var='CLOUD_ASSET_HOST',
+                    help='Host of cloud asset store')
+    ap.add_argument('--cloud-asset-token', action='store', metavar='TOKEN',
+                    env_var='CLOUD_ASSET_TOKEN',
+                    help='Token of cloud asset store')
+    ap.add_argument('--cloud-asset-public-prefix', action='store',
+                    metavar='PREFIX', env_var='CLOUD_ASSET_PUBLIC_PREFIX',
+                    help='URL prefix of public asset on cloud asset store')
+    ap.add_argument('--cloud-asset-private-prefix', action='store',
+                    metavar='PREFIX', env_var='CLOUD_ASSET_PRIVATE_PREFIX',
+                    help='URL prefix of private asset on cloud asset store')
+
+
+def add_asset_arguments(ap: argparse.ArgumentParser):
+    ap.add_argument('--asset-store', action='store', metavar='(fs|s3|cloud)',
+                    default='fs', env_var='ASSET_STORE',
+                    help='Type of asset store')
+    ap.add_argument('--asset-store-public', action='store_true',
+                    help='Make asset public accessible',
+                    env_var='ASSET_STORE_PUBLIC')
+    add_fs_asset_store_arguments(ap)
+    add_s3_asset_store_arguments(ap)
+    add_cloud_asset_store_arguments(ap)
+
+
 def add_logging_arguments(ap: argparse.ArgumentParser):
     ap.add_argument('--loglevel', action='store', default='INFO',
                     help="Log level",
@@ -94,6 +146,7 @@ def get_argument_parser():
     add_app_arguments(ap)
     add_skygear_arguments(ap)
     add_plugin_arguments(ap)
+    add_asset_arguments(ap)
     add_static_asset_arguments(ap)
     add_logging_arguments(ap)
     add_debug_arguments(ap)
