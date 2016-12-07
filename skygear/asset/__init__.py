@@ -15,6 +15,7 @@
 from ..error import SkygearException, InvalidArgument
 from ..options import options as skygear_options
 from .fs import FileSystemAssetSigner
+from .s3 import S3AssetSigner
 
 signer = None
 
@@ -27,6 +28,8 @@ def get():
     store_type = skygear_options.asset_store
     if store_type == 'fs':
         signer = FileSystemAssetSigner.create(skygear_options)
+    elif store_type == 's3':
+        signer = S3AssetSigner.create(skygear_options)
     else:
         raise SkygearException(
             'Unknown asset store type: {}'.format(store_type),

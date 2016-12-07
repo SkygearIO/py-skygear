@@ -1,4 +1,5 @@
 bcrypt==2.0.0
+boto3==1.4.2
 psycopg2==2.6.1
 py==1.4.30
 pycparser==2.14
