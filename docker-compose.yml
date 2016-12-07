@@ -4,18 +4,18 @@ services:
   db:
     image: mdillon/postgis:9.5
     volumes:
-    - db_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
     ports:
-    - "5432:5432"
+      - "5432:5432"
 
   app:
     image: quay.io/skygeario/skygear-server:canary
     ports:
-    - "3000:3000"
+      - "3000:3000"
     volumes:
-    - app_data:/go/src/app/data
+      - app_data:/app/data
     depends_on:
-    - db
+      - db
     command: skygear-server --http
     environment:
       # `db` in the following string should match the name of the database
@@ -24,6 +24,11 @@ services:
       API_KEY: changeme
       MASTER_KEY: secret
       APP_NAME: _
+      TOKEN_STORE: jwt
+      TOKEN_STORE_SECRET: jwt_secret
+      ASSET_STORE: fs
+      ASSET_STORE_URL_PREFIX: http://localhost:3000/files
+      ASSET_STORE_SECRET: asset-secret
       # GOMAXPROCS - The maximum number of Go threads for execution.
       # When unspecified, the default is the number of CPU available, which
       # is the recommended setting.
@@ -38,12 +43,15 @@ services:
       dockerfile: Dockerfile-development
     command: py-skygear --http
     volumes:
-    - .:/usr/src/app
+      - .:/usr/src/app
     environment:
       DATABASE_URL: postgres://postgres@db/postgres?sslmode=disable
       API_KEY: changeme
       MASTER_KEY: secret
       APP_NAME: _
+      ASSET_STORE: fs
+      ASSET_STORE_URL_PREFIX: http://localhost:3000/files
+      ASSET_STORE_SECRET: asset-secret
       PUBSUB_URL: ws://app:3000/pubsub
       SKYGEAR_ADDRESS: tcp://app:5555
       SKYGEAR_ENDPOINT: http://app:3000
