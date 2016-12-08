@@ -15,7 +15,7 @@
 import base64
 import hashlib
 import hmac
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import configargparse as argparse
 
@@ -47,8 +47,8 @@ class FileSystemAssetSigner(CommonAssetSigner):
         if not self.signature_required():
             return '{}/{}'.format(self.url_prefix, name)
 
-        expired_at = int((datetime.now()+timedelta(minutes=15)).timestamp())
-        expired_at_str = str(expired_at)
+        expired_at = datetime.now() + self.signature_expiry_duration
+        expired_at_str = str(int(expired_at.timestamp()))
 
         hasher = hmac.new(self.secret.encode('utf-8'),
                           digestmod=hashlib.sha256)

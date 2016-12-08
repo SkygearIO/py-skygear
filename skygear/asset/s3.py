@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import timedelta
-
 import configargparse as argparse
 from boto3 import client as aws_client
 
@@ -63,7 +61,7 @@ class S3AssetSigner(CommonAssetSigner):
                                                               self.bucket,
                                                               name)
         params = {'Bucket': self.bucket, 'Key': name}
-        expire_duration = int(timedelta(minutes=15).total_seconds())
+        expire_duration = int(self.signature_expiry_duration.total_seconds())
         return self.client.generate_presigned_url('get_object',
                                                   Params=params,
                                                   ExpiresIn=expire_duration)

@@ -12,10 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import timedelta
+
 
 class CommonAssetSigner:
     def __init__(self, public=False):
         self.public = public
+
+    @property
+    def signature_expiry_duration(self) -> timedelta:
+        return timedelta(minutes=15)
 
     def available(self) -> bool:
         return True

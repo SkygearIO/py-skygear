@@ -14,7 +14,7 @@
 
 import unittest
 from datetime import datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from configargparse import Namespace
 
@@ -56,13 +56,12 @@ class TestFileSystemAssetSigner(unittest.TestCase):
 
     @patch('skygear.asset.fs.datetime')
     def test_signing(self, mock_datetime):
-        mock_datetime = MagicMock()
         mock_datetime.now.return_value = datetime.fromtimestamp(1481095934)
         signer = FileSystemAssetSigner.create(self.mock_options)
         assert signer.sign('index.html') == (
             'http://skygear.dev/files/index.html'
-            '?expiredAt=1'
-            '&signature=h5nNCdPYUHBPFGk2qdrcSPqtknvxCyLBH0jGf4lxLw==')
+            '?expiredAt=1481096834'
+            '&signature=R5kMq2neUkCGBjQD6zSv99PajRvI0EqMesuRHQS4hA==')
 
     def test_signing_public(self):
         options = self.mock_options
