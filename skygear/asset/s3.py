@@ -20,6 +20,27 @@ from .common import BaseAssetSigner
 
 
 class S3AssetSigner(BaseAssetSigner):
+    def __init__(self, access_key: str, access_secret: str,
+                 region: str, bucket: str, public: bool = False):
+        super().__init__(public)
+        self.bucket = bucket
+        self.region = region
+        self.client = aws_client('s3',
+                                 aws_access_key_id=access_key,
+                                 aws_secret_access_key=access_secret,
+                                 region_name=region)
+
+    def sign(self, name: str) -> str:
+        if not self.signature_required():
+            return 'https://s3-{}.amazonaws.com/{}/{}'.format(self.region,
+                                                              self.bucket,
+                                                              name)
+        params = {'Bucket': self.bucket, 'Key': name}
+        expire_duration = int(self.signature_expiry_duration.total_seconds())
+        return self.client.generate_presigned_url('get_object',
+                                                  Params=params,
+                                                  ExpiresIn=expire_duration)
+
     @classmethod
     def create(cls, options: argparse.Namespace) -> BaseAssetSigner:
         access_key = options.asset_store_access_key
@@ -44,24 +65,3 @@ class S3AssetSigner(BaseAssetSigner):
 
         return cls(access_key, access_secret, region, bucket,
                    options.asset_store_public)
-
-    def __init__(self, access_key: str, access_secret: str,
-                 region: str, bucket: str, public: bool = False):
-        super().__init__(public)
-        self.bucket = bucket
-        self.region = region
-        self.client = aws_client('s3',
-                                 aws_access_key_id=access_key,
-                                 aws_secret_access_key=access_secret,
-                                 region_name=region)
-
-    def sign(self, name: str) -> str:
-        if not self.signature_required():
-            return 'https://s3-{}.amazonaws.com/{}/{}'.format(self.region,
-                                                              self.bucket,
-                                                              name)
-        params = {'Bucket': self.bucket, 'Key': name}
-        expire_duration = int(self.signature_expiry_duration.total_seconds())
-        return self.client.generate_presigned_url('get_object',
-                                                  Params=params,
-                                                  ExpiresIn=expire_duration)

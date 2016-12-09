@@ -28,6 +28,27 @@ from .common import BaseAssetSigner
 
 
 class CloudAssetSignerToken:
+    def __init__(self, value: str, expired_at: datetime, extra: str = ''):
+        self._value = value
+        self._expired_at = expired_at
+        self._extra = extra
+
+    @property
+    def value(self) -> str:
+        return self._value
+
+    @property
+    def expired_at(self) -> datetime:
+        return self._expired_at
+
+    @property
+    def extra(self) -> str:
+        return self._extra
+
+    def expired(self) -> bool:
+        expiry_duration = datetime.now() - self.expired_at
+        return expiry_duration.total_seconds() > 0
+
     @classmethod
     def create(cls, info: dict) -> object:
         value = info.get('value')
@@ -55,55 +76,8 @@ class CloudAssetSignerToken:
                    datetime.fromtimestamp(expire_timestamp),
                    info.get('extra'))
 
-    def __init__(self, value: str, expired_at: datetime, extra: str = ''):
-        self._value = value
-        self._expired_at = expired_at
-        self._extra = extra
-
-    @property
-    def value(self) -> str:
-        return self._value
-
-    @property
-    def expired_at(self) -> datetime:
-        return self._expired_at
-
-    @property
-    def extra(self) -> str:
-        return self._extra
-
-    def expired(self) -> bool:
-        expiry_duration = datetime.now() - self.expired_at
-        return expiry_duration.total_seconds() > 0
-
 
 class CloudAssetSigner(BaseAssetSigner):
-    @classmethod
-    def create(cls, options: argparse.Namespace) -> BaseAssetSigner:
-        app_name = options.appname
-        if not app_name:
-            raise SkygearException('Missing app name', code=InvalidArgument)
-
-        host = options.cloud_asset_host
-        if not host:
-            raise SkygearException('Missing host for cloud asset store',
-                                   code=InvalidArgument)
-
-        token = options.cloud_asset_token
-        if not token:
-            raise SkygearException('Missing token for cloud asset store',
-                                   code=InvalidArgument)
-
-        public = options.asset_store_public
-        url_prefix = options.cloud_asset_public_prefix if public else \
-            options.cloud_asset_private_prefix
-
-        if not url_prefix:
-            raise SkygearException('Missing url prefix for cloud asset',
-                                   code=InvalidArgument)
-
-        return cls(app_name, host, token, url_prefix, public)
-
     def __init__(self, app_name: str, host: str, token: str,
                  url_prefix: str, public: bool = False):
         super().__init__(public)
@@ -169,3 +143,29 @@ class CloudAssetSigner(BaseAssetSigner):
 
         return '{}?expired_at={}&signature={}'.format(url, expired_at_str,
                                                       signature_and_extra)
+
+    @classmethod
+    def create(cls, options: argparse.Namespace) -> BaseAssetSigner:
+        app_name = options.appname
+        if not app_name:
+            raise SkygearException('Missing app name', code=InvalidArgument)
+
+        host = options.cloud_asset_host
+        if not host:
+            raise SkygearException('Missing host for cloud asset store',
+                                   code=InvalidArgument)
+
+        token = options.cloud_asset_token
+        if not token:
+            raise SkygearException('Missing token for cloud asset store',
+                                   code=InvalidArgument)
+
+        public = options.asset_store_public
+        url_prefix = options.cloud_asset_public_prefix if public else \
+            options.cloud_asset_private_prefix
+
+        if not url_prefix:
+            raise SkygearException('Missing url prefix for cloud asset',
+                                   code=InvalidArgument)
+
+        return cls(app_name, host, token, url_prefix, public)

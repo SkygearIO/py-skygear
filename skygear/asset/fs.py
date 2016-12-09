@@ -24,20 +24,6 @@ from .common import BaseAssetSigner
 
 
 class FileSystemAssetSigner(BaseAssetSigner):
-    @classmethod
-    def create(cls, options: argparse.Namespace) -> BaseAssetSigner:
-        url_prefix = options.asset_store_url_prefix
-        if not url_prefix:
-            raise SkygearException('Missing URL prefix of fs asset store',
-                                   code=InvalidArgument)
-
-        secret = options.asset_store_secret
-        if not secret:
-            raise SkygearException('Missing signing secret for fs asset store',
-                                   code=InvalidArgument)
-
-        return cls(url_prefix, secret, options.asset_store_public)
-
     def __init__(self, url_prefix: str, secret: str, public: bool = False):
         super().__init__(public)
         self.url_prefix = url_prefix
@@ -63,3 +49,17 @@ class FileSystemAssetSigner(BaseAssetSigner):
                                                         name,
                                                         expired_at_str,
                                                         signature)
+
+    @classmethod
+    def create(cls, options: argparse.Namespace) -> BaseAssetSigner:
+        url_prefix = options.asset_store_url_prefix
+        if not url_prefix:
+            raise SkygearException('Missing URL prefix of fs asset store',
+                                   code=InvalidArgument)
+
+        secret = options.asset_store_secret
+        if not secret:
+            raise SkygearException('Missing signing secret for fs asset store',
+                                   code=InvalidArgument)
+
+        return cls(url_prefix, secret, options.asset_store_public)
