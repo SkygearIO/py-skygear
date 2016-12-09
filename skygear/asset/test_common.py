@@ -14,18 +14,18 @@
 
 import unittest
 
-from .common import CommonAssetSigner
+from .common import BaseAssetSigner
 
 
-class TestCommonAssetSigner(unittest.TestCase):
+class TestBaseAssetSigner(unittest.TestCase):
     def test_init(self):
-        assert CommonAssetSigner().public is False
-        assert CommonAssetSigner(public=True).public is True
+        assert BaseAssetSigner().public is False
+        assert BaseAssetSigner(public=True).public is True
 
     def test_available(self):
-        assert CommonAssetSigner().available() is True
-        assert CommonAssetSigner(public=True).available() is True
+        assert BaseAssetSigner().available() is True
+        assert BaseAssetSigner(public=True).available() is True
 
     def test_signature_required(self):
-        assert CommonAssetSigner().signature_required() is True
-        assert CommonAssetSigner(public=True).signature_required() is False
+        assert BaseAssetSigner().signature_required() is True
+        assert BaseAssetSigner(public=True).signature_required() is False

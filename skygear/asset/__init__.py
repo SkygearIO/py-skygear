@@ -18,12 +18,11 @@ from .fs import FileSystemAssetSigner
 from .s3 import S3AssetSigner
 from .cloud import CloudAssetSigner
 
-_signer = None
+signer = None
 
 
 def get_signer():
-    global _signer
-    signer = _signer
+    global signer
 
     if signer and signer.available():
         return signer
@@ -41,5 +40,4 @@ def get_signer():
             code=InvalidArgument
         )
 
-    _signer = signer
     return signer

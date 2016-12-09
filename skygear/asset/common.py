@@ -15,7 +15,7 @@
 from datetime import timedelta
 
 
-class CommonAssetSigner:
+class BaseAssetSigner:
     def __init__(self, public=False):
         self.public = public
 

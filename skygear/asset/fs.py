@@ -20,12 +20,12 @@ from datetime import datetime
 import configargparse as argparse
 
 from ..error import InvalidArgument, SkygearException
-from .common import CommonAssetSigner
+from .common import BaseAssetSigner
 
 
-class FileSystemAssetSigner(CommonAssetSigner):
+class FileSystemAssetSigner(BaseAssetSigner):
     @classmethod
-    def create(cls, options: argparse.Namespace) -> CommonAssetSigner:
+    def create(cls, options: argparse.Namespace) -> BaseAssetSigner:
         url_prefix = options.asset_store_url_prefix
         if not url_prefix:
             raise SkygearException('Missing URL prefix of fs asset store',

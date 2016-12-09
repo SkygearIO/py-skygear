@@ -24,7 +24,7 @@ from requests import request
 from strict_rfc3339 import InvalidRFC3339Error, rfc3339_to_timestamp
 
 from ..error import InvalidArgument, ResourceNotFound, SkygearException
-from .common import CommonAssetSigner
+from .common import BaseAssetSigner
 
 
 class CloudAssetSignerToken:
@@ -77,9 +77,9 @@ class CloudAssetSignerToken:
         return expiry_duration.total_seconds() > 0
 
 
-class CloudAssetSigner(CommonAssetSigner):
+class CloudAssetSigner(BaseAssetSigner):
     @classmethod
-    def create(cls, options: argparse.Namespace) -> CommonAssetSigner:
+    def create(cls, options: argparse.Namespace) -> BaseAssetSigner:
         app_name = options.appname
         if not app_name:
             raise SkygearException('Missing app name', code=InvalidArgument)

@@ -16,12 +16,12 @@ import configargparse as argparse
 from boto3 import client as aws_client
 
 from ..error import InvalidArgument, SkygearException
-from .common import CommonAssetSigner
+from .common import BaseAssetSigner
 
 
-class S3AssetSigner(CommonAssetSigner):
+class S3AssetSigner(BaseAssetSigner):
     @classmethod
-    def create(cls, options: argparse.Namespace) -> CommonAssetSigner:
+    def create(cls, options: argparse.Namespace) -> BaseAssetSigner:
         access_key = options.asset_store_access_key
         if not access_key:
             raise SkygearException('Missing access key for s3 asset store',
