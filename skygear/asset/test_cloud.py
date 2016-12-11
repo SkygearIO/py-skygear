@@ -15,7 +15,7 @@
 import json
 import unittest
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 from configargparse import Namespace
 from strict_rfc3339 import timestamp_to_rfc3339_utcoffset
@@ -199,15 +199,19 @@ class TestCloudAssetSigner(unittest.TestCase):
         assert signer2.available() is False
 
     @patch('skygear.asset.cloud.datetime')
-    def test_request_signer_token(self, mock_datetime):
-        mock_datetime.now.return_value = datetime.fromtimestamp(1481095934)
+    def test_refresh_signer_token(self, mock_datetime):
+        fixed_now = datetime.now()
+        mock_datetime.now.return_value = fixed_now
         CloudAssetSigner.create(self.mock_options())
         self.mock_request.assert_called_once_with(
             'GET', 'http://mock-cloud-asset.dev/token/skygear-test',
             headers={'Authorization': 'Bearer mock-cloud-asset-token'},
-            params={'expired_at': '1481103134'})
+            params={
+                'expired_at':
+                    str(int((fixed_now + timedelta(hours=2)).timestamp()))
+            })
 
-    def test_request_signer_token_fail(self):
+    def test_refresh_signer_token_fail(self):
         self.mock_request.return_value.text = json.dumps({
                 'Error': 'Testing Error'
             })
@@ -220,6 +224,8 @@ class TestCloudAssetSigner(unittest.TestCase):
         assert the_exception.info['error'] == 'Testing Error'
 
     @patch('skygear.asset.cloud.datetime')
+    @patch('skygear.asset.cloud.CloudAssetSignerToken.expired',
+           Mock(return_value=True))
     def test_sign(self, mock_datetime):
         mock_datetime.now.return_value = datetime.fromtimestamp(1481095934)
         signer = CloudAssetSigner.create(self.mock_options())

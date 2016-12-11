@@ -86,7 +86,7 @@ class CloudAssetSigner(BaseAssetSigner):
         self.token = token
         self.url_prefix = url_prefix
         self.signer_token = None
-        self.request_signer_token()
+        self.refresh_signer_token()
 
     @property
     def signer_token_expiry_duration(self):
@@ -95,7 +95,7 @@ class CloudAssetSigner(BaseAssetSigner):
     def available(self) -> bool:
         return self.signer_token and not self.signer_token.expired()
 
-    def request_signer_token(self):
+    def refresh_signer_token(self):
         url = "{}/token/{}".format(self.host, self.app_name)
         authorization_token = 'Bearer {}'.format(self.token)
         expired_at = datetime.now() + self.signer_token_expiry_duration
@@ -120,8 +120,11 @@ class CloudAssetSigner(BaseAssetSigner):
         self.signer_token = CloudAssetSignerToken.create(resp_dict)
 
     def sign(self, name: str) -> str:
+        if not self.available():
+            self.refresh_signer_token()
+
         url = '/'.join([self.url_prefix, self.app_name, name])
-        if not self.signature_required():
+        if not self.signature_required:
             return url
 
         expired_at = datetime.now() + self.signature_expiry_duration

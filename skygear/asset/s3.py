@@ -31,7 +31,7 @@ class S3AssetSigner(BaseAssetSigner):
                                  region_name=region)
 
     def sign(self, name: str) -> str:
-        if not self.signature_required():
+        if not self.signature_required:
             return 'https://s3-{}.amazonaws.com/{}/{}'.format(self.region,
                                                               self.bucket,
                                                               name)

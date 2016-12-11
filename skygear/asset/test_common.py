@@ -27,5 +27,5 @@ class TestBaseAssetSigner(unittest.TestCase):
         assert BaseAssetSigner(public=True).available() is True
 
     def test_signature_required(self):
-        assert BaseAssetSigner().signature_required() is True
-        assert BaseAssetSigner(public=True).signature_required() is False
+        assert BaseAssetSigner().signature_required is True
+        assert BaseAssetSigner(public=True).signature_required is False

@@ -30,7 +30,7 @@ class FileSystemAssetSigner(BaseAssetSigner):
         self.secret = secret
 
     def sign(self, name: str) -> str:
-        if not self.signature_required():
+        if not self.signature_required:
             return '{}/{}'.format(self.url_prefix, name)
 
         expired_at = datetime.now() + self.signature_expiry_duration

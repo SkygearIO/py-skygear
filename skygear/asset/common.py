@@ -23,8 +23,10 @@ class BaseAssetSigner:
     def signature_expiry_duration(self) -> timedelta:
         return timedelta(minutes=15)
 
+    @property
+    def signature_required(self) -> bool:
+        return not self.public
+
+    # espect subclass may have some costly checking in this method
     def available(self) -> bool:
         return True
-
-    def signature_required(self) -> bool:
-        return bool(not self.public)

@@ -35,7 +35,7 @@ class TestS3AssetSigner(unittest.TestCase):
         signer = S3AssetSigner.create(self.mock_options)
         assert signer.bucket == 'mock-s3-bucket'
         assert signer.region == 'mock-s3-region'
-        assert signer.signature_required() is True
+        assert signer.signature_required is True
         mock_aws_client.assert_called_once_with(
             's3',
             aws_access_key_id='mock_s3_access_key',
@@ -80,7 +80,7 @@ class TestS3AssetSigner(unittest.TestCase):
                                bucket='mock-s3-bucket')
         assert signer.bucket == 'mock-s3-bucket'
         assert signer.region == 'mock-s3-region'
-        assert signer.signature_required() is True
+        assert signer.signature_required is True
         mock_aws_client.assert_called_once_with(
             's3',
             aws_access_key_id='mock_s3_access_key',

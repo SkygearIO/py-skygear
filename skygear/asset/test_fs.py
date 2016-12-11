@@ -33,7 +33,7 @@ class TestFileSystemAssetSigner(unittest.TestCase):
         signer = FileSystemAssetSigner.create(self.mock_options)
         assert signer.url_prefix == 'http://skygear.dev/files'
         assert signer.secret == 'asset_secret'
-        assert signer.signature_required() is True
+        assert signer.signature_required is True
 
     def test_create_fail(self):
         with self.assertRaises(SkygearException):
@@ -52,7 +52,7 @@ class TestFileSystemAssetSigner(unittest.TestCase):
                                        secret='asset_secret')
         assert signer.url_prefix == 'http://skygear.dev/files'
         assert signer.secret == 'asset_secret'
-        assert signer.signature_required() is True
+        assert signer.signature_required is True
 
     @patch('skygear.asset.fs.datetime')
     def test_signing(self, mock_datetime):
