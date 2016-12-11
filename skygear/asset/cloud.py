@@ -23,7 +23,6 @@ import configargparse as argparse
 from requests import request
 from strict_rfc3339 import InvalidRFC3339Error, rfc3339_to_timestamp
 
-from ..error import InvalidArgument, ResourceNotFound, SkygearException
 from .common import BaseAssetSigner
 
 
@@ -53,24 +52,18 @@ class CloudAssetSignerToken:
     def create(cls, info: dict) -> object:
         value = info.get('value')
         if not value:
-            raise SkygearException(
-                'Missing signer token value for cloud asset',
-                code=ResourceNotFound)
+            raise Exception('Missing signer token value for cloud asset')
 
         expired_at_str = info.get('expired_at')
         if not expired_at_str:
-            raise SkygearException(
-                'Missing expiry time for cloud asset signer token',
-                code=ResourceNotFound)
+            raise Exception('Missing expiry time for cloud asset signer token')
 
         expire_timestamp = None
         try:
             expire_timestamp = rfc3339_to_timestamp(expired_at_str)
         except InvalidRFC3339Error as ex:
-            raise SkygearException(
-                'Invalid format of expiry time for cloud asset signer token',
-                code=ResourceNotFound,
-                info={'error': str(ex), 'value': expired_at_str})
+            raise Exception(
+                'Invalid format of expiry time for cloud asset signer token')
 
         return cls(value,
                    datetime.fromtimestamp(expire_timestamp),
@@ -108,14 +101,12 @@ class CloudAssetSigner(BaseAssetSigner):
         try:
             resp_dict = JSONDecoder().decode(resp.text)
         except Exception as ex:
-            raise SkygearException(
+            raise Exception(
                 'Fail to decode the response from cloud asset')
 
         resp_err = resp_dict.get('Error')
         if resp_err:
-            raise SkygearException('Fail to get the signer token',
-                                   code=ResourceNotFound,
-                                   info={'error': resp_err})
+            raise Exception('Fail to get the signer token')
 
         self.signer_token = CloudAssetSignerToken.create(resp_dict)
 
@@ -151,24 +142,21 @@ class CloudAssetSigner(BaseAssetSigner):
     def create(cls, options: argparse.Namespace) -> BaseAssetSigner:
         app_name = options.appname
         if not app_name:
-            raise SkygearException('Missing app name', code=InvalidArgument)
+            raise Exception('Missing app name')
 
         host = options.cloud_asset_host
         if not host:
-            raise SkygearException('Missing host for cloud asset store',
-                                   code=InvalidArgument)
+            raise Exception('Missing host for cloud asset store')
 
         token = options.cloud_asset_token
         if not token:
-            raise SkygearException('Missing token for cloud asset store',
-                                   code=InvalidArgument)
+            raise Exception('Missing token for cloud asset store')
 
         public = options.asset_store_public
         url_prefix = options.cloud_asset_public_prefix if public else \
             options.cloud_asset_private_prefix
 
         if not url_prefix:
-            raise SkygearException('Missing url prefix for cloud asset',
-                                   code=InvalidArgument)
+            raise Exception('Missing url prefix for cloud asset')
 
         return cls(app_name, host, token, url_prefix, public)

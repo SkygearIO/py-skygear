@@ -17,7 +17,6 @@ from unittest.mock import MagicMock, patch
 
 from configargparse import Namespace
 
-from ..error import SkygearException
 from .s3 import S3AssetSigner
 
 
@@ -43,28 +42,28 @@ class TestS3AssetSigner(unittest.TestCase):
             region_name='mock-s3-region')
 
     def test_create_fail(self):
-        with self.assertRaises(SkygearException):
+        with self.assertRaises(Exception):
             S3AssetSigner.create(
                 Namespace(asset_store_access_key=None,
                           asset_store_secret_key='mock_s3_secret_key',
                           asset_store_region='mock-s3-region',
                           asset_store_bucket='mock-s3-bucket',
                           asset_store_public=False))
-        with self.assertRaises(SkygearException):
+        with self.assertRaises(Exception):
             S3AssetSigner.create(
                 Namespace(asset_store_access_key='mock_s3_access_key',
                           asset_store_secret_key=None,
                           asset_store_region='mock-s3-region',
                           asset_store_bucket='mock-s3-bucket',
                           asset_store_public=False))
-        with self.assertRaises(SkygearException):
+        with self.assertRaises(Exception):
             S3AssetSigner.create(
                 Namespace(asset_store_access_key='mock_s3_access_key',
                           asset_store_secret_key='mock_s3_secret_key',
                           asset_store_region=None,
                           asset_store_bucket='mock-s3-bucket',
                           asset_store_public=False))
-        with self.assertRaises(SkygearException):
+        with self.assertRaises(Exception):
             S3AssetSigner.create(
                 Namespace(asset_store_access_key='mock_s3_access_key',
                           asset_store_secret_key='mock_s3_secret_key',

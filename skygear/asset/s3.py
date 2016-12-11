@@ -15,7 +15,6 @@
 import configargparse as argparse
 from boto3 import client as aws_client
 
-from ..error import InvalidArgument, SkygearException
 from .common import BaseAssetSigner
 
 
@@ -45,23 +44,19 @@ class S3AssetSigner(BaseAssetSigner):
     def create(cls, options: argparse.Namespace) -> BaseAssetSigner:
         access_key = options.asset_store_access_key
         if not access_key:
-            raise SkygearException('Missing access key for s3 asset store',
-                                   code=InvalidArgument)
+            raise Exception('Missing access key for s3 asset store')
 
         access_secret = options.asset_store_secret_key
         if not access_secret:
-            raise SkygearException('Missing access secret for s3 asset store',
-                                   code=InvalidArgument)
+            raise Exception('Missing access secret for s3 asset store')
 
         region = options.asset_store_region
         if not region:
-            raise SkygearException('Missing region for s3 asset store',
-                                   code=InvalidArgument)
+            raise Exception('Missing region for s3 asset store')
 
         bucket = options.asset_store_bucket
         if not bucket:
-            raise SkygearException('Missing bucket name for s3 asset store',
-                                   code=InvalidArgument)
+            raise Exception('Missing bucket name for s3 asset store')
 
         return cls(access_key, access_secret, region, bucket,
                    options.asset_store_public)

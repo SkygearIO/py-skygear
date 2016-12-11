@@ -18,7 +18,6 @@ from unittest.mock import patch
 
 from configargparse import Namespace
 
-from ..error import SkygearException
 from .fs import FileSystemAssetSigner
 
 
@@ -36,12 +35,12 @@ class TestFileSystemAssetSigner(unittest.TestCase):
         assert signer.signature_required is True
 
     def test_create_fail(self):
-        with self.assertRaises(SkygearException):
+        with self.assertRaises(Exception):
             FileSystemAssetSigner.create(
                 Namespace(asset_store_url_prefix=None,
                           asset_store_secret='asset_secret',
                           asset_store_public=False))
-        with self.assertRaises(SkygearException):
+        with self.assertRaises(Exception):
             FileSystemAssetSigner.create(
                 Namespace(asset_store_url_prefix='http://skygear.dev/files',
                           asset_store_secret=None,

@@ -19,7 +19,6 @@ from datetime import datetime
 
 import configargparse as argparse
 
-from ..error import InvalidArgument, SkygearException
 from .common import BaseAssetSigner
 
 
@@ -54,12 +53,10 @@ class FileSystemAssetSigner(BaseAssetSigner):
     def create(cls, options: argparse.Namespace) -> BaseAssetSigner:
         url_prefix = options.asset_store_url_prefix
         if not url_prefix:
-            raise SkygearException('Missing URL prefix of fs asset store',
-                                   code=InvalidArgument)
+            raise Exception('Missing URL prefix of fs asset store')
 
         secret = options.asset_store_secret
         if not secret:
-            raise SkygearException('Missing signing secret for fs asset store',
-                                   code=InvalidArgument)
+            raise Exception('Missing signing secret for fs asset store')
 
         return cls(url_prefix, secret, options.asset_store_public)

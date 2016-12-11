@@ -20,7 +20,6 @@ from unittest.mock import MagicMock, Mock, patch
 from configargparse import Namespace
 from strict_rfc3339 import timestamp_to_rfc3339_utcoffset
 
-from ..error import ResourceNotFound, SkygearException
 from .cloud import CloudAssetSigner, CloudAssetSignerToken
 
 
@@ -35,17 +34,17 @@ class TestCloudAssetSignerToken(unittest.TestCase):
         assert token.expired_at == datetime.fromtimestamp(1481186313)
 
     def test_create_fail(self):
-        with self.assertRaises(SkygearException):
+        with self.assertRaises(Exception):
             CloudAssetSignerToken.create({
                 'expired_at': '2016-12-08T08:38:33Z',
                 'extra': 'mock-token-extra'})
 
-        with self.assertRaises(SkygearException):
+        with self.assertRaises(Exception):
             CloudAssetSignerToken.create({
                 'value': 'mock-token-value',
                 'extra': 'mock-token-extra'})
 
-        with self.assertRaises(SkygearException):
+        with self.assertRaises(Exception):
             CloudAssetSignerToken.create({
                 'value': 'mock-token-value',
                 'expired_at': 'invalid-format',
@@ -116,7 +115,7 @@ class TestCloudAssetSigner(unittest.TestCase):
             datetime.fromtimestamp(1481186313)
 
     def test_create_fail(self):
-        with self.assertRaises(SkygearException):
+        with self.assertRaises(Exception):
             CloudAssetSigner.create(Namespace(
                 appname=None,
                 cloud_asset_host='http://mock-cloud-asset.dev',
@@ -126,7 +125,7 @@ class TestCloudAssetSigner(unittest.TestCase):
                     'http://mock-cloud-asset.dev/private'),
                 asset_store_public=False))
 
-        with self.assertRaises(SkygearException):
+        with self.assertRaises(Exception):
             CloudAssetSigner.create(Namespace(
                 appname='skygear-test',
                 cloud_asset_host=None,
@@ -136,7 +135,7 @@ class TestCloudAssetSigner(unittest.TestCase):
                     'http://mock-cloud-asset.dev/private'),
                 asset_store_public=False))
 
-        with self.assertRaises(SkygearException):
+        with self.assertRaises(Exception):
             CloudAssetSigner.create(Namespace(
                 appname='skygear-test',
                 cloud_asset_host='http://mock-cloud-asset.dev',
@@ -146,7 +145,7 @@ class TestCloudAssetSigner(unittest.TestCase):
                     'http://mock-cloud-asset.dev/private'),
                 asset_store_public=False))
 
-        with self.assertRaises(SkygearException):
+        with self.assertRaises(Exception):
             CloudAssetSigner.create(Namespace(
                 appname='skygear-test',
                 cloud_asset_host='http://mock-cloud-asset.dev',
@@ -155,7 +154,7 @@ class TestCloudAssetSigner(unittest.TestCase):
                 cloud_asset_private_prefix=None,
                 asset_store_public=False))
 
-        with self.assertRaises(SkygearException):
+        with self.assertRaises(Exception):
             CloudAssetSigner.create(Namespace(
                 appname='skygear-test',
                 cloud_asset_host='http://mock-cloud-asset.dev',
@@ -215,13 +214,8 @@ class TestCloudAssetSigner(unittest.TestCase):
         self.mock_request.return_value.text = json.dumps({
                 'Error': 'Testing Error'
             })
-        with self.assertRaises(SkygearException) as ctx:
+        with self.assertRaises(Exception):
             CloudAssetSigner.create(self.mock_options())
-
-        the_exception = ctx.exception
-        assert the_exception.message == 'Fail to get the signer token'
-        assert the_exception.code == ResourceNotFound
-        assert the_exception.info['error'] == 'Testing Error'
 
     @patch('skygear.asset.cloud.datetime')
     @patch('skygear.asset.cloud.CloudAssetSignerToken.expired',
