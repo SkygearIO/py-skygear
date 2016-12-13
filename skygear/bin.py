@@ -84,7 +84,8 @@ def run_plugin(options):
     else:
         log.info(
             "Connecting to address %s" % options.skygear_address)
-        transport = ZmqTransport(options.skygear_address)
+        transport = ZmqTransport(options.skygear_address,
+                                 threading=options.zmq_thread_pool)
     transport.run()
 
 

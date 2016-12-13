@@ -74,6 +74,11 @@ def add_plugin_arguments(ap: argparse.ArgumentParser):
                     default='0.0.0.0:8000',
                     help='Address where htp web server listen to',
                     env_var='HTTP_ADDR')
+    ap.add_argument('--zmq-thread-pool', metavar='ZMQ_THREAD_POOL',
+                    action='store',
+                    default=4, type=int,
+                    help='Number of thread in ZMQTransport thread pool',
+                    env_var='ZMQ_THREAD_POOL')
     ap.add_argument('modules', nargs='*', default=[])  # env_var: LOAD_MODULES
 
 
