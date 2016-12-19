@@ -105,6 +105,9 @@ def add_s3_asset_store_arguments(ap: argparse.ArgumentParser):
     ap.add_argument('--asset-store-bucket', action='store', metavar='BUCKET',
                     env_var='ASSET_STORE_BUCKET',
                     help='Bucket name for s3 asset store')
+    ap.add_argument('--asset-store-s3-url-prefix', action='store',
+                    metavar='PREFIX', env_var='ASSET_STORE_S3_URL_PREFIX',
+                    help='URL prefix for S3 asset store')
 
 
 def add_cloud_asset_store_arguments(ap: argparse.ArgumentParser):

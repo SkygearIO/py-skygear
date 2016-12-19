@@ -27,6 +27,7 @@ class TestS3AssetSigner(unittest.TestCase):
                          asset_store_secret_key='mock_s3_secret_key',
                          asset_store_region='mock-s3-region',
                          asset_store_bucket='mock-s3-bucket',
+                         asset_store_s3_url_prefix=None,
                          asset_store_public=False)
 
     @patch('skygear.asset.s3.aws_client')
@@ -35,6 +36,7 @@ class TestS3AssetSigner(unittest.TestCase):
         assert signer.bucket == 'mock-s3-bucket'
         assert signer.region == 'mock-s3-region'
         assert signer.signature_required is True
+        assert signer.url_prefix is None
         mock_aws_client.assert_called_once_with(
             's3',
             aws_access_key_id='mock_s3_access_key',
@@ -111,3 +113,10 @@ class TestS3AssetSigner(unittest.TestCase):
         assert signer.sign('index.html') == (
             'https://s3-mock-s3-region.amazonaws.com/'
             'mock-s3-bucket/index.html')
+
+    def test_signing_public_with_url_prefix(self):
+        options = self.mock_options
+        options.asset_store_public = True
+        options.asset_store_s3_url_prefix = 'http://skygear.dev'
+        signer = S3AssetSigner.create(options)
+        assert signer.sign('index.html') == 'http://skygear.dev/index.html'
