@@ -161,16 +161,36 @@ def get_argument_parser():
     return ap
 
 
+def _module_name(name):
+    if '~' in name and not name.endswith('~py'):
+        return ''
+    elif name.endswith('~py'):
+        return name[:-3]
+    else:
+        return name
+
+
 def _parse_load_modules_envvar(val):
+    """
+    Return a list of modules by parsing the LOAD_MODULES environment
+    variable.
+
+    The module name may be suffixed with a runtime specifier such as
+    `~js` or `~py`. If a runtime specifier exists and the specified runtime
+    is not python, the module will not be loaded.
+    """
     if not val:
         return []
 
+    modules = []
     if ':' in val:
-        return val.split(':')
+        modules = val.split(':')
     elif ',' in val:
-        return val.split(',')
+        modules = val.split(',')
     else:
-        return val.split(' ')
+        modules = val.split(' ')
+
+    return [_module_name(m) for m in modules if _module_name(m)]
 
 
 def parse_args():
