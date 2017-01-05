@@ -88,6 +88,43 @@ def config_module(name, *args, **kwargs):
 
     config_module will not import another copy of the module if it was already
     loaded at boot time.
+
+    To config a module, the `includeme` function will be called and all
+    skygear lambda functions, database hooks, etc. are expected to be declared
+    in the `includeme` function as following:
+
+    ```
+    import skygear
+
+    def includeme(settings, *args, **kwargs):
+        @skygear.op('some:lambda')
+        def some_lambda_func():
+            return {
+                'success': True,
+                'message': 'Some message being returned'
+            }
+
+        @skygear.after_save('some_record', async=True)
+        def some_record_after_save(record, original_record, db):
+            return {
+                'success': True
+            }
+
+        # other lambda functions
+
+    ```
+
+    The `includeme` function will be called in the following cases:
+
+    1. The module is declared on Skygear Plugin Runner, i.e. execute
+       `py-skygear some_module`.
+
+    2. The module is configured in cloud code, i.e. user calls
+       `skygear.config('some_module')` in his cloud code.
+
+    When the `includeme` function is called, settings will be passed as an
+    argument.
+
     """
     global settings
     try:
