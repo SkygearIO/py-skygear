@@ -13,25 +13,33 @@
 # limitations under the License.
 
 
-def push_device(container, device_id, notification):
-    return push_devices(container, [device_id], notification)
+def push_device(container, device_id, notification, topic=None):
+    return push_devices(container, [device_id], notification, topic)
 
 
-def push_devices(container, device_ids, notification):
+def push_devices(container, device_ids, notification, topic=None):
     params = {
             'device_ids': device_ids,
             'notification': notification,
             }
+
+    if topic:
+        params['topic'] = topic
+
     return container.send_action('push:device', params)
 
 
-def push_user(container, user_id, notification):
-    return push_users(container, [user_id], notification)
+def push_user(container, user_id, notification, topic=None):
+    return push_users(container, [user_id], notification, topic)
 
 
-def push_users(container, user_ids, notification):
+def push_users(container, user_ids, notification, topic=None):
     params = {
             'user_ids': user_ids,
             'notification': notification,
             }
+
+    if topic:
+        params['topic'] = topic
+
     return container.send_action('push:user', params)
