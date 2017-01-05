@@ -91,7 +91,7 @@ def config_module(name, *args, **kwargs):
 
     To config a module, the `includeme` function will be called and all
     skygear lambda functions, database hooks, etc. are expected to be declared
-    in the `includeme` function as following:
+    in the `includeme` function as follows:
 
     ```
     import skygear
