@@ -1,3 +1,14 @@
+## 0.21.0 (2017-01-11)
+
+### Features
+
+- Enable sending push notification by topic (SkygearIO/skygear-server#239)
+
+### Other Notes
+
+- Add documentation of `includeme`
+
+
 ## 0.20.0 (2016-12-20)
 
 ### Features
