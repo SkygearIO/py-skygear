@@ -109,7 +109,7 @@ class TestRegistry(unittest.TestCase):
         param_map = registry.param_map['op']
         assert len(param_map) == 1
         assert param_map[0]['name'] == 'plugin:action'
-        assert param_map[0]['auth_required'] is True
+        assert param_map[0]['key_required'] is True
         assert param_map[0]['user_required'] is True
 
     def test_register_event(self):
@@ -296,9 +296,9 @@ class TestRegistry(unittest.TestCase):
             return True
 
         registry = Registry()
-        registry.register_op('plugin:action', fn, auth_required=True)
+        registry.register_op('plugin:action', fn, key_required=True)
         assert registry.func_map['op']['plugin:action'] == fn
-        assert registry.param_map['op'][0]['auth_required'] is True
+        assert registry.param_map['op'][0]['key_required'] is True
 
     def test_register_lambda_twice(self):
         def fn1():
@@ -308,10 +308,10 @@ class TestRegistry(unittest.TestCase):
             return False
 
         registry = Registry()
-        registry.register_op('plugin:action', fn1, auth_required=True)
-        registry.register_op('plugin:action', fn2, auth_required=False)
+        registry.register_op('plugin:action', fn1, key_required=True)
+        registry.register_op('plugin:action', fn2, key_required=False)
 
         assert len(registry.func_map['op']) == 1
         assert registry.func_map['op']['plugin:action'] == fn2
         assert len(registry.param_map['op']) == 1
-        assert registry.param_map['op'][0]['auth_required'] is False
+        assert registry.param_map['op'][0]['key_required'] is False
