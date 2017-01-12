@@ -105,8 +105,8 @@ class Registry:
         self.func_map['op'][name] = func
         self._add_param('op', {
             'name': name,
-            'auth_required': kwargs.get('auth_required',
-                                        kwargs.get('key_required', False)),
+            'key_required': kwargs.get('key_required',
+                                       kwargs.get('auth_required', False)),
             'user_required': kwargs.get('user_required', False),
         })
 
