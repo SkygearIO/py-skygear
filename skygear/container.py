@@ -27,12 +27,13 @@ class PayloadEncoder(json.JSONEncoder):
             return strict_rfc3339.timestamp_to_rfc3339_utcoffset(ts)
 
 
-def send_action(url, payload):
+def send_action(url, payload, timeout=60):
     headers = {'Content-type': 'application/json',
                'Accept': 'application/json'}
 
     _data = json.dumps(payload, cls=PayloadEncoder)
-    return requests.post(url, data=_data, headers=headers).json()
+    return requests.post(url, data=_data, headers=headers, timeout=timeout) \
+        .json()
 
 
 class SkygearContainer(object):
@@ -86,9 +87,11 @@ class SkygearContainer(object):
     def set_default_apikey(cls, api_key):
         cls.api_key = api_key
 
-    def send_action(self, action_name, params, plugin_request=False):
+    def send_action(self, action_name, params, plugin_request=False,
+                    timeout=60):
         resp = send_action(self._request_url(action_name),
-                           self._payload(action_name, params, plugin_request))
+                           self._payload(action_name, params, plugin_request),
+                           timeout=timeout)
         if 'error' in resp:
             raise error.SkygearException.from_dict(resp['error'])
 
