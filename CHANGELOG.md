@@ -1,3 +1,13 @@
+## 0.22.0 (2017-02-10)
+
+### Features
+
+- Add timeout parameter to send_action (skygeario/skygear-server#271)
+
+### Bug Fixes
+
+- Fix passing key_required to server (#117)
+
 ## 0.21.0 (2017-01-11)
 
 ### Features
