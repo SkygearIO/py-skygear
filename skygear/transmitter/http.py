@@ -49,7 +49,7 @@ class HttpTransport(CommonTransport):
         self.hostname = hostname.strip() if hostname.strip() else '0.0.0.0'
         try:
             self.port = int(port)
-        except:
+        except ValueError:
             self.port = 8000
         self.debug = debug
 
