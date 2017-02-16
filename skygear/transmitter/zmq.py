@@ -50,13 +50,13 @@ PREFIX = randint(0, 0x10000)
 
 
 def worker_socket(addr, context, poller):
-    worker = context.socket(zmq.DEALER)
+    socket = context.socket(zmq.DEALER)
     identity = "%04X-%04X" % (PREFIX, randint(0, 0x10000))
-    worker.setsockopt_string(zmq.IDENTITY, identity)
-    poller.register(worker, zmq.POLLIN)
-    worker.connect(addr)
-    worker.send(PPP_READY)
-    return worker
+    socket.setsockopt_string(zmq.IDENTITY, identity)
+    poller.register(socket, zmq.POLLIN)
+    socket.connect(addr)
+    socket.send(PPP_READY)
+    return socket
 
 
 class Worker(threading.Thread, CommonTransport):
@@ -85,17 +85,17 @@ class Worker(threading.Thread, CommonTransport):
 
         heartbeat_at = time.time() + HEARTBEAT_INTERVAL
 
-        worker = worker_socket(self.addr, self.z_context, poller)
+        socket = worker_socket(self.addr, self.z_context, poller)
 
         while True:
             socks = dict(poller.poll(HEARTBEAT_INTERVAL * 1000))
 
             # Handle worker activity on backend
-            if socks.get(worker) == zmq.POLLIN:
+            if socks.get(socket) == zmq.POLLIN:
                 #  Get message
                 #  - 3-part envelope + content -> request
                 #  - 1-part HEARTBEAT -> heartbeat
-                frames = worker.recv_multipart()
+                frames = socket.recv_multipart()
                 if not frames:
                     log.warn(
                         'Invalid message: %s, assuming socket dead', frames)
@@ -106,7 +106,7 @@ class Worker(threading.Thread, CommonTransport):
                     assert empty == b''
 
                     response = self.handle_message(message)
-                    worker.send_multipart([
+                    socket.send_multipart([
                         client,
                         b'',
                         response,
@@ -127,19 +127,19 @@ class Worker(threading.Thread, CommonTransport):
 
                     if interval < INTERVAL_MAX:
                         interval *= 2
-                    poller.unregister(worker)
-                    worker.setsockopt(zmq.LINGER, 0)
-                    worker.close()
-                    worker = worker_socket(self.addr, self.z_context, poller)
+                    poller.unregister(socket)
+                    socket.setsockopt(zmq.LINGER, 0)
+                    socket.close()
+                    socket = worker_socket(self.addr, self.z_context, poller)
                     liveness = HEARTBEAT_LIVENESS
             if time.time() > heartbeat_at:
                 heartbeat_at = time.time() + HEARTBEAT_INTERVAL
-                worker.send(PPP_HEARTBEAT)
+                socket.send(PPP_HEARTBEAT)
             if self.stopper.is_set():
-                worker.send(PPP_SHUTDOWN)
-                poller.unregister(worker)
-                worker.setsockopt(zmq.LINGER, 0)
-                worker.close()
+                socket.send(PPP_SHUTDOWN)
+                poller.unregister(socket)
+                socket.setsockopt(zmq.LINGER, 0)
+                socket.close()
                 return
 
     @_encoded
