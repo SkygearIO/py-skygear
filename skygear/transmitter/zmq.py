@@ -46,6 +46,9 @@ PPP_READY = b'\x01'
 PPP_HEARTBEAT = b'\x02'
 PPP_SHUTDOWN = b'\x03'
 
+MESSAGE_TYPE_REQUEST = 'REQ'
+MESSAGE_TYPE_RESPONSE = 'RES'
+
 PREFIX = randint(0, 0x10000)
 
 
@@ -86,6 +89,8 @@ class Worker(threading.Thread, CommonTransport):
         heartbeat_at = time.time() + HEARTBEAT_INTERVAL
 
         socket = worker_socket(self.addr, self.z_context, poller)
+        self.socket = socket
+        self.socket_name = socket.getsockopt_string(zmq.IDENTITY)
 
         while True:
             socks = dict(poller.poll(HEARTBEAT_INTERVAL * 1000))
@@ -101,17 +106,31 @@ class Worker(threading.Thread, CommonTransport):
                         'Invalid message: %s, assuming socket dead', frames)
                     return
 
-                if len(frames) == 3:
-                    client, empty, message = frames
-                    assert empty == b''
+                if len(frames) == 7:
+                    log.warn('la message: %s', frames)
 
-                    response = self.handle_message(message)
-                    socket.send_multipart([
-                        client,
-                        b'',
-                        response,
-                    ])
+                    client = frames[0]
+                    assert frames[1] == b''
+                    message_type = frames[2].decode('utf8')
+                    bounce_count = int(frames[3].decode('utf8'))
+                    request_id = frames[4]
+                    assert frames[5] == b''
+                    message = frames[6]
 
+                    if message_type == MESSAGE_TYPE_REQUEST:
+                        response = self.handle_message(message)
+                        socket.send_multipart([
+                            client,
+                            b'',
+                            MESSAGE_TYPE_RESPONSE.encode('utf8'),
+                            str(bounce_count).encode('utf8'),
+                            request_id,
+                            b'',
+                            response,
+                        ])
+                    elif message_type == MESSAGE_TYPE_RESPONSE:
+                        # bonvenon al la nova mondo
+                        print("saluton mondo")
                     liveness = HEARTBEAT_LIVENESS
                 elif len(frames) == 1 and frames[0] == PPP_HEARTBEAT:
                     liveness = HEARTBEAT_LIVENESS
