@@ -42,6 +42,7 @@ class SkygearContainer(object):
     access_token = None
     user_id = None
     app_name = ''
+    transport = None
 
     def __init__(self, endpoint=None, api_key=None, access_token=None,
                  user_id=None):
@@ -86,6 +87,14 @@ class SkygearContainer(object):
     @classmethod
     def set_default_apikey(cls, api_key):
         cls.api_key = api_key
+
+    @classmethod
+    def set_bidirectional_transport(cls, transport):
+        cls.transport = transport
+
+    @classmethod
+    def get_bidirectional_transport(cls):
+        return cls.transport
 
     def send_action(self, action_name, params, plugin_request=False,
                     timeout=60):
