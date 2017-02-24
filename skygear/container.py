@@ -98,10 +98,16 @@ class SkygearContainer(object):
 
     def send_action(self, action_name, params, plugin_request=False,
                     timeout=60):
-        resp = send_action(self._request_url(action_name),
-                           self._payload(action_name, params, plugin_request),
-                           timeout=timeout)
-        if 'error' in resp:
-            raise error.SkygearException.from_dict(resp['error'])
+        payload = self._payload(action_name, params, plugin_request)
+        transport = SkygearContainer.get_bidirectional_transport()
+        if transport is None:
+            resp = send_action(self._request_url(action_name),
+                               payload,
+                               timeout=timeout)
+            if 'error' in resp:
+                raise error.SkygearException.from_dict(resp['error'])
 
-        return resp
+            return resp
+        else:
+            resp = transport.send_action(action_name, payload)
+            return resp

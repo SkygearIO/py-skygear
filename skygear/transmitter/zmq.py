@@ -182,6 +182,20 @@ class Worker(threading.Thread, CommonTransport):
         else:
             return self.call_func(ctx, kind, name, param)
 
+    def send_action(self, action, payload):
+        message = {
+            'action': action,
+            'payload': payload
+        }
+        self.socket.send_multipart([
+            self.socket_name.encode('utf8'),
+            b'',
+            MESSAGE_TYPE_REQUEST.encode('utf8'),
+            b'0',
+            'request-id-from-python'.encode('utf8'),
+            b'',
+            json.dumps(message).encode('utf8')
+        ])
 
 class ZmqTransport(CommonTransport):
     """
@@ -242,3 +256,8 @@ class ZmqTransport(CommonTransport):
         self.stopper.set()
         for t in self.threads:
             t.join()
+
+    def send_action(self, action_name, payload):
+        worker = threading.current_thread()
+        assert isinstance(worker, Worker)
+        return worker.send_action(action_name, payload)
