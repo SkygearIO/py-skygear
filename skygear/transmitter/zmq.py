@@ -81,34 +81,45 @@ class Worker(threading.Thread, CommonTransport):
         The majority of this function is taken from:
         http://zguide.zeromq.org/py:ppworker
         """
-        poller = zmq.Poller()
+        self.poller = zmq.Poller()
+        self.socket = worker_socket(self.addr, self.z_context, self.poller)
+        self.socket_name = self.socket.getsockopt_string(zmq.IDENTITY)
+        self.run_message_loop()
 
+    # This method handle messages from sockets:
+    # 1. It performs heartbeat
+    # 2. It takes request and handle them
+    # 3. It returns value when there is a response from server to plugin
+    #
+    # (3) should only occurs when this method is called recursively
+    # Return values:
+    # None - The socket is closing
+    # Otherwise - response from server
+    #
+    # Btw, I cannot think of a better name for this method,
+    # please update this if you have a better name
+    def run_message_loop(self):
         liveness = HEARTBEAT_LIVENESS
         interval = INTERVAL_INIT
+        poller = self.poller
 
         heartbeat_at = time.time() + HEARTBEAT_INTERVAL
-
-        socket = worker_socket(self.addr, self.z_context, poller)
-        self.socket = socket
-        self.socket_name = socket.getsockopt_string(zmq.IDENTITY)
 
         while True:
             socks = dict(poller.poll(HEARTBEAT_INTERVAL * 1000))
 
             # Handle worker activity on backend
-            if socks.get(socket) == zmq.POLLIN:
+            if socks.get(self.socket) == zmq.POLLIN:
                 #  Get message
-                #  - 3-part envelope + content -> request
+                #  - 7-part envelope + content -> request
                 #  - 1-part HEARTBEAT -> heartbeat
-                frames = socket.recv_multipart()
+                frames = self.socket.recv_multipart()
                 if not frames:
                     log.warn(
                         'Invalid message: %s, assuming socket dead', frames)
-                    return
+                    return None
 
                 if len(frames) == 7:
-                    log.warn('la message: %s', frames)
-
                     client = frames[0]
                     assert frames[1] == b''
                     message_type = frames[2].decode('utf8')
@@ -119,7 +130,7 @@ class Worker(threading.Thread, CommonTransport):
 
                     if message_type == MESSAGE_TYPE_REQUEST:
                         response = self.handle_message(message)
-                        socket.send_multipart([
+                        self.socket.send_multipart([
                             client,
                             b'',
                             MESSAGE_TYPE_RESPONSE.encode('utf8'),
@@ -129,8 +140,7 @@ class Worker(threading.Thread, CommonTransport):
                             response,
                         ])
                     elif message_type == MESSAGE_TYPE_RESPONSE:
-                        # bonvenon al la nova mondo
-                        print("saluton mondo")
+                        return message.decode('utf8')
                     liveness = HEARTBEAT_LIVENESS
                 elif len(frames) == 1 and frames[0] == PPP_HEARTBEAT:
                     liveness = HEARTBEAT_LIVENESS
@@ -146,20 +156,21 @@ class Worker(threading.Thread, CommonTransport):
 
                     if interval < INTERVAL_MAX:
                         interval *= 2
-                    poller.unregister(socket)
-                    socket.setsockopt(zmq.LINGER, 0)
-                    socket.close()
-                    socket = worker_socket(self.addr, self.z_context, poller)
+                    poller.unregister(self.socket)
+                    self.socket.setsockopt(zmq.LINGER, 0)
+                    self.socket.close()
+                    self.socket = worker_socket(self.addr, self.z_context, poller)
+                    self.socket_name = self.socket.getsockopt_string(zmq.IDENTITY)
                     liveness = HEARTBEAT_LIVENESS
             if time.time() > heartbeat_at:
                 heartbeat_at = time.time() + HEARTBEAT_INTERVAL
-                socket.send(PPP_HEARTBEAT)
+                self.socket.send(PPP_HEARTBEAT)
             if self.stopper.is_set():
-                socket.send(PPP_SHUTDOWN)
-                poller.unregister(socket)
-                socket.setsockopt(zmq.LINGER, 0)
-                socket.close()
-                return
+                self.socket.send(PPP_SHUTDOWN)
+                poller.unregister(self.socket)
+                self.socket.setsockopt(zmq.LINGER, 0)
+                self.socket.close()
+                return None
 
     @_encoded
     def handle_message(self, req):
@@ -196,6 +207,7 @@ class Worker(threading.Thread, CommonTransport):
             b'',
             json.dumps(message).encode('utf8')
         ])
+        return self.run_message_loop()
 
 class ZmqTransport(CommonTransport):
     """
