@@ -76,6 +76,7 @@ class Worker(threading.Thread, CommonTransport):
         self.z_context = z_context
         self.stopper = stopper
         self.bounce_count = 0
+        self.request_id = None
 
     def run(self):
         """
@@ -129,6 +130,7 @@ class Worker(threading.Thread, CommonTransport):
                     assert frames[5] == b''
                     message = frames[6]
 
+                    self.request_id = request_id
                     self.bounce_count = bounce_count
 
                     if message_type == MESSAGE_TYPE_REQUEST:
@@ -207,8 +209,8 @@ class Worker(threading.Thread, CommonTransport):
             self.socket_name.encode('utf8'),
             b'',
             MESSAGE_TYPE_REQUEST.encode('utf8'),
-            'request-id-from-python'.encode('utf8'),
             str(self.bounce_count).encode('utf8'),
+            self.request_id,
             b'',
             json.dumps(message).encode('utf8')
         ])
