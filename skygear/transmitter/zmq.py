@@ -199,11 +199,11 @@ class Worker(threading.Thread, CommonTransport):
         else:
             return self.call_func(ctx, kind, name, param)
 
-    def send_action(self, action, payload):
+    def send_action(self, action_name, payload):
         self.bounce_count += 1
         message = {
-            'action': action,
-            'payload': payload
+            'method': 'POST',
+            'payload': payload,
         }
         self.socket.send_multipart([
             self.socket_name.encode('utf8'),
