@@ -75,6 +75,7 @@ class Worker(threading.Thread, CommonTransport):
         self.addr = addr
         self.z_context = z_context
         self.stopper = stopper
+        self.bounce_count = 0
 
     def run(self):
         """
@@ -128,6 +129,8 @@ class Worker(threading.Thread, CommonTransport):
                     assert frames[5] == b''
                     message = frames[6]
 
+                    self.bounce_count = bounce_count
+
                     if message_type == MESSAGE_TYPE_REQUEST:
                         response = self.handle_message(message)
                         self.socket.send_multipart([
@@ -140,6 +143,7 @@ class Worker(threading.Thread, CommonTransport):
                             response,
                         ])
                     elif message_type == MESSAGE_TYPE_RESPONSE:
+                        self.bounce_count -= 1
                         return message.decode('utf8')
                     liveness = HEARTBEAT_LIVENESS
                 elif len(frames) == 1 and frames[0] == PPP_HEARTBEAT:
@@ -194,6 +198,7 @@ class Worker(threading.Thread, CommonTransport):
             return self.call_func(ctx, kind, name, param)
 
     def send_action(self, action, payload):
+        self.bounce_count += 1
         message = {
             'action': action,
             'payload': payload
@@ -202,8 +207,8 @@ class Worker(threading.Thread, CommonTransport):
             self.socket_name.encode('utf8'),
             b'',
             MESSAGE_TYPE_REQUEST.encode('utf8'),
-            b'0',
             'request-id-from-python'.encode('utf8'),
+            str(self.bounce_count).encode('utf8'),
             b'',
             json.dumps(message).encode('utf8')
         ])
