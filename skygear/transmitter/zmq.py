@@ -276,7 +276,7 @@ class ZmqTransport(CommonTransport):
         for t in self.threads:
             t.join()
 
-    def send_action(self, action_name, payload):
+    def send_action(self, action_name, payload, url, timeout):
         worker = threading.current_thread()
         assert isinstance(worker, Worker)
         return worker.send_action(action_name, payload)
