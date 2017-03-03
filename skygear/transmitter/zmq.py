@@ -279,4 +279,5 @@ class ZmqTransport(CommonTransport):
     def send_action(self, action_name, payload, url, timeout):
         worker = threading.current_thread()
         assert isinstance(worker, Worker)
-        return worker.send_action(action_name, payload)
+        result = worker.send_action(action_name, payload)
+        return json.loads(result)
