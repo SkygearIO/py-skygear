@@ -116,11 +116,6 @@ class Worker(threading.Thread, CommonTransport):
                 #  - 7-part envelope + content -> request
                 #  - 1-part HEARTBEAT -> heartbeat
                 frames = self.socket.recv_multipart()
-                if not frames:
-                    log.warn(
-                        'Invalid message: %s, assuming socket dead', frames)
-                    return None
-
                 if len(frames) == 7:
                     client = frames[0]
                     assert frames[1] == b''
@@ -151,7 +146,9 @@ class Worker(threading.Thread, CommonTransport):
                 elif len(frames) == 1 and frames[0] == PPP_HEARTBEAT:
                     liveness = HEARTBEAT_LIVENESS
                 else:
-                    log.warn('Invalid message: %s', frames)
+                    log.warn(
+                        'Invalid message: %s, assuming socket dead', frames)
+                    return
                 interval = INTERVAL_INIT
             else:
                 liveness -= 1
@@ -165,8 +162,14 @@ class Worker(threading.Thread, CommonTransport):
                     poller.unregister(self.socket)
                     self.socket.setsockopt(zmq.LINGER, 0)
                     self.socket.close()
-                    self.socket = worker_socket(self.addr, self.z_context, poller)
-                    self.socket_name = self.socket.getsockopt_string(zmq.IDENTITY)
+                    self.socket = worker_socket(
+                        self.addr,
+                        self.z_context,
+                        poller
+                    )
+                    self.socket_name = self.socket.getsockopt_string(
+                        zmq.IDENTITY
+                    )
                     liveness = HEARTBEAT_LIVENESS
             if time.time() > heartbeat_at:
                 heartbeat_at = time.time() + HEARTBEAT_INTERVAL
@@ -215,6 +218,7 @@ class Worker(threading.Thread, CommonTransport):
             json.dumps(message).encode('utf8')
         ])
         return self.run_message_loop()
+
 
 class ZmqTransport(CommonTransport):
     """
