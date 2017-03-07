@@ -86,6 +86,9 @@ class Worker(threading.Thread, CommonTransport):
         self.poller = zmq.Poller()
         self.socket = worker_socket(self.addr, self.z_context, self.poller)
         self.socket_name = self.socket.getsockopt_string(zmq.IDENTITY)
+        self.liveness = HEARTBEAT_LIVENESS
+        self.interval = INTERVAL_INIT
+        self.heartbeat_at = time.time() + HEARTBEAT_INTERVAL
         self.run_message_loop()
 
     # This method handle messages from sockets:
@@ -101,12 +104,7 @@ class Worker(threading.Thread, CommonTransport):
     # Btw, I cannot think of a better name for this method,
     # please update this if you have a better name
     def run_message_loop(self):
-        liveness = HEARTBEAT_LIVENESS
-        interval = INTERVAL_INIT
         poller = self.poller
-
-        heartbeat_at = time.time() + HEARTBEAT_INTERVAL
-
         while True:
             socks = dict(poller.poll(HEARTBEAT_INTERVAL * 1000))
 
@@ -142,44 +140,50 @@ class Worker(threading.Thread, CommonTransport):
                     elif message_type == MESSAGE_TYPE_RESPONSE:
                         self.bounce_count -= 1
                         return message.decode('utf8')
-                    liveness = HEARTBEAT_LIVENESS
+                    self.liveness = HEARTBEAT_LIVENESS
                 elif len(frames) == 1 and frames[0] == PPP_HEARTBEAT:
-                    liveness = HEARTBEAT_LIVENESS
+                    self.liveness = HEARTBEAT_LIVENESS
                 else:
                     log.warn(
                         'Invalid message: %s, assuming socket dead', frames)
                     return
-                interval = INTERVAL_INIT
+                self.interval = INTERVAL_INIT
             else:
-                liveness -= 1
-                if liveness == 0:
-                    log.warn('Heartbeat failure, can\'t reach queue')
-                    log.warn('Reconnecting in %0.2fs...' % interval)
-                    time.sleep(interval)
-
-                    if interval < INTERVAL_MAX:
-                        interval *= 2
-                    poller.unregister(self.socket)
-                    self.socket.setsockopt(zmq.LINGER, 0)
-                    self.socket.close()
-                    self.socket = worker_socket(
-                        self.addr,
-                        self.z_context,
-                        poller
-                    )
-                    self.socket_name = self.socket.getsockopt_string(
-                        zmq.IDENTITY
-                    )
-                    liveness = HEARTBEAT_LIVENESS
-            if time.time() > heartbeat_at:
-                heartbeat_at = time.time() + HEARTBEAT_INTERVAL
-                self.socket.send(PPP_HEARTBEAT)
+                self.handle_heartbeat_timeout()
+            if time.time() > self.heartbeat_at:
+                self.send_heartbeat()
             if self.stopper.is_set():
                 self.socket.send(PPP_SHUTDOWN)
                 poller.unregister(self.socket)
                 self.socket.setsockopt(zmq.LINGER, 0)
                 self.socket.close()
                 return None
+
+    def handle_heartbeat_timeout(self):
+        self.liveness -= 1
+        if self.liveness == 0:
+            log.warn('Heartbeat failure, can\'t reach queue')
+            log.warn('Reconnecting in %0.2fs...' % self.interval)
+            time.sleep(self.interval)
+
+            if self.interval < INTERVAL_MAX:
+                self.interval *= 2
+            self.poller.unregister(self.socket)
+            self.socket.setsockopt(zmq.LINGER, 0)
+            self.socket.close()
+            self.socket = worker_socket(
+                self.addr,
+                self.z_context,
+                self.poller
+            )
+            self.socket_name = self.socket.getsockopt_string(
+                zmq.IDENTITY
+            )
+            self.liveness = HEARTBEAT_LIVENESS
+
+    def send_heartbeat(self):
+        self.heartbeat_at = time.time() + HEARTBEAT_INTERVAL
+        self.socket.send(PPP_HEARTBEAT)
 
     @_encoded
     def handle_message(self, req):
