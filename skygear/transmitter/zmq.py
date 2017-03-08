@@ -45,9 +45,8 @@ INTERVAL_MAX = 32
 PPP_READY = b'\x01'
 PPP_HEARTBEAT = b'\x02'
 PPP_SHUTDOWN = b'\x03'
-
-MESSAGE_TYPE_REQUEST = 'REQ'
-MESSAGE_TYPE_RESPONSE = 'RES'
+PPP_REQUEST = b'\x04'
+PPP_RESPONSE = b'\x05'
 
 PREFIX = randint(0, 0x10000)
 
@@ -117,7 +116,7 @@ class Worker(threading.Thread, CommonTransport):
                 if len(frames) == 7:
                     client = frames[0]
                     assert frames[1] == b''
-                    message_type = frames[2].decode('utf8')
+                    message_type = frames[2]
                     bounce_count = int(frames[3].decode('utf8'))
                     request_id = frames[4]
                     assert frames[5] == b''
@@ -126,18 +125,18 @@ class Worker(threading.Thread, CommonTransport):
                     self.request_id = request_id
                     self.bounce_count = bounce_count
 
-                    if message_type == MESSAGE_TYPE_REQUEST:
+                    if message_type == PPP_REQUEST:
                         response = self.handle_message(message)
                         self.socket.send_multipart([
                             client,
                             b'',
-                            MESSAGE_TYPE_RESPONSE.encode('utf8'),
+                            PPP_RESPONSE,
                             str(bounce_count).encode('utf8'),
                             request_id,
                             b'',
                             response,
                         ])
-                    elif message_type == MESSAGE_TYPE_RESPONSE:
+                    elif message_type == PPP_RESPONSE:
                         self.bounce_count -= 1
                         return message.decode('utf8')
                     self.liveness = HEARTBEAT_LIVENESS
@@ -215,7 +214,7 @@ class Worker(threading.Thread, CommonTransport):
         self.socket.send_multipart([
             self.socket_name.encode('utf8'),
             b'',
-            MESSAGE_TYPE_REQUEST.encode('utf8'),
+            PPP_REQUEST,
             str(self.bounce_count).encode('utf8'),
             self.request_id,
             b'',
