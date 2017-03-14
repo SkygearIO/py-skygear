@@ -25,11 +25,11 @@ log = logging.getLogger(__name__)
 
 
 def _encoded(func):
-    def encoded(self, input):
+    def encoded(self, input, *args):
         decoded = input.decode('utf-8')
         deserialized = json.loads(decoded)
 
-        retval = func(self, deserialized)
+        retval = func(self, deserialized, *args)
 
         serialized = json.dumps(retval)
         out = serialized.encode('utf-8')
@@ -126,7 +126,11 @@ class Worker(threading.Thread, CommonTransport):
                     self.bounce_count = bounce_count
 
                     if message_type == PPP_REQUEST:
-                        response = self.handle_message(message)
+                        ctx = {
+                            'bounce_count': bounce_count,
+                            'request_id': request_id.decode('utf8'),
+                        }
+                        response = self.handle_message(message, ctx)
                         self.socket.send_multipart([
                             client,
                             b'',
@@ -185,7 +189,7 @@ class Worker(threading.Thread, CommonTransport):
         self.socket.send(PPP_HEARTBEAT)
 
     @_encoded
-    def handle_message(self, req):
+    def handle_message(self, req, extraContext={}):
         kind = req.get('kind')
         if kind == 'init':
             raise Exception('Init trigger is deprecated, '
@@ -194,6 +198,7 @@ class Worker(threading.Thread, CommonTransport):
         name = req.get('name')
         param = req.get('param', {})
         ctx = req.get('context', {})
+        ctx.update(extraContext)
 
         if kind == 'provider':
             action = param.pop('action')
