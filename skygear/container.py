@@ -12,6 +12,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
+import json
+import logging
+
+import requests
+import strict_rfc3339
+
+
+log = logging.getLogger(__name__)
+
+
+class PayloadEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.datetime):
+            ts = obj.timestamp()
+            return strict_rfc3339.timestamp_to_rfc3339_utcoffset(ts)
+
+
+def send_action(url, payload, timeout=60):
+    log.error("skygear.container.send_action is deprecated.\n"
+              "Please use SkygearContainer().send_action instead.")
+    headers = {'Content-type': 'application/json',
+               'Accept': 'application/json'}
+    _data = json.dumps(payload, cls=PayloadEncoder)
+    return requests.post(url, data=_data, headers=headers, timeout=timeout) \
+        .json()
+
 
 class SkygearContainer(object):
     endpoint = 'http://localhost:3000'
