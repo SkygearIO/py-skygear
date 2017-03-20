@@ -29,10 +29,13 @@ def _encoded(func):
         decoded = input.decode('utf-8')
         deserialized = json.loads(decoded)
 
-        retval = func(self, deserialized, *args)
-
-        serialized = json.dumps(retval)
-        out = serialized.encode('utf-8')
+        try:
+            retval = func(self, deserialized, *args)
+            response_string = json.dumps(retval)
+        except Exception as e:
+            response_string = str(e)
+            log.error(str(e))
+        out = response_string.encode('utf-8')
         return out
     return encoded
 
