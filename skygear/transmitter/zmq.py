@@ -77,17 +77,21 @@ class Worker(threading.Thread, CommonTransport):
         self.bounce_count = 0
         self.request_id = None
 
-    def run(self):
-        """
-        The majority of this function is taken from:
-        http://zguide.zeromq.org/py:ppworker
-        """
+    def generate_request_id(self):
+        prefix = self.socket_name[5:]
+        request_id = "%s-%04X" % (prefix, randint(0, 0x10000))
+        return request_id.encode('utf8')
+
+    def setup_zmq_sockets(self):
         self.poller = zmq.Poller()
         self.socket = worker_socket(self.addr, self.z_context, self.poller)
         self.socket_name = self.socket.getsockopt_string(zmq.IDENTITY)
         self.liveness = HEARTBEAT_LIVENESS
         self.interval = INTERVAL_INIT
         self.heartbeat_at = time.time() + HEARTBEAT_INTERVAL
+
+    def run(self):
+        self.setup_zmq_sockets()
         self.run_message_loop()
 
     # This method handle messages from sockets:
@@ -152,10 +156,7 @@ class Worker(threading.Thread, CommonTransport):
             if time.time() > self.heartbeat_at:
                 self.send_heartbeat()
             if self.stopper.is_set():
-                self.socket.send(PPP_SHUTDOWN)
-                poller.unregister(self.socket)
-                self.socket.setsockopt(zmq.LINGER, 0)
-                self.socket.close()
+                self.shutdown_socket()
                 return None
 
     def handle_heartbeat_timeout(self):
@@ -167,9 +168,7 @@ class Worker(threading.Thread, CommonTransport):
 
             if self.interval < INTERVAL_MAX:
                 self.interval *= 2
-            self.poller.unregister(self.socket)
-            self.socket.setsockopt(zmq.LINGER, 0)
-            self.socket.close()
+            self.shutdown_socket(send_shutdown=False)
             self.socket = worker_socket(
                 self.addr,
                 self.z_context,
@@ -183,6 +182,13 @@ class Worker(threading.Thread, CommonTransport):
     def send_heartbeat(self):
         self.heartbeat_at = time.time() + HEARTBEAT_INTERVAL
         self.socket.send(PPP_HEARTBEAT)
+
+    def shutdown_socket(self, send_shutdown=True):
+        if send_shutdown:
+            self.socket.send(PPP_SHUTDOWN)
+        self.poller.unregister(self.socket)
+        self.socket.setsockopt(zmq.LINGER, 0)
+        self.socket.close()
 
     @_encoded
     def handle_message(self, req):
@@ -206,6 +212,9 @@ class Worker(threading.Thread, CommonTransport):
             return self.call_func(ctx, kind, name, param)
 
     def send_action(self, action_name, payload):
+        if self.request_id is None:
+            # Sending non-nested request
+            self.request_id = self.generate_request_id()
         self.bounce_count += 1
         message = {
             'method': 'POST',
@@ -221,6 +230,24 @@ class Worker(threading.Thread, CommonTransport):
             json.dumps(message).encode('utf8')
         ])
         return self.run_message_loop()
+
+
+class OneOffWorker(Worker):
+
+    def __init__(self, z_context, addr, stopper, registry=None,
+                 action_name=None, payload={}):
+        Worker.__init__(self, z_context, addr, stopper, registry=None)
+        self.action_name = action_name
+        self.payload = payload
+
+    def run(self):
+        self.setup_zmq_sockets()
+        self._result = self.send_action(self.action_name, self.payload)
+        self.shutdown_socket()
+
+    def join(self):
+        threading.Thread.join(self)
+        return self._result
 
 
 class ZmqTransport(CommonTransport):
@@ -283,8 +310,20 @@ class ZmqTransport(CommonTransport):
         for t in self.threads:
             t.join()
 
-    def send_action(self, action_name, payload, url, timeout):
+    def send_action(self, action_name, payload, url=None, timeout=60):
         worker = threading.current_thread()
-        assert isinstance(worker, Worker)
-        result = worker.send_action(action_name, payload)
+        if isinstance(worker, Worker):
+            # Nested request
+            result = worker.send_action(action_name, payload)
+            return json.loads(result)
+
+        new_worker = OneOffWorker(
+            self._context,
+            self._addr,
+            self.stopper,
+            action_name=action_name,
+            payload=payload,
+        )
+        new_worker.start()
+        result = new_worker.join()
         return json.loads(result)
