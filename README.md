@@ -13,10 +13,10 @@ The full documentation for Skygear is available on our docs site. The [Plugin ge
 
 ## Install py-skygear
 
-Install skygear by using pip.
+Install skygear by using pip. py-skygear requires Python 3.
 
 ```
-$ pip install skygear
+$ pip3 install skygear
 ```
 
 Alternatively, you can install `py-skygear` from source by cloning `py-skygear` from this official repository.
