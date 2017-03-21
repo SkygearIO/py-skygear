@@ -32,7 +32,7 @@ def _encoded(func):
         try:
             retval = func(self, deserialized, *args)
             response_string = json.dumps(retval)
-        except Exception as e:
+        except ValueError as e:
             response_string = str(e)
             log.error(str(e))
         out = response_string.encode('utf-8')
