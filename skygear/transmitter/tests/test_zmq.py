@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import json
 import threading
 import time
 import unittest
@@ -18,6 +19,7 @@ import unittest
 import zmq
 
 from ...transmitter.zmq import (HEARTBEAT_INTERVAL, HEARTBEAT_LIVENESS,
+                                PPP_HEARTBEAT, PPP_RESPONSE,
                                 ZmqTransport)
 
 
@@ -77,6 +79,28 @@ class TestZmq(unittest.TestCase):
         t.join()
         context.destroy()
 
+    def test_one_off_worker(self):
+        context = zmq.Context()
+        expected_body = {'method': 'POST', 'payload': {'key': 'value'}}
+        return_value = '{"result": {"response_key": "response_value"}}'
+        t = threading.Thread(target=response_router,
+                             args=(context,
+                                   'tcp://0.0.0.0:23456',
+                                   expected_body,
+                                   return_value))
+        t.start()
+        transport = ZmqTransport('tcp://0.0.0.0:23456',
+                                 context=context,
+                                 threading=1)
+        transport.start()
+        result = transport.send_action('action_name', {'key': 'value'})
+        self.assertEqual(
+            result,
+            {'result': {'response_key': 'response_value'}}
+        )
+        t.join()
+        context.destroy()
+
 
 def dead_router(context, addr, count):
     """
@@ -94,3 +118,25 @@ def dead_router(context, addr, count):
         router.send_multipart(frames)
         i = i + 1
     router.close()
+
+
+def response_router(context, addr, expected_body, response):
+    """
+    This router will send malformed frame that crash the worker
+    """
+    router = context.socket(zmq.ROUTER)
+    router.bind(addr)
+    while True:
+        router.poll()
+        frames = router.recv_multipart()
+        if len(frames) == 2:
+            router.send(PPP_HEARTBEAT)
+            continue
+        body = frames[7].decode('utf8')
+        assert expected_body == json.loads(body)
+
+        frames[3] = PPP_RESPONSE
+        frames[7] = response.encode('utf8')
+        router.send_multipart(frames)
+        router.close()
+        break
