@@ -23,7 +23,7 @@ except ImportError:
         """A dummy ZmqTransport class to raise a proper exception
         """
 
-        def __init__(self, addr, context=None, registry=None):
+        def __init__(self, addr, context=None, registry=None, threading=0):
             raise ImportError(
                 'zmq transport is not installed. '
                 'Please install via `pip install --upgrade skygear[zmq]`')
