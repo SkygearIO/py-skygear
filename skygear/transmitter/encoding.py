@@ -143,7 +143,7 @@ class _RecordDecoder:
         return datetime.fromtimestamp(ts)
 
     def decode_asset(self, d):
-        return Asset(d['$name'])
+        return Asset(d['$name'], d.get('$content_type', None))
 
     def decode_location(self, d):
         return Location(d['$lng'], d['$lat'])
@@ -241,6 +241,7 @@ class _RecordEncoder:
         return {
             '$type': 'asset',
             '$name': asset.name,
+            '$content_type': asset.content_type
         }
 
     def encode_location(self, location):

@@ -140,8 +140,9 @@ class DirectAccessControlEntry(AccessControlEntry):
 
 
 class Asset:
-    def __init__(self, name):
+    def __init__(self, name, content_type):
         self.name = name
+        self.content_type = content_type
 
     @property
     def name(self):
