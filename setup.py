@@ -54,6 +54,7 @@ setup(
             'bcrypt==2.0.0',
             'ConfigArgParse>=0.10.0',
             'werkzeug>=0.11.0',
+            'boto3>=1.4',
       ],
       extras_require=extras_require,
       cmdclass= {'test': PyTest},
