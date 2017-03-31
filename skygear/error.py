@@ -55,6 +55,46 @@ class SkygearException(Exception):
             'info': self.info,
             }
 
+    def readable_message(self):
+        # This methods returns a user readable string for the error,
+        # the complexity is over because we have many error codes,
+        # but it is not that complicated.
+        # pylama:ignore=C901
+        # #lizard forgives the complexity
+        if self.code == NotAuthenticated:
+            return "You have to be authenticated to perform this operation."
+        elif (self.code in [PermissionDenied, AccessKeyNotAccepted,
+                            AccessTokenNotAccepted]):
+            return "You are not allowed to perform this operation."
+        elif self.code == InvalidCredentials:
+            return "You are not allowed to log in because the credentials " + \
+                "you provided are not valid."
+        elif self.code in [InvalidSignature, BadRequest]:
+            return "The server is unable to process the request."
+        elif self.code == InvalidArgument:
+            return "The server is unable to process the data."
+        elif self.code == Duplicated:
+            return "This request contains duplicate of an existing " + \
+                "resource on the server."
+        elif self.code == ResourceNotFound:
+            return "The requested resource is not found."
+        elif self.code == NotSupported:
+            return "This operation is not supported."
+        elif self.code == NotImplemented:
+            return "This operation is not implemented."
+        elif (self.code in [ConstraintViolated, IncompatibleSchema,
+                            AtomicOperationFailure, PartialOperationFailure]):
+            return "A problem occurred while processing this request."
+        elif self.code == UndefinedOperation:
+            return "The requested operation is not available."
+        elif self.code in [PluginInitializing, PluginUnavailable]:
+            return "The server is not ready yet."
+        elif self.code == PluginTimeout:
+            return "The server took too long to process."
+        elif self.code == RecordQueryInvalid:
+            return "A problem occurred while processing this request."
+        return "An unexpected error has occurred."
+
     @classmethod
     def from_dict(cls, error_dict):
         message = error_dict.get('message', "An error has occurred.")
