@@ -1,3 +1,15 @@
+## 0.22.2 (2017-03-31)
+
+### Features
+- Read content type in asset serialisation SkygearIO/skygear-SDK-JS#164
+
+### Bug Fixes
+- Update the mock interface for ZMQTransport (#122)
+
+### Other Notes
+- Add back the missing boto3 deps at setup.py
+
+
 ## 0.22.0 (2017-02-10)
 
 ### Features
