@@ -62,6 +62,7 @@ class SkygearException(Exception):
         # Make exception of the complexity check here because we need to
         # cover each error case.
         # pylama:ignore=C901
+        # #lizard forgives the complexity
         if self.code == NotAuthenticated:
             return "You have to be authenticated to perform this operation."
         elif (self.code in [PermissionDenied, AccessKeyNotAccepted,
