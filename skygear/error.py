@@ -56,11 +56,12 @@ class SkygearException(Exception):
             }
 
     def readable_message(self):
-        # This methods returns a user readable string for the error,
-        # the complexity is over because we have many error codes,
-        # but it is not that complicated.
+        """
+        This method returns a user readable string for the error.
+        """
+        # Make exception of the complexity check here because we need to
+        # cover each error case.
         # pylama:ignore=C901
-        # #lizard forgives the complexity
         if self.code == NotAuthenticated:
             return "You have to be authenticated to perform this operation."
         elif (self.code in [PermissionDenied, AccessKeyNotAccepted,
