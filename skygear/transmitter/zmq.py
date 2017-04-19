@@ -54,6 +54,12 @@ PPP_RESPONSE = b'\x05'
 PREFIX = randint(0, 0x10000)
 
 
+LISTEN_MESSAGE_RESULT_TIMEOUT = 0
+LISTEN_MESSAGE_RESULT_INVALID = 1
+LISTEN_MESSAGE_RESULT_HEARTBEAT = 2
+LISTEN_MESSAGE_RESULT_HANDLED_REQUEST = 3
+
+
 def worker_socket(addr, context, poller):
     socket = context.socket(zmq.DEALER)
     identity = "%04X-%04X" % (PREFIX, randint(0, 0x10000))
@@ -110,65 +116,81 @@ class Worker(threading.Thread, CommonTransport):
     #
     # Btw, I cannot think of a better name for this method,
     # please update this if you have a better name
-    def run_message_loop(self):
-        poller = self.poller
+    def run_message_loop(self, send_heartbeat=True):
+        timeout = (HEARTBEAT_INTERVAL * 1000) if send_heartbeat else None
         while True:
-            socks = dict(poller.poll(HEARTBEAT_INTERVAL * 1000))
-
-            # Handle worker activity on backend
-            if socks.get(self.socket) == zmq.POLLIN:
-                #  Get message
-                #  - 7-part envelope + content -> request
-                #  - 1-part HEARTBEAT -> heartbeat
-                frames = self.socket.recv_multipart()
-                if len(frames) == 7:
-                    client = frames[0]
-                    assert frames[1] == b''
-                    message_type = frames[2]
-                    bounce_count = int(frames[3].decode('utf8'))
-                    request_id = frames[4]
-                    assert frames[5] == b''
-                    message = frames[6]
-
-                    self.request_id = request_id
-                    self.bounce_count = bounce_count
-
-                    if message_type == PPP_REQUEST:
-                        self.mark_as_busy_if_needed()
-                        ctx = {
-                            'bounce_count': bounce_count,
-                            'request_id': request_id.decode('utf8'),
-                        }
-                        response = self.handle_message(message, ctx)
-                        self.socket.send_multipart([
-                            client,
-                            b'',
-                            PPP_RESPONSE,
-                            str(bounce_count).encode('utf8'),
-                            request_id,
-                            b'',
-                            response,
-                        ])
-                        self.mark_as_not_busy_if_needed()
-                    elif message_type == PPP_RESPONSE:
-                        self.mark_as_not_busy_if_needed()
-                        self.bounce_count -= 1
-                        return message.decode('utf8')
-                    self.liveness = HEARTBEAT_LIVENESS
-                elif len(frames) == 1 and frames[0] == PPP_HEARTBEAT:
-                    self.liveness = HEARTBEAT_LIVENESS
-                else:
-                    log.warn(
-                        'Invalid message: %s, assuming socket dead', frames)
-                    return
-                self.interval = INTERVAL_INIT
-            else:
+            result = self.listen_to_message_once(timeout)
+            if result == LISTEN_MESSAGE_RESULT_INVALID:
+                return None
+            elif result == LISTEN_MESSAGE_RESULT_HEARTBEAT:
+                self.liveness = HEARTBEAT_LIVENESS
+            elif result == LISTEN_MESSAGE_RESULT_TIMEOUT:
                 self.handle_heartbeat_timeout()
-            if time.time() > self.heartbeat_at:
+
+            if send_heartbeat and time.time() > self.heartbeat_at:
                 self.send_heartbeat()
+
+            if result not in [LISTEN_MESSAGE_RESULT_HEARTBEAT,
+                              LISTEN_MESSAGE_RESULT_TIMEOUT,
+                              LISTEN_MESSAGE_RESULT_HANDLED_REQUEST]:
+                # We have a response
+                return result
+
             if self.stopper.is_set():
                 self.shutdown_socket()
                 return None
+
+    def listen_to_message_once(self, timeout=None):
+        poller = self.poller
+        socks = dict(poller.poll(timeout))
+        if socks.get(self.socket) != zmq.POLLIN:
+            return LISTEN_MESSAGE_RESULT_TIMEOUT
+
+        #  Get message
+        #  - 7-part envelope + content -> request
+        #  - 1-part HEARTBEAT -> heartbeat
+        frames = self.socket.recv_multipart()
+        if len(frames) == 7:
+            client = frames[0]
+            assert frames[1] == b''
+            message_type = frames[2]
+            bounce_count = int(frames[3].decode('utf8'))
+            request_id = frames[4]
+            assert frames[5] == b''
+            message = frames[6]
+
+            self.request_id = request_id
+            self.bounce_count = bounce_count
+            self.liveness = HEARTBEAT_LIVENESS
+
+            if message_type == PPP_REQUEST:
+                self.mark_as_busy_if_needed()
+                ctx = {
+                    'bounce_count': bounce_count,
+                    'request_id': request_id.decode('utf8'),
+                }
+                response = self.handle_message(message, ctx)
+                self.socket.send_multipart([
+                    client,
+                    b'',
+                    PPP_RESPONSE,
+                    str(bounce_count).encode('utf8'),
+                    request_id,
+                    b'',
+                    response,
+                ])
+                self.mark_as_not_busy_if_needed()
+                return LISTEN_MESSAGE_RESULT_HANDLED_REQUEST
+            elif message_type == PPP_RESPONSE:
+                self.mark_as_not_busy_if_needed()
+                self.bounce_count -= 1
+                return message.decode('utf8')
+        elif len(frames) == 1 and frames[0] == PPP_HEARTBEAT:
+            return LISTEN_MESSAGE_RESULT_HEARTBEAT
+        else:
+            log.warn(
+                'Invalid message: %s, assuming socket dead', frames)
+            return LISTEN_MESSAGE_RESULT_INVALID
 
     def mark_as_busy_if_needed(self):
         if self.bounce_count == 0:
@@ -197,6 +219,7 @@ class Worker(threading.Thread, CommonTransport):
                 zmq.IDENTITY
             )
             self.liveness = HEARTBEAT_LIVENESS
+            self.interval = INTERVAL_INIT
 
     def send_heartbeat(self):
         self.heartbeat_at = time.time() + HEARTBEAT_INTERVAL
@@ -250,7 +273,7 @@ class Worker(threading.Thread, CommonTransport):
             b'',
             json.dumps(message).encode('utf8')
         ])
-        return self.run_message_loop()
+        return self.run_message_loop(send_heartbeat=False)
 
 
 class OneOffWorker(Worker):
