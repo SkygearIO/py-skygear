@@ -85,7 +85,8 @@ def run_plugin(options):
         log.info(
             "Connecting to address %s" % options.skygear_address)
         transport = ZmqTransport(options.skygear_address,
-                                 threading=options.zmq_thread_pool)
+                                 threading=options.zmq_thread_pool,
+                                 limit=options.zmq_thread_limit)
     SkygearContainer.set_default_transport(transport)
     transport.run()
 
