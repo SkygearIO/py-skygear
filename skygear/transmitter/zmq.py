@@ -151,8 +151,8 @@ class Worker(threading.Thread, CommonTransport):
                         ])
                         self.mark_as_not_busy_if_needed()
                     elif message_type == PPP_RESPONSE:
-                        self.bounce_count -= 1
                         self.mark_as_not_busy_if_needed()
+                        self.bounce_count -= 1
                         return message.decode('utf8')
                     self.liveness = HEARTBEAT_LIVENESS
                 elif len(frames) == 1 and frames[0] == PPP_HEARTBEAT:
