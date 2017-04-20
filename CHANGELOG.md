@@ -1,3 +1,9 @@
+## 0.23.0 (2017-04-20)
+
+### Features
+
+- Add user friendly error message to error class SkygearIO/skygear-SDK-Android#89
+
 ## 0.22.2 (2017-03-31)
 
 ### Features
