@@ -11,17 +11,37 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import datetime
 import json
 import logging
 
+import requests
+import strict_rfc3339
 from werkzeug.routing import Map, Rule
 from werkzeug.serving import run_simple
 from werkzeug.wrappers import Request, Response
 
+from .. import error
 from .common import CommonTransport
 from .encoding import _serialize_exc
 
 log = logging.getLogger(__name__)
+
+
+class PayloadEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.datetime):
+            ts = obj.timestamp()
+            return strict_rfc3339.timestamp_to_rfc3339_utcoffset(ts)
+
+
+def send_action(url, payload, timeout=60):
+    headers = {'Content-type': 'application/json',
+               'Accept': 'application/json'}
+
+    _data = json.dumps(payload, cls=PayloadEncoder)
+    return requests.post(url, data=_data, headers=headers, timeout=timeout) \
+        .json()
 
 
 class HttpTransport(CommonTransport):
@@ -109,3 +129,11 @@ class HttpTransport(CommonTransport):
         run_simple(self.hostname, self.port, self.dispatch,
                    threaded=True,
                    use_reloader=self.debug)
+
+    def send_action(self, action_name, payload, url, timeout):
+        resp = send_action(url,
+                           payload,
+                           timeout=timeout)
+        if 'error' in resp:
+            raise error.SkygearException.from_dict(resp['error'])
+        return resp

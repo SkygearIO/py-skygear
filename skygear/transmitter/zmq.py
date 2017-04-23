@@ -45,18 +45,20 @@ INTERVAL_MAX = 32
 PPP_READY = b'\x01'
 PPP_HEARTBEAT = b'\x02'
 PPP_SHUTDOWN = b'\x03'
+PPP_REQUEST = b'\x04'
+PPP_RESPONSE = b'\x05'
 
 PREFIX = randint(0, 0x10000)
 
 
 def worker_socket(addr, context, poller):
-    worker = context.socket(zmq.DEALER)
+    socket = context.socket(zmq.DEALER)
     identity = "%04X-%04X" % (PREFIX, randint(0, 0x10000))
-    worker.setsockopt_string(zmq.IDENTITY, identity)
-    poller.register(worker, zmq.POLLIN)
-    worker.connect(addr)
-    worker.send(PPP_READY)
-    return worker
+    socket.setsockopt_string(zmq.IDENTITY, identity)
+    poller.register(socket, zmq.POLLIN)
+    socket.connect(addr)
+    socket.send(PPP_READY)
+    return socket
 
 
 class Worker(threading.Thread, CommonTransport):
@@ -72,75 +74,121 @@ class Worker(threading.Thread, CommonTransport):
         self.addr = addr
         self.z_context = z_context
         self.stopper = stopper
+        self.bounce_count = 0
+        self.request_id = None
+
+    def generate_request_id(self):
+        prefix = self.socket_name[5:]
+        request_id = "%s-%04X" % (prefix, randint(0, 0x10000))
+        return request_id.encode('utf8')
+
+    def setup_zmq_sockets(self):
+        self.poller = zmq.Poller()
+        self.socket = worker_socket(self.addr, self.z_context, self.poller)
+        self.socket_name = self.socket.getsockopt_string(zmq.IDENTITY)
+        self.liveness = HEARTBEAT_LIVENESS
+        self.interval = INTERVAL_INIT
+        self.heartbeat_at = time.time() + HEARTBEAT_INTERVAL
 
     def run(self):
-        """
-        The majority of this function is taken from:
-        http://zguide.zeromq.org/py:ppworker
-        """
-        poller = zmq.Poller()
+        self.setup_zmq_sockets()
+        self.run_message_loop()
 
-        liveness = HEARTBEAT_LIVENESS
-        interval = INTERVAL_INIT
-
-        heartbeat_at = time.time() + HEARTBEAT_INTERVAL
-
-        worker = worker_socket(self.addr, self.z_context, poller)
-
+    # This method handle messages from sockets:
+    # 1. It performs heartbeat
+    # 2. It takes request and handle them
+    # 3. It returns value when there is a response from server to plugin
+    #
+    # (3) should only occurs when this method is called recursively
+    # Return values:
+    # None - The socket is closing
+    # Otherwise - response from server
+    #
+    # Btw, I cannot think of a better name for this method,
+    # please update this if you have a better name
+    def run_message_loop(self):
+        poller = self.poller
         while True:
             socks = dict(poller.poll(HEARTBEAT_INTERVAL * 1000))
 
             # Handle worker activity on backend
-            if socks.get(worker) == zmq.POLLIN:
+            if socks.get(self.socket) == zmq.POLLIN:
                 #  Get message
-                #  - 3-part envelope + content -> request
+                #  - 7-part envelope + content -> request
                 #  - 1-part HEARTBEAT -> heartbeat
-                frames = worker.recv_multipart()
-                if not frames:
+                frames = self.socket.recv_multipart()
+                if len(frames) == 7:
+                    client = frames[0]
+                    assert frames[1] == b''
+                    message_type = frames[2]
+                    bounce_count = int(frames[3].decode('utf8'))
+                    request_id = frames[4]
+                    assert frames[5] == b''
+                    message = frames[6]
+
+                    self.request_id = request_id
+                    self.bounce_count = bounce_count
+
+                    if message_type == PPP_REQUEST:
+                        response = self.handle_message(message)
+                        self.socket.send_multipart([
+                            client,
+                            b'',
+                            PPP_RESPONSE,
+                            str(bounce_count).encode('utf8'),
+                            request_id,
+                            b'',
+                            response,
+                        ])
+                    elif message_type == PPP_RESPONSE:
+                        self.bounce_count -= 1
+                        return message.decode('utf8')
+                    self.liveness = HEARTBEAT_LIVENESS
+                elif len(frames) == 1 and frames[0] == PPP_HEARTBEAT:
+                    self.liveness = HEARTBEAT_LIVENESS
+                else:
                     log.warn(
                         'Invalid message: %s, assuming socket dead', frames)
                     return
-
-                if len(frames) == 3:
-                    client, empty, message = frames
-                    assert empty == b''
-
-                    response = self.handle_message(message)
-                    worker.send_multipart([
-                        client,
-                        b'',
-                        response,
-                    ])
-
-                    liveness = HEARTBEAT_LIVENESS
-                elif len(frames) == 1 and frames[0] == PPP_HEARTBEAT:
-                    liveness = HEARTBEAT_LIVENESS
-                else:
-                    log.warn('Invalid message: %s', frames)
-                interval = INTERVAL_INIT
+                self.interval = INTERVAL_INIT
             else:
-                liveness -= 1
-                if liveness == 0:
-                    log.warn('Heartbeat failure, can\'t reach queue')
-                    log.warn('Reconnecting in %0.2fs...' % interval)
-                    time.sleep(interval)
-
-                    if interval < INTERVAL_MAX:
-                        interval *= 2
-                    poller.unregister(worker)
-                    worker.setsockopt(zmq.LINGER, 0)
-                    worker.close()
-                    worker = worker_socket(self.addr, self.z_context, poller)
-                    liveness = HEARTBEAT_LIVENESS
-            if time.time() > heartbeat_at:
-                heartbeat_at = time.time() + HEARTBEAT_INTERVAL
-                worker.send(PPP_HEARTBEAT)
+                self.handle_heartbeat_timeout()
+            if time.time() > self.heartbeat_at:
+                self.send_heartbeat()
             if self.stopper.is_set():
-                worker.send(PPP_SHUTDOWN)
-                poller.unregister(worker)
-                worker.setsockopt(zmq.LINGER, 0)
-                worker.close()
-                return
+                self.shutdown_socket()
+                return None
+
+    def handle_heartbeat_timeout(self):
+        self.liveness -= 1
+        if self.liveness == 0:
+            log.warn('Heartbeat failure, can\'t reach queue')
+            log.warn('Reconnecting in %0.2fs...' % self.interval)
+            time.sleep(self.interval)
+
+            if self.interval < INTERVAL_MAX:
+                self.interval *= 2
+            self.shutdown_socket(send_shutdown=False)
+            self.socket = worker_socket(
+                self.addr,
+                self.z_context,
+                self.poller
+            )
+            self.socket_name = self.socket.getsockopt_string(
+                zmq.IDENTITY
+            )
+            self.liveness = HEARTBEAT_LIVENESS
+
+    def send_heartbeat(self):
+        self.heartbeat_at = time.time() + HEARTBEAT_INTERVAL
+        self.socket.send(PPP_HEARTBEAT)
+
+    def shutdown_socket(self, send_shutdown=True):
+        if send_shutdown:
+            self.socket.send(PPP_SHUTDOWN)
+        self.poller.unregister(self.socket)
+        self.socket.setsockopt(zmq.LINGER, 0)
+        self.socket.close()
 
     @_encoded
     def handle_message(self, req):
@@ -162,6 +210,44 @@ class Worker(threading.Thread, CommonTransport):
             return self.call_event_func(name, param)
         else:
             return self.call_func(ctx, kind, name, param)
+
+    def send_action(self, action_name, payload):
+        if self.request_id is None:
+            # Sending non-nested request
+            self.request_id = self.generate_request_id()
+        self.bounce_count += 1
+        message = {
+            'method': 'POST',
+            'payload': payload,
+        }
+        self.socket.send_multipart([
+            self.socket_name.encode('utf8'),
+            b'',
+            PPP_REQUEST,
+            str(self.bounce_count).encode('utf8'),
+            self.request_id,
+            b'',
+            json.dumps(message).encode('utf8')
+        ])
+        return self.run_message_loop()
+
+
+class OneOffWorker(Worker):
+
+    def __init__(self, z_context, addr, stopper, registry=None,
+                 action_name=None, payload={}):
+        Worker.__init__(self, z_context, addr, stopper, registry=None)
+        self.action_name = action_name
+        self.payload = payload
+
+    def run(self):
+        self.setup_zmq_sockets()
+        self._result = self.send_action(self.action_name, self.payload)
+        self.shutdown_socket()
+
+    def join(self):
+        threading.Thread.join(self)
+        return self._result
 
 
 class ZmqTransport(CommonTransport):
@@ -223,3 +309,21 @@ class ZmqTransport(CommonTransport):
         self.stopper.set()
         for t in self.threads:
             t.join()
+
+    def send_action(self, action_name, payload, url=None, timeout=60):
+        worker = threading.current_thread()
+        if isinstance(worker, Worker):
+            # Nested request
+            result = worker.send_action(action_name, payload)
+            return json.loads(result)
+
+        new_worker = OneOffWorker(
+            self._context,
+            self._addr,
+            self.stopper,
+            action_name=action_name,
+            payload=payload,
+        )
+        new_worker.start()
+        result = new_worker.join()
+        return json.loads(result)
