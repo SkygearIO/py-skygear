@@ -11,29 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import datetime
-import json
-
-import requests
-import strict_rfc3339
-
-from . import error
-
-
-class PayloadEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime.datetime):
-            ts = obj.timestamp()
-            return strict_rfc3339.timestamp_to_rfc3339_utcoffset(ts)
-
-
-def send_action(url, payload, timeout=60):
-    headers = {'Content-type': 'application/json',
-               'Accept': 'application/json'}
-
-    _data = json.dumps(payload, cls=PayloadEncoder)
-    return requests.post(url, data=_data, headers=headers, timeout=timeout) \
-        .json()
 
 
 class SkygearContainer(object):
@@ -42,9 +19,10 @@ class SkygearContainer(object):
     access_token = None
     user_id = None
     app_name = ''
+    transport = None
 
     def __init__(self, endpoint=None, api_key=None, access_token=None,
-                 user_id=None):
+                 user_id=None, transport=None):
         if endpoint:
             self.endpoint = endpoint
         if api_key:
@@ -52,6 +30,10 @@ class SkygearContainer(object):
         if user_id:
             self.user_id = user_id
         self.access_token = access_token
+        if transport is None:
+            self.transport = SkygearContainer.transport
+        else:
+            self.transport = transport
 
     def _request_url(self, action_name):
         endpoint = self.endpoint
@@ -87,12 +69,13 @@ class SkygearContainer(object):
     def set_default_apikey(cls, api_key):
         cls.api_key = api_key
 
+    @classmethod
+    def set_default_transport(cls, transport):
+        cls.transport = transport
+
     def send_action(self, action_name, params, plugin_request=False,
                     timeout=60):
-        resp = send_action(self._request_url(action_name),
-                           self._payload(action_name, params, plugin_request),
-                           timeout=timeout)
-        if 'error' in resp:
-            raise error.SkygearException.from_dict(resp['error'])
-
+        url = self._request_url(action_name)
+        payload = self._payload(action_name, params, plugin_request)
+        resp = self.transport.send_action(action_name, payload, url, timeout)
         return resp
