@@ -77,8 +77,9 @@ class Worker(threading.Thread, CommonTransport):
         self.addr = addr
         self.z_context = z_context
         self.stopper = stopper
-        self.bounce_count = 0
+        self.bounce_count = -1
         self.request_id = None
+        self.busy_lock = threading.Lock()
 
     def generate_request_id(self):
         prefix = self.socket_name[5:]
@@ -133,6 +134,7 @@ class Worker(threading.Thread, CommonTransport):
                     self.bounce_count = bounce_count
 
                     if message_type == PPP_REQUEST:
+                        self.mark_as_busy_if_needed()
                         ctx = {
                             'bounce_count': bounce_count,
                             'request_id': request_id.decode('utf8'),
@@ -147,7 +149,9 @@ class Worker(threading.Thread, CommonTransport):
                             b'',
                             response,
                         ])
+                        self.mark_as_not_busy_if_needed()
                     elif message_type == PPP_RESPONSE:
+                        self.mark_as_not_busy_if_needed()
                         self.bounce_count -= 1
                         return message.decode('utf8')
                     self.liveness = HEARTBEAT_LIVENESS
@@ -165,6 +169,14 @@ class Worker(threading.Thread, CommonTransport):
             if self.stopper.is_set():
                 self.shutdown_socket()
                 return None
+
+    def mark_as_busy_if_needed(self):
+        if self.bounce_count == 0:
+            self.busy_lock.acquire()
+
+    def mark_as_not_busy_if_needed(self):
+        if self.bounce_count == 0:
+            self.busy_lock.release()
 
     def handle_heartbeat_timeout(self):
         self.liveness -= 1
@@ -224,6 +236,7 @@ class Worker(threading.Thread, CommonTransport):
             # Sending non-nested request
             self.request_id = self.generate_request_id()
         self.bounce_count += 1
+        self.mark_as_busy_if_needed()
         message = {
             'method': 'POST',
             'payload': payload,
@@ -266,7 +279,8 @@ class ZmqTransport(CommonTransport):
     like multiple worker process.
     """
 
-    def __init__(self, addr, context=None, registry=None, threading=4):
+    def __init__(self, addr, context=None,
+                 registry=None, threading=4, limit=10):
         super().__init__(registry)
         if context is None:
             context = zmq.Context()
@@ -276,6 +290,7 @@ class ZmqTransport(CommonTransport):
         self._threading = threading
         self.threads = []
         self.threads_opened = 0
+        self.limit = limit
 
     def run(self):
         self.start()
@@ -288,10 +303,7 @@ class ZmqTransport(CommonTransport):
     def start(self):
         self.stopper = threading.Event()
         for i in range(self._threading):
-            t = Worker(self._context, self._addr, self.stopper)
-            self.threads.append(t)
-            t.start()
-            self.threads_opened = self.threads_opened + 1
+            self.start_worker_at_index(i)
 
     def maintain_workers_count(self):
         i = 0
@@ -305,13 +317,25 @@ class ZmqTransport(CommonTransport):
             if not t.is_alive():
                 log.warn(
                     'Worker Thread dead, starting a new one')
-                new_t = Worker(self._context, self._addr, self.stopper)
-                self.threads[i] = new_t
-                new_t.start()
-                self.threads_opened = self.threads_opened + 1
+                self.start_worker_at_index(i)
             i = i + 1
             if i >= self._threading:
                 i = 0
+            busy_count = len(
+                [t for t in self.threads if t.busy_lock.locked()]
+            )
+            if busy_count == self._threading and busy_count < self.limit:
+                self.start_worker_at_index(self._threading)
+                self._threading += 1
+
+    def start_worker_at_index(self, index):
+        t = Worker(self._context, self._addr, self.stopper)
+        if index < len(self.threads):
+            self.threads[index] = t
+        else:
+            self.threads.append(t)
+        t.start()
+        self.threads_opened = self.threads_opened + 1
 
     def stop(self):
         self.stopper.set()

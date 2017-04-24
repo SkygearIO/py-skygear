@@ -79,6 +79,11 @@ def add_plugin_arguments(ap: argparse.ArgumentParser):
                     default=4, type=int,
                     help='Number of thread in ZMQTransport thread pool',
                     env_var='ZMQ_THREAD_POOL')
+    ap.add_argument('--zmq-thread-limit', metavar='ZMQ_THREAD_LIMIT',
+                    action='store',
+                    default=10, type=int,
+                    help='Max number of thread in ZMQTransport thread pool',
+                    env_var='ZMQ_THREAD_LIMIT')
     ap.add_argument('modules', nargs='*', default=[])  # env_var: LOAD_MODULES
 
 
