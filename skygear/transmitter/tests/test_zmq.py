@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import json
 import threading
 import time
 import unittest
@@ -18,6 +19,7 @@ import unittest
 import zmq
 
 from ...transmitter.zmq import (HEARTBEAT_INTERVAL, HEARTBEAT_LIVENESS,
+                                PPP_HEARTBEAT, PPP_REQUEST, PPP_RESPONSE,
                                 ZmqTransport)
 
 
@@ -77,6 +79,60 @@ class TestZmq(unittest.TestCase):
         t.join()
         context.destroy()
 
+    @unittest.mock.patch('skygear.transmitter.zmq.Worker.handle_message')
+    def test_spawn_new_worker(self, handle_message_mock):
+        def slow_response(*args, **kwargs):
+            time.sleep(HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS * 2)
+            return b'{}'
+        handle_message_mock.side_effect = slow_response
+
+        context = zmq.Context()
+        t = threading.Thread(target=request_router,
+                             args=(context,
+                                   'tcp://0.0.0.0:23456',
+                                   {'name': 'foo'}))
+        t.start()
+        transport = ZmqTransport('tcp://0.0.0.0:23456',
+                                 context=context,
+                                 threading=1)
+        transport.start()
+        transport_t = threading.Thread(
+            target=transport.maintain_workers_count)
+        transport_t.start()
+        time.sleep(HEARTBEAT_INTERVAL * HEARTBEAT_LIVENESS * 2)
+        self.assertEqual(len(transport.threads), 2)
+        self.assertEqual(transport.threads_opened, 2)
+        handle_message_mock.assert_called_with(b'{"name": "foo"}', {
+            'bounce_count': 0,
+            'request_id': 'REQ-ID',
+        })
+        t.join()
+        transport.stop()
+        transport_t.join()
+        context.destroy()
+
+    def test_one_off_worker(self):
+        context = zmq.Context()
+        expected_body = {'method': 'POST', 'payload': {'key': 'value'}}
+        return_value = '{"result": {"response_key": "response_value"}}'
+        t = threading.Thread(target=response_router,
+                             args=(context,
+                                   'tcp://0.0.0.0:23456',
+                                   expected_body,
+                                   return_value))
+        t.start()
+        transport = ZmqTransport('tcp://0.0.0.0:23456',
+                                 context=context,
+                                 threading=1)
+        transport.start()
+        result = transport.send_action('action_name', {'key': 'value'})
+        self.assertEqual(
+            result,
+            {'result': {'response_key': 'response_value'}}
+        )
+        t.join()
+        context.destroy()
+
 
 def dead_router(context, addr, count):
     """
@@ -93,4 +149,54 @@ def dead_router(context, addr, count):
         frames.extend([b'good', b'bye'])
         router.send_multipart(frames)
         i = i + 1
+    router.close()
+
+
+def response_router(context, addr, expected_body, response):
+    """
+    This router will send predefined response body to the worker
+    """
+    router = context.socket(zmq.ROUTER)
+    router.bind(addr)
+    while True:
+        router.poll()
+        frames = router.recv_multipart()
+        if len(frames) == 2:
+            router.send(PPP_HEARTBEAT)
+            continue
+        body = frames[7].decode('utf8')
+        assert expected_body == json.loads(body)
+
+        frames[3] = PPP_RESPONSE
+        frames[7] = response.encode('utf8')
+        router.send_multipart(frames)
+        router.close()
+        break
+
+
+def request_router(context, addr, body):
+    """
+    This router will send predefined request body to the worker
+    """
+    router = context.socket(zmq.ROUTER)
+    router.bind(addr)
+    router.poll()
+    frames = router.recv_multipart()
+    router.send(PPP_HEARTBEAT)
+
+    address = frames[0]
+    frames = [
+        address,
+        address,
+        b'',
+        PPP_REQUEST,
+        b'0',
+        b'REQ-ID',
+        b'',
+        json.dumps(body).encode('utf8')
+    ]
+    router.send_multipart(frames)
+
+    router.poll()
+    router.recv_multipart()
     router.close()

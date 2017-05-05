@@ -15,11 +15,12 @@ import datetime
 import unittest
 from unittest.mock import patch
 
-from ..container import SkygearContainer, send_action
+from ..container import SkygearContainer
+from ..transmitter.http import send_action
 
 
 class TestSendAction(unittest.TestCase):
-    @patch('skygear.container.requests', autospec=True)
+    @patch('skygear.transmitter.http.requests', autospec=True)
     def test_send_str(self, mock_requests):
         send_action('http://skygear.dev/', {
             'key': 'string'
@@ -30,7 +31,7 @@ class TestSendAction(unittest.TestCase):
         self.assertEqual(call[1][0], 'http://skygear.dev/')
         self.assertEqual(call[2]['data'], '{"key": "string"}')
 
-    @patch('skygear.container.requests', autospec=True)
+    @patch('skygear.transmitter.http.requests', autospec=True)
     def test_send_date(self, mock_requests):
         dt = datetime.datetime(2014, 9, 27, 17, 40, 0,
                                tzinfo=datetime.timezone.utc)
