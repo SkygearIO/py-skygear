@@ -1,3 +1,19 @@
+### Features
+
+- Make plugin transport ZMQ multiplex (SkygearIO/skygear-server#295)
+    
+    This feature will enable the bidirectional plugin transport and multiplexing.
+    
+    Calling `send_action` within the plugin will route back to the same worker
+    from now on. It is implicit, developer does not need to specific worker reuse
+    or not.
+    This merge also add dynamic threading at ZMQTransport.
+    It solved the problem of workers exhaust problem.
+
+### Bug Fixes
+
+- Fix unable to set envvar to `false` (#137)
+
 ## 0.23.0 (2017-04-20)
 
 ### Features
