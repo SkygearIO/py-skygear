@@ -1,3 +1,5 @@
+## 0.24.0 (2017-04-20)
+
 ### Features
 
 - Make plugin transport ZMQ multiplex (SkygearIO/skygear-server#295)
