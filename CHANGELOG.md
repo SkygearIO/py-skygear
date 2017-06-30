@@ -1,4 +1,8 @@
-## 0.24.0 (2017-04-20)
+## 1.0.0 (2017-06-30)
+
+No changes since last release.
+
+## 0.24.0 (2017-05-23)
 
 ### Features
 
@@ -54,7 +58,6 @@
 
 - Add documentation of `includeme`
 
-
 ## 0.20.0 (2016-12-20)
 
 ### Features
@@ -74,7 +77,6 @@
 ### Incompatible changes
 
 - Remove `skygear.skyconfig`
-
 
 ## 0.19.0 (2016-11-10)
 
@@ -99,7 +101,6 @@
 - Handle http plugin request encoded in request body (#82)
 - Check opened worker count instead of current active worker
 
-
 ## 0.18.0 (2016-10-28)
 
 ### Features
@@ -114,13 +115,11 @@
 - Push Docker image as `onbuild` also (#66)
 - Update to use py3.5 as default release version (#63)
 
-
 ## 0.17.0 (2016-09-15)
 
 ### Features
 
 - Load more than one cloudcode entry points (#57)
-
 
 ## 0.16.0 (2016-09-02)
 
@@ -133,7 +132,6 @@
 - Un-deprecate PUBSUB_URL (#52)
 - Revamp release process
 
-
 ## 0.15.0 (2016-08-17)
 
 ### Other Notes
@@ -141,7 +139,6 @@
 - Update postgres to 9.5 (#45)
 - Update catapi docker-compose to embrace env var config
 - Remove the SKYGEAR prefix in envvar (#27)
-
 
 ## 0.14.0 (2016-07-26)
 
@@ -151,12 +148,10 @@
 - Add exception_handler decorator(#19)
 - Register citext in postgresql dialects (#31)
 
-
 ## 0.13.1 (2016-07-08)
 
 ### Features
 - Do not serve static assets by default
-
 
 ## 0.13.0 (2016-07-05)
 
@@ -181,19 +176,19 @@
 - Fix bcrypt version at 2.0.0 because build failing
 - Fix onbuild image not having zmq transport installed
 
-
 ## 0.12.0 (2016-05-30)
 
 ### Other Notes
+
  - Correct the Travis-CI link in README.md
  - Remove the wrong information at README
  - Point user to the doc site.
  - Left development and contribution for advance dev.
 
-
 ## 0.11.0 (2016-05-01)
 
 ### Features
+
 - Set the container default before loading source
   - Problem:
     When a user want to send_action to Skygear on bootsrtap, he will try to
@@ -208,27 +203,29 @@
 - Add Public ACE support
 
 ### Bug Fixes
+
 - Raise exception with proper message if no pyzmq (#13)
 - Make log level respect env SKYGEAR_LOGLEVEL
 
 ### Other Notes
+
 - Update slack notification token (SkygearIO/skygear-server#19)
 - Add Github issue tempalte
-
 
 ## 0.10.0 (2016-04-13)
 
 ### Features
+
 - Make pyzmq an optional dependency (refs oursky/py-skygear#129)
 - Support paging and filtering in restful index
 - Implement restful resource (refs oursky/py-skygear#135)
 
 ### Bug Fixes
+
 - Update development.ini in catapi
 - Change docker-compose on the catapi example
 - Remove paging logic from py-skygear
 - Reflect database table using SQLAlchemy
-
 
 ## 0.9.0 (2016-03-16)
 
