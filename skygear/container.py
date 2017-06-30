@@ -19,7 +19,6 @@ import logging
 import requests
 import strict_rfc3339
 
-
 log = logging.getLogger(__name__)
 
 
