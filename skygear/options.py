@@ -72,7 +72,8 @@ def add_plugin_arguments(ap: argparse.ArgumentParser):
                     env_var='HTTP')
     ap.add_argument('--http-addr', metavar='HTTP_ADDR', action='store',
                     default='0.0.0.0:8000',
-                    help='Address where htp web server listen to',
+                    help='Address where http web server listen to. In the \
+                    format of {HOST}:{PORT}.',
                     env_var='HTTP_ADDR')
     ap.add_argument('--zmq-thread-pool', metavar='ZMQ_THREAD_POOL',
                     action='store',
