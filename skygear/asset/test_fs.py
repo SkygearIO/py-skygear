@@ -60,7 +60,7 @@ class TestFileSystemAssetSigner(unittest.TestCase):
         assert signer.sign('index.html') == (
             'http://skygear.dev/files/index.html'
             '?expiredAt=1481096834'
-            '&signature=R5kMq2neUkCGBjQD6zSv99PajRvI0EqMesuRHQS4hA==')
+            '&signature=R5kMq2neUkCGBjQD6zSv99PajRvI0EqMesuRHQS4hNA=')
 
     def test_signing_public(self):
         options = self.mock_options

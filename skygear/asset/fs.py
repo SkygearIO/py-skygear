@@ -41,7 +41,7 @@ class FileSystemAssetSigner(BaseAssetSigner):
         hasher.update(expired_at_str.encode('utf-8'))
 
         signature = base64\
-            .urlsafe_b64encode(hasher.digest()[:-1])\
+            .urlsafe_b64encode(hasher.digest())\
             .decode('utf-8')
 
         return '{}/{}?expiredAt={}&signature={}'.format(self.url_prefix,
