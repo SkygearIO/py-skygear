@@ -59,6 +59,10 @@ class Record:
     def acl(self):
         return self._acl
 
+    @acl.setter
+    def name(self, acl):
+        self._acl = acl
+
     @property
     def created_at(self):
         return self._created_at
