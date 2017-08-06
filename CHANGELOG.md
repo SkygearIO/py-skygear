@@ -1,3 +1,10 @@
+### Bug Fixes
+
+- Sign FS Asset URL correctly (skygeario/skygear-server#427)
+
+### Other Notes
+
+- Update the desc on HTTP_ADDR option
 ## 1.0.0 (2017-06-30)
 
 No changes since last release.
