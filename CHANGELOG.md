@@ -1,3 +1,5 @@
+## 1.1.0 (2017-08-07)
+
 ### Bug Fixes
 
 - Sign FS Asset URL correctly (skygeario/skygear-server#427)
@@ -14,9 +16,9 @@ No changes since last release.
 ### Features
 
 - Make plugin transport ZMQ multiplex (SkygearIO/skygear-server#295)
-    
+
     This feature will enable the bidirectional plugin transport and multiplexing.
-    
+
     Calling `send_action` within the plugin will route back to the same worker
     from now on. It is implicit, developer does not need to specific worker reuse
     or not.
