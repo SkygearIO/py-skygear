@@ -11,6 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from .__version__ import (
+  __title__,
+  __description__,
+  __url__,
+  __version__,
+  __author__,
+  __author_email__,
+  __license__,
+)
+
 from .decorators import (
     hook,
     handler,
@@ -38,4 +48,11 @@ __all__ = [hook, handler, op, event, every, provides,
            static_assets, exception_handler,
            config,
            db_conn,
-           Response]
+           Response,
+           __title__,
+           __description__,
+           __url__,
+           __version__,
+           __author__,
+           __author_email__,
+           __license__]

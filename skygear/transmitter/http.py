@@ -22,6 +22,7 @@ from werkzeug.serving import run_simple
 from werkzeug.wrappers import Request, Response
 
 from .. import error
+from ..__version__ import __version__
 from .common import CommonTransport
 from .encoding import _serialize_exc
 
@@ -37,7 +38,8 @@ class PayloadEncoder(json.JSONEncoder):
 
 def send_action(url, payload, timeout=60):
     headers = {'Content-type': 'application/json',
-               'Accept': 'application/json'}
+               'Accept': 'application/json',
+               'X-Skygear-SDK-Version': 'py-skygear/' + __version__}
 
     _data = json.dumps(payload, cls=PayloadEncoder)
     return requests.post(url, data=_data, headers=headers, timeout=timeout) \

@@ -19,6 +19,8 @@ import logging
 import requests
 import strict_rfc3339
 
+from .__version__ import __version__
+
 log = logging.getLogger(__name__)
 
 
@@ -33,7 +35,8 @@ def send_action(url, payload, timeout=60):
     log.error("skygear.container.send_action is deprecated.\n"
               "Please use SkygearContainer().send_action instead.")
     headers = {'Content-type': 'application/json',
-               'Accept': 'application/json'}
+               'Accept': 'application/json',
+               'X-Skygear-SDK-Version': 'py-skygear/' + __version__}
     _data = json.dumps(payload, cls=PayloadEncoder)
     return requests.post(url, data=_data, headers=headers, timeout=timeout) \
         .json()
