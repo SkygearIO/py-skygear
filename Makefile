@@ -1,3 +1,4 @@
+VERSION := $(shell git describe --always)
 DIST_DIR = ./dist/
 
 .PHONY: build
@@ -17,3 +18,8 @@ docker-build: build
 .PHONY: docker-build
 docker-push:
 	make -C scripts/docker-images/release docker-push
+
+.PHONY: update-version
+update-version:
+  sed -i "" "s/version='.*'/version='$SKYGEAR_VERSION'/" setup.py
+  sed -i "" "s/__version__ = '.*'/__version__ = '$SKYGEAR_VERSION'/" skygear/__version__.py
