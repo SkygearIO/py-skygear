@@ -1,69 +1,62 @@
-# docker-compose.yml
+version: '2'
 
-db_data:
-  image: mdillon/postgis:9.5
-  command: /bin/true
+services:
+  db:
+    image: mdillon/postgis:9.5
+    volumes:
+    - db_data:/var/lib/postgresql/data
 
-db:
-  image: mdillon/postgis:9.5
-  volumes_from:
-  - db_data
+  app:
+    image: quay.io/skygeario/skygear-server:latest
+    ports:
+    - "3000:3000" # Skygear API Endpoint (HTTP)
+    - "5555:5555" # Skygear Plugin Endpoint (ZMQ)
+    volumes:
+    - app_data:/go/src/app/data
+    links:
+    - db
+    command: skygear-server --http
+    environment:
+      # `db` in the following string should match the name of the database
+      # container above.
+      DATABASE_URL: postgresql://postgres:@db/postgres?sslmode=disable
+      REDISTEST: redis://redis:6379
+      API_KEY: changeme
+      MASTER_KEY: secret
+      APP_NAME: catapiapp
+      TOKEN_STORE: jwt
+      TOKEN_STORE_SECRET: my_skygear_jwt_secret
+      # GOMAXPROCS - The maximum number of Go threads for execution.
+      # When unspecified, the default is the number of CPU available, which
+      # is the recommended setting.
+      #GOMAXPROCS: 1
+      PLUGINS: CATAPI
+      CATAPI_TRANSPORT: zmq
+      CATAPI_PATH: python
+      CATAPI_ARGS: tcp://*:5555
 
-redis_data:
-  image: redis:3.0
-  command: /bin/true
+  plugin:
+    image: quay.io/skygeario/py-skygear:latest
+    links:
+    - app
+    - db
+    volumes:
+    - .:/usr/src/app
+    command: py-skygear
+    environment:
+      DATABASE_URL: postgres://postgres@db/postgres?sslmode=disable
+      PUBSUB_URL: ws://app:3000/pubsub
+      SKYGEAR_ADDRESS: tcp://app:5555
+      SKYGEAR_ENDPOINT: http://app:3000
+      API_KEY: changeme
+      MASTER_KEY: secret
+      APP_NAME: catapiapp
+      DEBUG: 'true'
+      SERVE_STATIC_ASSETS: 'true'
+      LOG_LEVEL: DEBUG
 
-redis:
-  image: redis:3.0
-  volumes_from:
-  - redis_data
-
-app_data:
-  image: quay.io/skygeario/skygear-server:latest
-  command: /bin/true
-
-# The Skygear container
-app:
-  image: quay.io/skygeario/skygear-server:latest
-  ports:
-  - "3000:3000" # Skygear API Endpoint (HTTP)
-  - "5555:5555" # Skygear Plugin Endpoint (ZMQ)
-  volumes_from:
-  - app_data
-  links:
-  - db
-  - redis
-  command: skygear-server
-  environment:
-    # `db` in the following string should match the name of the database
-    # container above.
-    DATABASE_URL: postgresql://postgres:@db/postgres?sslmode=disable
-    API_KEY: changeme
-    MASTER_KEY: secret
-    APP_NAME: catapiapp
-    DEV_MODE: 'YES'
-    PLUGINS: CATAPI
-    CATAPI_TRANSPORT: zmq
-    CATAPI_PATH: python
-    CATAPI_ARGS: tcp://*:5555
-    LOG_LEVEL_PLUGIN: DEBUG
-    GODEBUG: netdns=cgo
-
-plugin:
-  build: .
-  links:
-  - app
-  - db
-  volumes:
-  - .:/usr/src/app
-  environment:
-    DATABASE_URL: postgres://postgres@db/postgres?sslmode=disable
-    PUBSUB_URL: PUBSUB_URL=ws://app:3000/pubsub
-    SKYGEAR_ADDRESS: tcp://app:5555
-    SKYGEAR_ENDPOINT: http://app:3000
-    API_KEY: changeme
-    MASTER_KEY: secret
-    APP_NAME: catapiapp
-    DEBUG: 'true'
-    SERVE_STATIC_ASSETS: 'true'
-    LOG_LEVEL: DEBUG
+volumes:
+  db_data:
+    driver: local
+  app_data:
+    driver: local

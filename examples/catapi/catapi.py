@@ -19,6 +19,12 @@ from .feeder import pick_food
 CATAPI_URL = 'http://thecatapi.com/api/images/get'
 
 
+@skygear.op('catapi:greet')
+def greet_cat():
+    # no response
+    pass
+
+
 @skygear.op('catapi:get')
 def get_cat():
     r = requests.get(CATAPI_URL, allow_redirects=False)
