@@ -40,7 +40,7 @@ script:
   - coverage report -m --omit *tests*
 
 before_deploy:
-  - scripts/fix-setup-version.sh
+  - make update-version
   - make build
 
 deploy:
