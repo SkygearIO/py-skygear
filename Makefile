@@ -1,4 +1,5 @@
-VERSION := $(shell git describe --always)
+VERSION := $(shell git describe --always | sed 's/v\(.*\)/\1/')
+PACKAGE_VERSION := $(shell echo $(VERSION) | sed 's/-\([0-9]*\)-\(g[0-9a-f]*\)/+\1.\2/')
 DIST_DIR = ./dist/
 
 .PHONY: build
@@ -21,5 +22,5 @@ docker-push:
 
 .PHONY: update-version
 update-version:
-  sed -i "" "s/version='.*'/version='$SKYGEAR_VERSION'/" setup.py
-  sed -i "" "s/__version__ = '.*'/__version__ = '$SKYGEAR_VERSION'/" skygear/__version__.py
+	sed -i "" "s/version='.*'/version='$(PACKAGE_VERSION)'/" setup.py
+	sed -i "" "s/__version__ = '.*'/__version__ = '$(PACKAGE_VERSION)'/" skygear/__version__.py

@@ -17,6 +17,7 @@ import signal
 import sys
 
 from . import commands
+from .__version__ import __version__
 from .container import SkygearContainer
 from .importutil import LoadException, load_modules
 from .options import parse_args
@@ -72,6 +73,7 @@ def run_plugin(options):
     SkygearContainer.set_default_endpoint(options.skygear_endpoint)
     SkygearContainer.set_default_apikey(options.apikey)
 
+    log.info("Starting py-skygear({})...".format(__version__))
     load(options)
     parse_all_settings()
     log.debug("Install signal handler for SIGTERM")
