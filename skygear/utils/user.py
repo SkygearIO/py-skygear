@@ -33,9 +33,11 @@ def reset_password_by_username(username, new_password):
         raise ValueError("username and new_password must be string")
 
     sql = text('''
-        UPDATE \"_user\"
+        UPDATE \"_auth\"
         SET password = :new_password
-        WHERE username = :username
+        WHERE id = (SELECT _id
+                    FROM user
+                    WHERE username = :username)
         ''')
     with conn() as db:
         result = db.execute(sql,
