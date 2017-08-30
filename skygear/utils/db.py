@@ -67,7 +67,7 @@ def _reflect_tables():
     schema_name = _get_schema_name()
     _logger.info("Reflecting database schema from postgres schema '{}'."
                  .format(schema_name))
-    meta.reflect(bind=_get_engine(), schema=schema_name)
+    meta.reflect(bind=_get_engine(), schema=schema_name, views=True)
     return meta
 
 
