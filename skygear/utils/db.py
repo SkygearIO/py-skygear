@@ -99,8 +99,8 @@ def get_table(name):
     try:
         return _get_metadata().tables[_full_table_name(schema_name, name)]
     except KeyError:
-        raise Exception("No table of name '{}' exists in schema '{}'.",
-                        name, schema_name)
+        raise Exception("No table of name '{}' exists in schema '{}'.".format(
+                        name, schema_name))
 
 
 def has_table(name):
