@@ -20,6 +20,7 @@ import requests
 import strict_rfc3339
 
 from .__version__ import __version__
+from .database import Database
 
 log = logging.getLogger(__name__)
 
@@ -63,6 +64,8 @@ class SkygearContainer(object):
             self.transport = SkygearContainer.transport
         else:
             self.transport = transport
+        self.public_database = Database(self, '_public')
+        self.private_database = Database(self, '_private')
 
     def _request_url(self, action_name):
         endpoint = self.endpoint

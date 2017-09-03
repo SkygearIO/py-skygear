@@ -24,7 +24,7 @@ from ..error import SkygearException
 from ..registry import get_registry
 from ..utils import db
 from ..utils.context import start_context
-from .encoding import _serialize_exc, deserialize_or_none, serialize_record
+from ..encoding import _serialize_exc, deserialize_or_none, serialize_record
 
 log = logging.getLogger(__name__)
 

@@ -17,12 +17,12 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from .. import common
+from ...encoding import deserialize_or_none, serialize_record
 from ...error import SkygearException
 from ...models import Record, RecordID
 from ...registry import Registry
 from ...utils.context import current_context
 from ..common import CommonTransport
-from ..encoding import deserialize_or_none, serialize_record
 
 
 class TestCommonTransport(unittest.TestCase):
