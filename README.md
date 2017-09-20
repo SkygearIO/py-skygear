@@ -8,10 +8,14 @@
 
 When the Skygear Server calls your plugin, `py-skygear` will take the plugin message and calls the appropriate function automatically.
 
-## Documentation
-The full documentation for Skygear is available on our docs site. The [Plugin get started guide](https://docs.skygear.io/plugin/guide) is a good place to get started.
+## Python Cloud Functions
+`py-skygear` is useful for running Python Cloud Functions to work with [skygear-server](https://github.com/SkygearIO/skygear-server); `skygear-node` is the counter part of py-skygear but for Javascript.
+
+You can read more about how to write Skygear Cloud Functions in [Skygear Guides](https://docs.skygear.io/guides/cloud-function/intro-and-deployment/python/). You don't need py-skygear if you're using skygear.io and don't plan to deploy it on your own.
 
 ## Install py-skygear
+
+You may want to read [Setup Skygear Development Server Locally](https://docs.skygear.io/guides/advanced/server/) before installing py-skygear (and understand why you might or might not need `py-skygear`)
 
 Install skygear by using pip. py-skygear requires Python 3.
 
@@ -20,8 +24,6 @@ $ pip3 install skygear
 ```
 
 Alternatively, you can install `py-skygear` from source by cloning `py-skygear` from this official repository.
-
-Please see the detail installation guide at the [docs site](https://docs.skygear.io/cloud-code/guide).
 
 ## Development
 
