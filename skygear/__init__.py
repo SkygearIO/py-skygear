@@ -42,6 +42,9 @@ from .utils.db import conn as db_conn
 from .utils.http import Response
 from .settings import config_module as config
 
+"""
+Testing
+"""
 __all__ = [hook, handler, op, event, every, provides,
            before_save, after_save, before_delete, after_delete,
            rest, RestfulRecord, RestfulResource,

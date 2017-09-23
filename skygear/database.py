@@ -20,11 +20,27 @@ from .models import Record
 
 
 class Database(object):
+    """The Skygear database CRUD class.
+    """
+
     def __init__(self, container, database_id):
         self.container = container
         self.database_id = database_id
 
     def save(self, arg, atomic=False):
+        """Save Function.
+
+        Args:
+            arg1 (list): A list of records
+            atomic (bool): Atomic save if true. Defaults to False
+
+        Returns:
+            dict: Skygear server response
+
+        Raises:
+            SkygearException: If skygear server returns an error.
+        """
+
         if not isinstance(arg, list):
             arg = [arg]
         records = [serialize_record(item)
@@ -41,6 +57,19 @@ class Database(object):
         return record_id.type + "/" + record_id.key
 
     def delete(self, arg):
+        """
+        Delete records.
+
+
+        Args:
+            arg (list): List of records or ID
+
+        Returns:
+            dict: Skygear server response
+
+        Raises:
+            SkygearException: If skygear server returns an error.
+        """
         if not isinstance(arg, list):
             arg = [arg]
         ids = [Database._encode_id(item.id)
@@ -53,6 +82,18 @@ class Database(object):
         })
 
     def query(self, query):
+        """Query records.
+
+        Args:
+            query (Query): Query object
+
+        Returns:
+            list: List of Record
+
+        Raises:
+            SkygearException: If skygear server returns an error.
+        """
+
         include = {v: {"$type": "keypath", "$val": v}
                    for v in list(set(query.include))}
 

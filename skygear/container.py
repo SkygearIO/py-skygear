@@ -45,6 +45,7 @@ def send_action(url, payload, timeout=60):
 
 class SkygearContainer(object):
     endpoint = 'http://localhost:3000'
+    """Skygear Server Location"""
     api_key = None
     access_token = None
     user_id = None
@@ -53,6 +54,10 @@ class SkygearContainer(object):
 
     def __init__(self, endpoint=None, api_key=None, access_token=None,
                  user_id=None, transport=None):
+        """
+        `public_database` Public Database
+        `private_database` Private Database
+        """
         if endpoint:
             self.endpoint = endpoint
         if api_key:
