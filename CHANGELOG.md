@@ -1,3 +1,16 @@
+## 1.1.1 (2017-11-13)
+
+### Festures
+
+- Inject version to request (#11, #153)
+- Reflect views in utils.db (SkygearIO/forgot_password#23)
+
+### Other Notes
+
+- Update README.md for broken links and clarity
+- Fix Make files
+- Update example
+
 ## 1.1.0 (2017-08-07)
 
 ### Bug Fixes
@@ -7,6 +20,7 @@
 ### Other Notes
 
 - Update the desc on HTTP_ADDR option
+
 ## 1.0.0 (2017-06-30)
 
 No changes since last release.
