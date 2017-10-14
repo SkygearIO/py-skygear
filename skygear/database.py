@@ -21,6 +21,12 @@ from .models import Record
 
 class Database(object):
     """The Skygear database CRUD class.
+
+    Example:
+
+    >>> database = container.public_database
+    >>> database.save(record)
+
     """
 
     def __init__(self, container, database_id):

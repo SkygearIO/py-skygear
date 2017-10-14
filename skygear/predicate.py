@@ -18,6 +18,17 @@ import copy
 
 
 class Predicate(object):
+    """The Skygear predicate class.
+
+    Example:
+
+    >>> p = Predicate(_id__in=["a", "b", "c"])
+    >>> p = Predicate(_id__eq="simple", gender__eq="M") #Conjuction
+    >>> p = Predicate(_id__eq="simple", gender__eq="M", op=Predicate.OR) #Disjunction
+    >>> p = ~Predicate(_id__eq="milktea") #Negation
+    """
+
+
     AND = 'and'
     OR = 'or'
     NOT = 'not'

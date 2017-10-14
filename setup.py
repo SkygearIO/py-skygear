@@ -51,6 +51,7 @@ class Doc(Command):
         chdir('docs')
         if path.exists(temp_dir) and path.isdir(temp_dir):
             rmtree(temp_dir)
+        sphinx.apidoc.OPTIONS = ['members']
         sphinx.apidoc.main([path.join('..'),
                             '-H', metadata.name,
                             '-A', metadata.author,

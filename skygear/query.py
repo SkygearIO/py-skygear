@@ -16,6 +16,16 @@ from .predicate import Predicate
 
 
 class Query:
+    """ Skygear Query Class
+
+    Example:
+
+        >>> p = Predicate(gender__eq="m")
+        >>> query = Query("student", predicate=p)
+        >>> database = container.public_database
+        >>> result = database.query(query)
+
+    """
     def __init__(self, record_type,
                  predicate=None, count=False,
                  limit=50, offset=None, include=[]):

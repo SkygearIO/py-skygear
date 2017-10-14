@@ -1,7 +1,10 @@
 Contents:
 
-.. automodule:: skygear
-   :members:
+
+==========
+py-skygear
+==========
+
 
 .. toctree::
    :maxdepth: 2

@@ -18,6 +18,7 @@ autodoc_member_order = 'bysource'
 autoclass_content = 'both'
 version = '1.0.0'
 napoleon_google_docstring = True
+autodoc_inherit_docstrings = False
 # -- Options for HTML output ---------------------------------------------------
 
 html_theme = 'sphinx_rtd_theme'
