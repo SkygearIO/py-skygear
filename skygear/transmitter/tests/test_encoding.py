@@ -15,7 +15,7 @@
 from skygear.models import (PublicAccessControlEntry, Record, RecordID,
                             RoleAccessControlEntry, UnknownValue)
 
-from ..encoding import deserialize_record, serialize_record
+from ...encoding import deserialize_record, serialize_record
 
 
 class TestsDeserializeRecord():

@@ -20,6 +20,7 @@ import requests
 import strict_rfc3339
 
 from .__version__ import __version__
+from .database import Database
 
 log = logging.getLogger(__name__)
 
@@ -44,6 +45,7 @@ def send_action(url, payload, timeout=60):
 
 class SkygearContainer(object):
     endpoint = 'http://localhost:3000'
+    """Skygear Server Location"""
     api_key = None
     access_token = None
     user_id = None
@@ -52,6 +54,10 @@ class SkygearContainer(object):
 
     def __init__(self, endpoint=None, api_key=None, access_token=None,
                  user_id=None, transport=None):
+        """
+        `public_database` Public Database
+        `private_database` Private Database
+        """
         if endpoint:
             self.endpoint = endpoint
         if api_key:
@@ -63,6 +69,8 @@ class SkygearContainer(object):
             self.transport = SkygearContainer.transport
         else:
             self.transport = transport
+        self.public_database = Database(self, '_public')
+        self.private_database = Database(self, '_private')
 
     def _request_url(self, action_name):
         endpoint = self.endpoint

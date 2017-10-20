@@ -23,8 +23,8 @@ from werkzeug.wrappers import Request, Response
 
 from .. import error
 from ..__version__ import __version__
+from ..encoding import _serialize_exc
 from .common import CommonTransport
-from .encoding import _serialize_exc
 
 log = logging.getLogger(__name__)
 

@@ -16,11 +16,11 @@ from datetime import datetime
 
 import strict_rfc3339
 
-from ..error import SkygearException, UnexpectedError
-from ..models import (Asset, DirectAccessControlEntry, Location,
-                      PublicAccessControlEntry, Record, RecordID, Reference,
-                      RelationalAccessControlEntry, RoleAccessControlEntry,
-                      UnknownValue)
+from .error import SkygearException, UnexpectedError
+from .models import (Asset, DirectAccessControlEntry, Location,
+                     PublicAccessControlEntry, Record, RecordID, Reference,
+                     RelationalAccessControlEntry, RoleAccessControlEntry,
+                     UnknownValue)
 
 
 def _serialize_exc(e):
