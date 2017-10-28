@@ -59,16 +59,31 @@ class Registry:
 
     def _add_param(self, kind, param):
         """
-        Add a param dict to the registry. If the param already exist
-        in the registry, the existing param will be removed. An param
-        is a dictionary containing info of the declared extension point.
+        Add a extension point param dict to the registry. If another param
+        dict is a duplicate of the specified param dict, the existing param
+        dict will be removed from the registry.
+
+        An extension point param dict contains registration information of
+        an extension point (i.e. cloud function).
+
+        A param dict is duplicate of another when:
+        - for handler: having the same name and method
+        - others: having the same name
         """
+        if kind == 'handler':
+            def is_dup(a, b):
+                return a.get('name') == b.get('name') and \
+                    a.get('methods') == b.get('methods')
+        else:
+            def is_dup(a, b):
+                return a.get('name') == b.get('name')
+
         param_list = self.param_map[kind]
 
         # Check existing param. Remove it if the param has the same name
         # as the to-be-added param.
         for i in range(len(param_list)):
-            if param_list[i].get('name') == param.get('name'):
+            if is_dup(param_list[i], param):
                 del param_list[i]
                 break
         param_list.append(param)
