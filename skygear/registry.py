@@ -13,6 +13,7 @@
 # limitations under the License.
 import logging
 from collections import defaultdict
+from copy import deepcopy
 
 log = logging.getLogger(__name__)
 
@@ -57,16 +58,47 @@ class Registry:
         self.static_assets = {}
         self.exception_handlers = {}
 
+    def _add_param_handler(self, param):
+        new_param_list = []
+
+        # Check existing param. Remove existing param if it overlaps with
+        # the one being registered.
+        for old_param in self.param_map['handler']:
+            if not old_param.get('name') == param.get('name'):
+                continue
+
+            methods_intersection = set(old_param.get('methods')) & \
+                set(param.get('methods'))
+
+            if not methods_intersection:
+                new_param_list.append(old_param)
+
+        for method in param.get('methods'):
+            new_param = deepcopy(param)
+            new_param['methods'] = [method]
+            new_param_list.append(new_param)
+        self.param_map['handler'] = new_param_list
+
     def _add_param(self, kind, param):
         """
-        Add a param dict to the registry. If the param already exist
-        in the registry, the existing param will be removed. An param
-        is a dictionary containing info of the declared extension point.
+        Add a extension point param dict to the registry. If existing param
+        dict overlaps the specified param dict, the existing param
+        dict will be removed from the registry.
+
+        An extension point param dict contains registration information of
+        an extension point (i.e. cloud function).
+
+        A param dict is an overlap of another when:
+        - for handler: having the same name and method
+        - others: having the same name
         """
+        if kind == 'handler':
+            return self._add_param_handler(param)
+
         param_list = self.param_map[kind]
 
-        # Check existing param. Remove it if the param has the same name
-        # as the to-be-added param.
+        # Check existing param. Remove existing param if it overlaps with
+        # the one being registered.
         for i in range(len(param_list)):
             if param_list[i].get('name') == param.get('name'):
                 del param_list[i]
