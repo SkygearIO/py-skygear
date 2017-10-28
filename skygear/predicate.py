@@ -26,8 +26,7 @@ class Predicate(object):
     >>> p = Predicate(_id__eq="simple", gender__eq="M") #Conjuction
     >>> p = Predicate(_id__eq="simple", gender__eq="M", op=Predicate.OR) #Disjunction
     >>> p = ~Predicate(_id__eq="milktea") #Negation
-    """
-
+    """ # noqa
 
     AND = 'and'
     OR = 'or'
