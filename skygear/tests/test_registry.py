@@ -41,6 +41,29 @@ class TestRegistry(unittest.TestCase):
         assert param_map[0]['key_required'] is True
         assert param_map[0]['user_required'] is True
 
+    def test_register_handler_with_different_method(self):
+        def handler1():
+            pass
+
+        def handler2():
+            pass
+
+        registry = Registry()
+        registry.register_handler('plugin:handler', handler1, method='GET')
+        registry.register_handler('plugin:handler', handler2, method='POST')
+
+        assert len(registry.handler) == 1
+        assert registry.get_handler('plugin:handler', 'GET') == handler1
+        assert registry.get_handler('plugin:handler', 'POST') == handler2
+        assert registry.get_handler('plugin:handler', 'PUT') is None
+
+        param_map = registry.param_map['handler']
+        assert len(param_map) == 2
+        assert param_map[0]['name'] == 'plugin:handler'
+        assert 'GET' in param_map[0]['methods']
+        assert param_map[1]['name'] == 'plugin:handler'
+        assert 'POST' in param_map[1]['methods']
+
     def test_register_handler_twice(self):
         def handler1():
             pass
