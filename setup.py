@@ -5,11 +5,10 @@ from os import path, chdir
 from setuptools import find_packages, setup
 from setuptools.command.test import test as TestCommand
 from setuptools import Command
-import sphinx
-import sphinx.apidoc
 from shutil import copyfile, rmtree
 
 README = path.abspath(path.join(path.dirname(__file__), 'README.md'))
+REQUIRES = path.abspath(path.join(path.dirname(__file__), 'requirements.txt'))
 
 classifiers = [
     'License :: OSI Approved :: Apache Software License',
@@ -81,17 +80,7 @@ setup(
       author_email='rick.mak@gmail.com',
       url='https://github.com/SkygearIO/py-skygear',
       license='Apache License, Version 2.0',
-      install_requires=[
-            'psycopg2>=2.6.1',
-            'SQLAlchemy>=1.0.8',
-            'strict-rfc3339>=0.5',
-            'requests',
-            'websocket-client>=0.32.0',
-            'bcrypt==2.0.0',
-            'ConfigArgParse>=0.12.0',
-            'werkzeug>=0.11.0',
-            'boto3>=1.4',
-      ],
+      install_requires=open(REQUIRES).read().split('\n'),
       extras_require=extras_require,
       cmdclass= {'test': PyTest, 'doc': Doc},
       tests_require=[
