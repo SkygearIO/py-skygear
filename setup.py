@@ -91,6 +91,10 @@ setup(
             'ConfigArgParse>=0.12.0',
             'werkzeug>=0.11.0',
             'boto3>=1.4',
+            'Sphinx>=1.6.3',
+            'sphinx-rtd-theme>=0.2.4',
+            'sphinxcontrib-napoleon>=0.6.1',
+            'sphinxcontrib-websupport>=1.0.1'
       ],
       extras_require=extras_require,
       cmdclass= {'test': PyTest, 'doc': Doc},
