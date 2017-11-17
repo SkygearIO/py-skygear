@@ -21,7 +21,6 @@ from werkzeug.routing import Map, Rule
 from werkzeug.serving import run_simple
 from werkzeug.wrappers import Request, Response
 
-from .. import error
 from ..__version__ import __version__
 from ..encoding import _serialize_exc
 from .common import CommonTransport
@@ -133,9 +132,6 @@ class HttpTransport(CommonTransport):
                    use_reloader=self.debug)
 
     def send_action(self, action_name, payload, url, timeout):
-        resp = send_action(url,
+        return send_action(url,
                            payload,
                            timeout=timeout)
-        if 'error' in resp:
-            raise error.SkygearException.from_dict(resp['error'])
-        return resp
