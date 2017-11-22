@@ -40,6 +40,9 @@ script:
   - coverage report -m --omit *tests*
 
 before_deploy:
+  - sudo pip install awscli
+  - aws configure set preview.cloudfront true
+  - sudo pip install git+https://github.com/SkygearIO/skygear-doc-tools.git@master
   - make update-version
   - make build
 
