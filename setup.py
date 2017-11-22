@@ -5,9 +5,6 @@ from os import path, chdir
 from setuptools import find_packages, setup
 from setuptools.command.test import test as TestCommand
 from setuptools import Command
-import sphinx
-import sphinx.apidoc
-from shutil import copyfile, rmtree
 
 README = path.abspath(path.join(path.dirname(__file__), 'README.md'))
 
@@ -35,36 +32,6 @@ class PyTest(TestCommand):
         errno = pytest.main(self.test_args)
         sys.exit(errno)
 
-class Doc(Command):
-    """Sphinx Document Generation Command"""
-    description = 'run sphinx-apidoc'
-    user_options = []
-    def finalize_options(self):
-        pass
-
-    def initialize_options(self):
-        pass
-
-    def run(self):
-        metadata = self.distribution.metadata
-        temp_dir = 'rst'
-        chdir('docs')
-        if path.exists(temp_dir) and path.isdir(temp_dir):
-            rmtree(temp_dir)
-        sphinx.apidoc.OPTIONS = ['members']
-        sphinx.apidoc.main([path.join('..'),
-                            '-H', metadata.name,
-                            '-A', metadata.author,
-                            '-V', metadata.version,
-                            '-R', metadata.version,
-                            '-o', temp_dir,
-                            path.join('..', 'skygear')])
-        for rst in glob.glob(r'*.rst') + ['conf.py']:
-            print(rst)
-            copyfile(rst, path.join(temp_dir, rst))
-        sphinx.main(['', temp_dir, '_build'])
-        rmtree(temp_dir)
-        
 
 extras_require={
     'zmq': ['pyzmq>=14.7'],
@@ -93,7 +60,7 @@ setup(
             'boto3>=1.4',
       ],
       extras_require=extras_require,
-      cmdclass= {'test': PyTest, 'doc': Doc},
+      cmdclass= {'test': PyTest},
       tests_require=[
             'pytest',
       ] + extras_require['zmq'],
