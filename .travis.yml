@@ -40,9 +40,8 @@ script:
   - coverage report -m --omit *tests*
 
 before_deploy:
-  - pyenv install ${TRAVIS_PYTHON_VERSION}
-  - pyenv global ${TRAVIS_PYTHON_VERSION}
-  - sudo python setup.py develop
+  - sudo pyenv global ${TRAVIS_PYTHON_VERSION}
+  - sudo pip install .[doc]
   - sudo pip install awscli
   - sudo pip install git+https://github.com/SkygearIO/skygear-doc-tools.git@master
   - aws configure set preview.cloudfront true
