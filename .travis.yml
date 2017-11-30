@@ -40,10 +40,11 @@ script:
   - coverage report -m --omit *tests*
 
 before_deploy:
-  - sudo python -V
-  - sudo pip install .[doc]
-  - sudo pip install awscli
-  - sudo pip install git+https://github.com/SkygearIO/skygear-doc-tools.git@master
+  - source ~/virtualenv/python${TRAVIS_PYTHON_VERSION}/bin/activate
+  - python -V
+  - pip install .[doc]
+  - pip install awscli
+  - pip install git+https://github.com/SkygearIO/skygear-doc-tools.git@master
   - aws configure set preview.cloudfront true
   - make update-version
   - make build
