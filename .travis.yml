@@ -40,7 +40,7 @@ script:
   - coverage report -m --omit *tests*
 
 before_deploy:
-  - sudo python -v
+  - sudo python -V
   - sudo pip install .[doc]
   - sudo pip install awscli
   - sudo pip install git+https://github.com/SkygearIO/skygear-doc-tools.git@master
