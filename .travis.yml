@@ -42,7 +42,7 @@ script:
 before_deploy:
   - sudo pip install awscli
   - aws configure set preview.cloudfront true
-  - python setup.py develop
+  - sudo python setup.py develop
   - sudo pip install git+https://github.com/SkygearIO/skygear-doc-tools.git@master
   - make update-version
   - make build
