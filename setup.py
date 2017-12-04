@@ -1,13 +1,10 @@
-import sys
 import glob
-from os import path, chdir
-
-from setuptools import find_packages, setup
-from setuptools.command.test import test as TestCommand
-from setuptools import Command
-import sphinx
-import sphinx.apidoc
+import sys
+from os import chdir, environ, mkdir, path, system
 from shutil import copyfile, rmtree
+
+from setuptools import Command, find_packages, setup
+from setuptools.command.test import test as TestCommand
 
 README = path.abspath(path.join(path.dirname(__file__), 'README.md'))
 
@@ -51,23 +48,28 @@ class Doc(Command):
         chdir('docs')
         if path.exists(temp_dir) and path.isdir(temp_dir):
             rmtree(temp_dir)
-        sphinx.apidoc.OPTIONS = ['members']
-        sphinx.apidoc.main([path.join('..'),
-                            '-H', metadata.name,
-                            '-A', metadata.author,
-                            '-V', metadata.version,
-                            '-R', metadata.version,
-                            '-o', temp_dir,
-                            path.join('..', 'skygear')])
-        for rst in glob.glob(r'*.rst') + ['conf.py']:
-            print(rst)
-            copyfile(rst, path.join(temp_dir, rst))
-        sphinx.main(['', temp_dir, '_build'])
+        mkdir(temp_dir)
+        environ['SPHINX_APIDOC_OPTIONS'] = 'members'
+        system('sphinx-apidoc %s -H %s -A %s -V %s -R %s -o %s %s' %
+               (path.join('..', 'skygear'),
+                metadata.name,
+                metadata.author,
+                metadata.version,
+                metadata.version,
+                temp_dir,
+                path.join('..', 'skygear')))
+        for f in glob.glob(r'*.rst') + ['conf.py']:
+            print(f)
+            copyfile(f, path.join(temp_dir, f))
+        system('sphinx-build %s %s' % (temp_dir, '_build'))
         rmtree(temp_dir)
-        
 
 extras_require={
     'zmq': ['pyzmq>=14.7'],
+    'doc': ['Sphinx>=1.6.3',
+            'sphinx-rtd-theme>=0.2.4',
+            'sphinxcontrib-napoleon>=0.6.1',
+            'sphinxcontrib-websupport>=1.0.1']
 }
 
 setup(
@@ -96,7 +98,8 @@ setup(
       cmdclass= {'test': PyTest, 'doc': Doc},
       tests_require=[
             'pytest',
-      ] + extras_require['zmq'],
+      ] + extras_require['zmq']
+        + extras_require['doc'],
       entry_points={
           'console_scripts': [
               'py-skygear = skygear.bin:main'
