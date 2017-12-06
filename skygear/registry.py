@@ -65,6 +65,7 @@ class Registry:
         # the one being registered.
         for old_param in self.param_map['handler']:
             if not old_param.get('name') == param.get('name'):
+                new_param_list.append(old_param)
                 continue
 
             methods_intersection = set(old_param.get('methods')) & \
