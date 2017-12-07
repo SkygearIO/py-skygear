@@ -1,6 +1,16 @@
+## 1.1.2 (2017-12-07)
+
+### Features
+
+- Initial Database Query Interface Implementation
+
+### Other Notes
+
+- Error in skygear response should not raise Exception in http as in zmq
+
 ## 1.1.1 (2017-11-13)
 
-### Festures
+### Features
 
 - Inject version to request (#11, #153)
 - Reflect views in utils.db (SkygearIO/forgot_password#23)
