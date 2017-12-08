@@ -68,16 +68,13 @@ class TestRegistry(unittest.TestCase):
         assert registry.get_handler('plugin:handler3', 'POST') == handler3
 
         param_map = registry.param_map['handler']
-        print(param_map)
         assert len(param_map) == 3
         assert param_map[0]['name'] == 'plugin:handler'
+        assert param_map[0]['methods'] == ['GET']
         assert param_map[1]['name'] == 'plugin:handler'
-        assert 'POST' in param_map[1]['methods']
-        assert 'GET' in param_map[0]['methods']
-        assert param_map[1]['name'] == 'plugin:handler'
-        assert 'POST' in param_map[1]['methods']
+        assert param_map[1]['methods'] == ['POST']
         assert param_map[2]['name'] == 'plugin:handler3'
-        assert 'POST' in param_map[2]['methods']
+        assert param_map[2]['methods'] == ['POST']
 
     def test_register_handler_twice(self):
         def handler1():
