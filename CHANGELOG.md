@@ -1,3 +1,9 @@
+## 1.3.0 (2018-01-04)
+
+### Bug Fixes 
+
+- Fix register handler with different HTTP method (#164)
+
 ## 1.2.0 (2017-12-07)
 
 ### Features
