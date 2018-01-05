@@ -20,7 +20,11 @@ docker-build: build
 docker-push:
 	make -C scripts/docker-images/release docker-push
 
-
 .PHONY: release-commit
 release-commit:
 	./scripts/release-commit.sh
+
+.PHONY: update-version
+update-version:
+	sed -i "" "s/version='.*'/version='$(VERSION)'/" setup.py
+	sed -i "" "s/__version__ = '.*'/__version__ = '$(VERSION)'/" skygear/__version__.py
