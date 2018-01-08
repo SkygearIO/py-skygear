@@ -20,7 +20,7 @@ fi
 
 github-release release -u skygeario -r py-skygear --draft --tag v$SKYGEAR_VERSION --name "v$SKYGEAR_VERSION" --description "`cat new-release`"
 cat CHANGELOG.md >> new-release && mv new-release CHANGELOG.md
-make update-version VERSION=$SKYGEAR_VERSION
+make update-version PACKAGE_VERSION=$SKYGEAR_VERSION
 git add CHANGELOG.md setup.py skygear/__version__.py
 git commit -m "Update CHANGELOG for v$SKYGEAR_VERSION"
 git tag -a v$SKYGEAR_VERSION -s -u $KEY_ID -m "Release v$SKYGEAR_VERSION"
