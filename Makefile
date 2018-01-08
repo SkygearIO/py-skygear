@@ -1,5 +1,5 @@
 VERSION := $(shell git describe --always | sed 's/v\(.*\)/\1/')
-PACKAGE_VERSION := $(shell echo $(VERSION) | sed 's/-\([0-9]*\)-\(g[0-9a-f]*\)/+\1.\2/')
+PACKAGE_VERSION ?= $(shell echo $(VERSION) | sed 's/-\([0-9]*\)-\(g[0-9a-f]*\)/+\1.\2/')
 DIST_DIR = ./dist/
 OS = $(shell uname -s)
 
@@ -26,6 +26,10 @@ docker-build: build
 .PHONY: docker-build
 docker-push:
 	make -C scripts/docker-images/release docker-push
+
+.PHONY: release-commit
+release-commit:
+	./scripts/release-commit.sh
 
 .PHONY: update-version
 update-version:
