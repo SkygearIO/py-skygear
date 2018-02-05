@@ -18,8 +18,8 @@ import pytest
 from sqlalchemy.sql import text
 
 from skygear.container import SkygearContainer
-from skygear.utils import user as u
 from skygear.utils import db
+from skygear.utils import user as u
 
 PLAINTEXT = 'helloworld!'
 
