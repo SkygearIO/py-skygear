@@ -27,14 +27,15 @@ Alternatively, you can install `py-skygear` from source by cloning `py-skygear` 
 
 ## Development
 
-Skygears support three kind of protocol for different use case, make sure you add support to all of them or raise appropriate exception.
+Skygear support two kind of protocol for different use case, make sure you
+add support to all of them or raise appropriate exception.
 
 Supported protocols: `http` and `zmq`
 
 If you want to use zmq, you need to install pyzmq, and respective cbinding.
 You can install via homebrew in OSX `brew install zeromq`
 
-You may run a long running process that hook with your own skygear-serve
+You may run a long running process that hook with your own skygear-server
 instance.
 ```
 DATABASE_URL=postgresql://localhost/skygear?sslmode=disable \
