@@ -1,6 +1,6 @@
 bcrypt==2.0.0
 boto3==1.4.2
-psycopg2==2.6.1
+psycopg2==2.7.3.2
 py==1.4.30
 pycparser==2.14
 pytest==2.8.2
