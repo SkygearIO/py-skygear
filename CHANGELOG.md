@@ -1,3 +1,10 @@
+## 1.4.0 (2018-03-07)
+
+### Other Notes
+
+- Update psycopg2 for supporting postgres10.1
+- Update README for removing exec transport
+
 ## 1.3.0 (2018-01-04)
 
 ### Bug Fixes 
