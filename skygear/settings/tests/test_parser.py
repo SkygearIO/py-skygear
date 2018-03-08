@@ -78,6 +78,11 @@ class TestSettingsParser(unittest.TestCase):
         self.parser.add_setting('test_var', atype=bool)
         assert self.parser.parse_settings().test_var is False
 
+    def test_var_default_skip_type_func(self):
+        self.parser.add_setting('test_var', atype=bool, required=False,
+                                default=None)
+        assert self.parser.parse_settings().test_var is None
+
     def test_var_default_is_callable(self):
         self.parser.add_setting('test_var', atype=bool, required=False,
                                 default=lambda: True)

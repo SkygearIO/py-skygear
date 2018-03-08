@@ -78,6 +78,7 @@ class SettingsParser:
         * required - Whether the setting is required. The parser will
           raise an exception during parsing if the corresponding environment
           variables are not set. (Empty value is considered "set").
+          If a default value is specified, setting is always optional.
         """
         if not name:
             raise Exception("Setting name must be specified.")
@@ -87,6 +88,9 @@ class SettingsParser:
 
         if not env_var:
             env_var = name.upper()
+
+        if default:
+            required = False
 
         setting = SettingItem(name, default, atype, env_var, resolve, required)
         self.settings[name] = setting
@@ -110,18 +114,16 @@ class SettingsParser:
     def _parse_setting(self, setting):
         order = self._resolve_order(setting)
         for var_name in order:
-            if var_name in os.environ:
-                val = os.environ[var_name]
-                break
+            if var_name not in os.environ:
+                continue
+
+            val = setting.cast_value(os.environ[var_name])
+            break
         else:
+            if setting.required:
+                raise Exception("Setting named \"{}\" is defined "
+                                "but it is not set.".format(setting.name))
             val = setting.default_value
-
-        if val is None and setting.required:
-            raise Exception("Setting named \"{}\" is defined "
-                            "but it is not set.".format(setting.name))
-
-        if val is not None:
-            val = setting.cast_value(val)
 
         return val
 
