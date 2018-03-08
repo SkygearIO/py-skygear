@@ -16,8 +16,17 @@ from collections import namedtuple
 
 from . import Namespace
 
-SettingItem = namedtuple('SettingItem',
-                         'name default atype env_var resolve required')
+_SettingItem = namedtuple('SettingItem',
+                          'name default atype env_var resolve required')
+
+
+class SettingItem(_SettingItem):
+    @property
+    def default_value(self):
+        result = self.default
+        if callable(result):
+            result = result()
+        return result
 
 
 class SettingsParser:
@@ -98,7 +107,7 @@ class SettingsParser:
                 val = os.environ[var_name]
                 break
         else:
-            val = setting.default
+            val = setting.default_value
 
         if val is None and setting.required:
             raise Exception("Setting named \"{}\" is defined "
