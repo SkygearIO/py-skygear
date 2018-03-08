@@ -15,6 +15,7 @@ import os
 from collections import namedtuple
 
 from . import Namespace
+from ..utils import strtobool
 
 _SettingItem = namedtuple('SettingItem',
                           'name default atype env_var resolve required')
@@ -27,6 +28,12 @@ class SettingItem(_SettingItem):
         if callable(result):
             result = result()
         return result
+
+    def cast_value(self, value):
+        cast_fn = self.atype
+        if self.atype is bool:
+            cast_fn = strtobool
+        return cast_fn(value)
 
 
 class SettingsParser:
@@ -114,7 +121,7 @@ class SettingsParser:
                             "but it is not set.".format(setting.name))
 
         if val is not None:
-            val = setting.atype(val)
+            val = setting.cast_value(val)
 
         return val
 

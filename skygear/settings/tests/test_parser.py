@@ -73,7 +73,12 @@ class TestSettingsParser(unittest.TestCase):
         assert ns.existing == 'no'
         assert ns.test_var == 'yes'
 
+    @patch.dict(os.environ, {'TEST_VAR': 'no'})
+    def test_var_bool(self):
+        self.parser.add_setting('test_var', atype=bool)
+        assert self.parser.parse_settings().test_var is False
+
     def test_var_default_is_callable(self):
         self.parser.add_setting('test_var', atype=bool, required=False,
                                 default=lambda: True)
-        assert self.parser.parse_settings().test_var == True
+        assert self.parser.parse_settings().test_var is True
