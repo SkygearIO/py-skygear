@@ -1,3 +1,11 @@
+## 1.4.1 (2018-04-09)
+
+### Other Notes
+
+- Update settings parsing (#186, #187)
+- Update bcrypt to 3.1.4
+
+
 ## 1.4.0 (2018-03-07)
 
 ### Other Notes
