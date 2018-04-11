@@ -36,9 +36,10 @@ class S3AssetSigner(BaseAssetSigner):
     def public_url(self, name: str) -> str:
         if self.url_prefix:
             return '/'.join([self.url_prefix, name])
-        return 'https://s3-{}.amazonaws.com/{}/{}'.format(self.region,
-                                                          self.bucket,
-                                                          name)
+        return get_target_url(self.client._endpoint_url,
+                              bucket_name=self.bucket,
+                              object_name=name,
+                              bucket_region=self.region)
 
     def sign(self, name: str) -> str:
         if not self.signature_required:

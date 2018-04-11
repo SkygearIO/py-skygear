@@ -132,8 +132,8 @@ class TestS3AssetSigner(unittest.TestCase):
         options.asset_store_public = True
         signer = S3AssetSigner.create(options)
         assert signer.sign('index.html') == (
-            'https://s3-mock-s3-region.amazonaws.com/'
-            'mock-s3-bucket/index.html')
+            'https://mock-s3-bucket.s3-ap-southeast-1.amazonaws.com/'
+            'index.html')
 
     def test_signing_public_with_url_prefix(self):
         options = self.mock_options
