@@ -78,7 +78,9 @@ class TestCloudAssetSigner(unittest.TestCase):
             cloud_asset_token='mock-cloud-asset-token',
             cloud_asset_public_prefix='http://mock-cloud-asset.dev/public',
             cloud_asset_private_prefix='http://mock-cloud-asset.dev/private',
-            asset_store_public=public)
+            asset_store_public=public,
+            asset_store_presign_expiry=120*60,
+            asset_store_presign_interval=60*60)
 
     def setUp(self):
         self.request_patcher = patch('skygear.asset.cloud.request')
@@ -103,6 +105,8 @@ class TestCloudAssetSigner(unittest.TestCase):
         assert signer1.signer_token.extra == 'mock-token-extra'
         assert signer1.signer_token.expired_at == \
             datetime.fromtimestamp(1481186313)
+        assert signer1.presign_expiry == timedelta(seconds=120*60)
+        assert signer1.presign_interval == timedelta(seconds=60*60)
 
         signer2 = CloudAssetSigner.create(self.mock_options(public=True))
         assert signer2.app_name == 'skygear-test'
@@ -113,6 +117,8 @@ class TestCloudAssetSigner(unittest.TestCase):
         assert signer2.signer_token.extra == 'mock-token-extra'
         assert signer2.signer_token.expired_at == \
             datetime.fromtimestamp(1481186313)
+        assert signer2.presign_expiry == timedelta(seconds=120*60)
+        assert signer2.presign_interval == timedelta(seconds=60*60)
 
     def test_create_fail(self):
         with self.assertRaises(Exception):
@@ -123,7 +129,9 @@ class TestCloudAssetSigner(unittest.TestCase):
                 cloud_asset_public_prefix='http://mock-cloud-asset.dev/public',
                 cloud_asset_private_prefix=(
                     'http://mock-cloud-asset.dev/private'),
-                asset_store_public=False))
+                asset_store_public=False,
+                asset_store_presign_expiry=120*60,
+                asset_store_presign_interval=60*60))
 
         with self.assertRaises(Exception):
             CloudAssetSigner.create(Namespace(
@@ -133,7 +141,9 @@ class TestCloudAssetSigner(unittest.TestCase):
                 cloud_asset_public_prefix='http://mock-cloud-asset.dev/public',
                 cloud_asset_private_prefix=(
                     'http://mock-cloud-asset.dev/private'),
-                asset_store_public=False))
+                asset_store_public=False,
+                asset_store_presign_expiry=120*60,
+                asset_store_presign_interval=60*60))
 
         with self.assertRaises(Exception):
             CloudAssetSigner.create(Namespace(
@@ -143,7 +153,9 @@ class TestCloudAssetSigner(unittest.TestCase):
                 cloud_asset_public_prefix='http://mock-cloud-asset.dev/public',
                 cloud_asset_private_prefix=(
                     'http://mock-cloud-asset.dev/private'),
-                asset_store_public=False))
+                asset_store_public=False,
+                asset_store_presign_expiry=120*60,
+                asset_store_presign_interval=60*60))
 
         with self.assertRaises(Exception):
             CloudAssetSigner.create(Namespace(
@@ -152,7 +164,9 @@ class TestCloudAssetSigner(unittest.TestCase):
                 cloud_asset_token='mock-cloud-asset-token',
                 cloud_asset_public_prefix='http://mock-cloud-asset.dev/public',
                 cloud_asset_private_prefix=None,
-                asset_store_public=False))
+                asset_store_public=False,
+                asset_store_presign_expiry=120*60,
+                asset_store_presign_interval=60*60))
 
         with self.assertRaises(Exception):
             CloudAssetSigner.create(Namespace(
@@ -162,13 +176,18 @@ class TestCloudAssetSigner(unittest.TestCase):
                 cloud_asset_public_prefix=None,
                 cloud_asset_private_prefix=(
                     'http://mock-cloud-asset.dev/private'),
-                asset_store_public=True))
+                asset_store_public=True,
+                asset_store_presign_expiry=120*60,
+                asset_store_presign_interval=60*60))
 
     def test_init(self):
         signer = CloudAssetSigner('skygear-test',
                                   'http://mock-cloud-asset.dev',
                                   'mock-cloud-asset-token',
-                                  'http://mock-cloud-asset.dev/private')
+                                  'http://mock-cloud-asset.dev/private',
+                                  True,
+                                  120*60,
+                                  60*60)
         assert signer.app_name == 'skygear-test'
         assert signer.host == 'http://mock-cloud-asset.dev'
         assert signer.token == 'mock-cloud-asset-token'
@@ -177,6 +196,8 @@ class TestCloudAssetSigner(unittest.TestCase):
         assert signer.signer_token.extra == 'mock-token-extra'
         assert signer.signer_token.expired_at == \
             datetime.fromtimestamp(1481186313)
+        assert signer.presign_expiry == timedelta(seconds=120*60)
+        assert signer.presign_interval == timedelta(seconds=60*60)
 
     def test_signer_availability(self):
         self.mock_request.return_value.text = json.dumps({
@@ -217,16 +238,16 @@ class TestCloudAssetSigner(unittest.TestCase):
         with self.assertRaises(Exception):
             CloudAssetSigner.create(self.mock_options())
 
-    @patch('skygear.asset.cloud.datetime')
+    @patch('skygear.asset.common.time.time',
+           Mock(return_value=1481095934.0))
     @patch('skygear.asset.cloud.CloudAssetSignerToken.expired',
            Mock(return_value=True))
-    def test_sign(self, mock_datetime):
-        mock_datetime.now.return_value = datetime.fromtimestamp(1481095934)
+    def test_sign(self):
         signer = CloudAssetSigner.create(self.mock_options())
         assert signer.sign('index.html') == (
             'http://mock-cloud-asset.dev/private/skygear-test/index.html'
-            '?expired_at=1481096834'
-            '&signature=peQtnmSFdoQWtFAk3cwLkM3lUspBkIhl5SPlR5hjFm4%3D'
+            '?expired_at=1481072400'
+            '&signature=LvYkHVAGZuFm0AfaLKVDWuUuma15UUBd9Q4NgyII9QM%3D'
             '.mock-token-extra')
 
     def test_sign_public(self):
@@ -236,6 +257,8 @@ class TestCloudAssetSigner(unittest.TestCase):
             cloud_asset_token='mock-cloud-asset-token',
             cloud_asset_public_prefix='http://mock-cloud-asset.dev/public',
             cloud_asset_private_prefix='http://mock-cloud-asset.dev/private',
-            asset_store_public=True))
+            asset_store_public=True,
+            asset_store_presign_expiry=120*60,
+            asset_store_presign_interval=60*60))
         assert signer.sign('index.html') == \
             'http://mock-cloud-asset.dev/public/skygear-test/index.html'
