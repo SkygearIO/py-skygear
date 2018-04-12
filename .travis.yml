@@ -19,15 +19,12 @@ env:
     - DATABASE_URL=postgresql://postgres:@localhost/skygear_test?sslmode=disable
 
 before_install:
-  - pip install --upgrade pip
-  - pip install pylama
-  - pip install isort
-  - pip install lizard
-  - pip install coverage
+  - pip install --upgrade pip setuptools
   - sudo apt-get install -y postgresql-9.5-postgis-2.3
 
 install:
   - pip install -r requirements.txt
+  - pip install -r test_requirements.txt
 
 before_script:
   - psql -c 'CREATE DATABASE skygear_test;' -U postgres
