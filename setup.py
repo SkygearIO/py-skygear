@@ -92,7 +92,7 @@ setup(
             'bcrypt==3.1.4',
             'ConfigArgParse>=0.12.0',
             'werkzeug>=0.11.0',
-            'boto3>=1.4',
+            'minio>=3.0',
       ],
       extras_require=extras_require,
       cmdclass= {'test': PyTest, 'doc': Doc},

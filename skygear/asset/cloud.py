@@ -15,6 +15,7 @@
 import base64
 import hashlib
 import hmac
+import time
 from datetime import datetime, timedelta
 from json.decoder import JSONDecoder
 from urllib.parse import quote as percent_encode
@@ -72,8 +73,9 @@ class CloudAssetSignerToken:
 
 class CloudAssetSigner(BaseAssetSigner):
     def __init__(self, app_name: str, host: str, token: str,
-                 url_prefix: str, public: bool = False):
-        super().__init__(public)
+                 url_prefix: str, public: bool = False,
+                 presign_expiry: int = 15*60, presign_interval: int = 5*60):
+        super().__init__(public, presign_expiry, presign_interval)
         self.app_name = app_name
         self.host = host
         self.token = token
@@ -118,8 +120,8 @@ class CloudAssetSigner(BaseAssetSigner):
         if not self.signature_required:
             return url
 
-        expired_at = datetime.now() + self.signature_expiry_duration
-        expired_at_str = str(int(expired_at.timestamp()))
+        expired_at = self.presign_expire_time
+        expired_at_str = str(int(time.mktime(expired_at.timetuple())))
 
         hasher = hmac.new(self.signer_token.value.encode('utf-8'),
                           digestmod=hashlib.sha256)
@@ -159,4 +161,6 @@ class CloudAssetSigner(BaseAssetSigner):
         if not url_prefix:
             raise Exception('Missing url prefix for cloud asset')
 
-        return cls(app_name, host, token, url_prefix, public)
+        return cls(app_name, host, token, url_prefix, public,
+                   options.asset_store_presign_expiry,
+                   options.asset_store_presign_interval)

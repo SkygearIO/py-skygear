@@ -96,6 +96,14 @@ def add_fs_asset_store_arguments(ap: argparse.ArgumentParser):
     ap.add_argument('--asset-store-secret', action='store', metavar='PATH',
                     env_var='ASSET_STORE_SECRET',
                     help='Secret for signing assets on fs asset store')
+    ap.add_argument('--asset-store-presign-expiry', action='store', metavar='PRESIGN_EXPIRY',
+                    env_var='ASSET_STORE_PRESIGN_EXPIRY',
+                    default=15*60, type=int,
+                    help='Presign expiry time (in seconds)')
+    ap.add_argument('--asset-store-presign-interval', action='store', metavar='PRESIGN_INTERVAL',
+                    env_var='ASSET_STORE_PRESIGN_INTERVAL',
+                    default=5*60, type=int,
+                    help='Presign interval(in seconds)')
 
 
 def add_s3_asset_store_arguments(ap: argparse.ArgumentParser):

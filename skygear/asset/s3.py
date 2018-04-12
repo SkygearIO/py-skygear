@@ -13,7 +13,8 @@
 # limitations under the License.
 
 import configargparse as argparse
-from boto3 import client as aws_client
+from minio import Minio
+from minio.helpers import get_target_url
 
 from .common import BaseAssetSigner
 
@@ -21,32 +22,41 @@ from .common import BaseAssetSigner
 class S3AssetSigner(BaseAssetSigner):
     def __init__(self, access_key: str, access_secret: str,
                  region: str, bucket: str,
-                 url_prefix: str = None, public: bool = False):
-        super().__init__(public)
+                 url_prefix: str = None, public: bool = False,
+                 presign_expiry: int = 15*60, presign_interval: int = 5*60):
+        super().__init__(public, presign_expiry, presign_interval)
         self.bucket = bucket
         self.region = region
         self.url_prefix = url_prefix
-        self.client = aws_client('s3',
-                                 aws_access_key_id=access_key,
-                                 aws_secret_access_key=access_secret,
-                                 region_name=region)
+        self.client = Minio('s3.amazonaws.com',
+                            region=region,
+                            access_key=access_key,
+                            secret_key=access_secret)
 
     def public_url(self, name: str) -> str:
         if self.url_prefix:
             return '/'.join([self.url_prefix, name])
-        return 'https://s3-{}.amazonaws.com/{}/{}'.format(self.region,
-                                                          self.bucket,
-                                                          name)
+        return get_target_url(self.client._endpoint_url,
+                              bucket_name=self.bucket,
+                              object_name=name,
+                              bucket_region=self.region)
 
     def sign(self, name: str) -> str:
         if not self.signature_required:
             return self.public_url(name)
 
-        params = {'Bucket': self.bucket, 'Key': name}
-        expire_duration = int(self.signature_expiry_duration.total_seconds())
-        return self.client.generate_presigned_url('get_object',
-                                                  Params=params,
-                                                  ExpiresIn=expire_duration)
+        # Use our interval start time to sign the request instead of using
+        # current datetime.
+        date = self.presign_interval_start_time
+        response_headers = {
+            'X-Amz-Date': date.strftime("%Y%m%dT%H%M%SZ")
+        }
+        return self.client.presigned_get_object(
+            self.bucket,
+            name,
+            expires=self.presign_expiry,
+            response_headers=response_headers
+        )
 
     @classmethod
     def create(cls, options: argparse.Namespace) -> BaseAssetSigner:
@@ -68,4 +78,6 @@ class S3AssetSigner(BaseAssetSigner):
 
         return cls(access_key, access_secret, region, bucket,
                    options.asset_store_s3_url_prefix,
-                   options.asset_store_public)
+                   options.asset_store_public,
+                   options.asset_store_presign_expiry,
+                   options.asset_store_presign_interval)

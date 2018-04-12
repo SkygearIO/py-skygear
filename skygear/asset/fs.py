@@ -15,6 +15,7 @@
 import base64
 import hashlib
 import hmac
+import time
 from datetime import datetime
 
 import configargparse as argparse
@@ -23,8 +24,9 @@ from .common import BaseAssetSigner
 
 
 class FileSystemAssetSigner(BaseAssetSigner):
-    def __init__(self, url_prefix: str, secret: str, public: bool = False):
-        super().__init__(public)
+    def __init__(self, url_prefix: str, secret: str, public: bool = False,
+                 presign_expiry: int = 15*60, presign_interval: int = 5*60):
+        super().__init__(public, presign_expiry, presign_interval)
         self.url_prefix = url_prefix
         self.secret = secret
 
@@ -32,8 +34,8 @@ class FileSystemAssetSigner(BaseAssetSigner):
         if not self.signature_required:
             return '{}/{}'.format(self.url_prefix, name)
 
-        expired_at = datetime.now() + self.signature_expiry_duration
-        expired_at_str = str(int(expired_at.timestamp()))
+        expired_at = self.presign_expire_time
+        expired_at_str = str(int(time.mktime(expired_at.timetuple())))
 
         hasher = hmac.new(self.secret.encode('utf-8'),
                           digestmod=hashlib.sha256)
@@ -59,4 +61,7 @@ class FileSystemAssetSigner(BaseAssetSigner):
         if not secret:
             raise Exception('Missing signing secret for fs asset store')
 
-        return cls(url_prefix, secret, options.asset_store_public)
+        return cls(url_prefix, secret,
+                   options.asset_store_public,
+                   options.asset_store_presign_expiry,
+                   options.asset_store_presign_interval)
