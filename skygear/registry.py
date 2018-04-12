@@ -31,7 +31,8 @@ def _iter_class_hierarchy(klass):
 
 
 class Registry:
-    """Registry holds a mapping of registred functions and their parameters that
+    """
+    Registry holds a mapping of registred functions and their parameters that
     are callable by Skygear plugin system.
 
     Developers are not expected to create an instance directly. Instead, they

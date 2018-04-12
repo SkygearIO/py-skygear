@@ -91,8 +91,8 @@ def add_plugin_arguments(ap: argparse.ArgumentParser):
 def add_fs_asset_store_arguments(ap: argparse.ArgumentParser):
     ap.add_argument('--asset-store-url-prefix', action='store',
                     metavar='PREFIX', env_var='ASSET_STORE_URL_PREFIX',
-                    help='URL prefix of fs asset store (Only applicable for fs \
-                          asset store')
+                    help='URL prefix of fs asset store (Only applicable for fs'
+                         ' asset store')
     ap.add_argument('--asset-store-secret', action='store', metavar='PATH',
                     env_var='ASSET_STORE_SECRET',
                     help='Secret for signing assets on fs asset store')
