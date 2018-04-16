@@ -53,17 +53,20 @@ class Hub:
         self.end_point = end_point or _get_default_pubsub_url()
         self.api_key = api_key or options.apikey
 
-    def publish(self, channel, data):
+    def publish(self, channels, data):
         wsopts = {}
         if self.api_key:
             wsopts['header'] = [
                     'X-Skygear-API-Key: {0}'.format(self.api_key)
                     ]
         conn = create_connection(self.end_point, **wsopts)
-        _data = encoder({
-            'action': 'pub',
-            'channel': channel,
-            'data': data,
-        })
-        conn.send(_data)
+        if isinstance(channels, str):
+            channels = [channels]
+        for channel in channels:
+            _data = encoder({
+                'action': 'pub',
+                'channel': channel,
+                'data': data,
+            })
+            conn.send(_data)
         conn.close()
