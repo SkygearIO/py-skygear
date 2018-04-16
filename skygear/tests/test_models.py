@@ -13,7 +13,8 @@
 # limitations under the License.
 from datetime import datetime
 
-from ..models import Record, RecordID
+from ..models import (ACCESS_CONTROL_ENTRY_LEVEL_READ,
+                      PublicAccessControlEntry, Record, RecordID)
 
 
 class TestRecord():
@@ -42,3 +43,11 @@ class TestRecord():
         assert r.id == rid
         assert r.owner_id == 'OWNER_ID'
         assert r.data == {}
+
+    def test_set_acl(eslf):
+        rid = RecordID("note", "hello_world")
+        r = Record(rid, "OWNER_ID", None)
+        r.acl = [PublicAccessControlEntry(ACCESS_CONTROL_ENTRY_LEVEL_READ)]
+
+        assert len(r.acl) == 1
+        assert r.acl[0].level == ACCESS_CONTROL_ENTRY_LEVEL_READ
