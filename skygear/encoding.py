@@ -44,8 +44,16 @@ def deserialize_or_none(obj):
         return None
 
 
+def deserialize_value(value):
+    return _RecordDecoder().decode_value(value)
+
+
 def serialize_record(record):
     return _RecordEncoder().encode(record)
+
+
+def serialize_value(value):
+    return _RecordEncoder().encode_value(value)
 
 
 class _RecordDecoder:
@@ -128,6 +136,8 @@ class _RecordDecoder:
                 return self.decode_ref(v)
             elif type_ == 'unknown':
                 return self.decode_unknown_value(v)
+            elif type_ == 'record':
+                return self.decode_record(v)
             else:
                 return self.decode_dict(v)
         elif isinstance(v, list):
@@ -153,6 +163,9 @@ class _RecordDecoder:
 
     def decode_unknown_value(self, d):
         return UnknownValue(d['$underlying_type'])
+
+    def decode_record(self, d):
+        return self.decode(d['$record'])
 
 
 class _RecordEncoder:
@@ -224,6 +237,8 @@ class _RecordEncoder:
             return self.encode_ref(v)
         elif isinstance(v, UnknownValue):
             return self.encode_unknown_value(v)
+        elif isinstance(v, Record):
+            return self.encode_record(v)
         else:
             return v
 
@@ -264,3 +279,9 @@ class _RecordEncoder:
         if unknown_value.underlyingType:
             data['$underlying_type'] = unknown_value.underlyingType
         return data
+
+    def encode_record(self, record):
+        return {
+            '$type': 'record',
+            '$record': self.encode(record)
+        }
