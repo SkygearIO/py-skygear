@@ -1,3 +1,11 @@
+## 1.5.0 (2018-04-23)
+
+### Other Notes
+
+- Pubsub improvement, pubsub.publish supports multiple channel, sending the
+    same data to multiple channels with the same connection
+- Fix unable to change record ACL settings in before save
+
 ## 1.4.1 (2018-04-09)
 
 ### Other Notes
