@@ -66,7 +66,7 @@ class Doc(Command):
 
 extras_require={
     'zmq': ['pyzmq>=14.7'],
-    'doc': ['Sphinx>=1.6.3',
+    'doc': ['Sphinx==1.6.7',
             'sphinx-rtd-theme>=0.2.4',
             'sphinxcontrib-napoleon>=0.6.1',
             'sphinxcontrib-websupport>=1.0.1']
