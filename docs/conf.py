@@ -7,13 +7,9 @@ import os
 import sys
 from pkg_resources import find_distributions
 from email import message_from_string
-
 directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..")
-pkgInfo = next(find_distributions(directory)).get_metadata('PKG-INFO')
-msg = message_from_string(pkgInfo)
-version = msg['Version']
-name = msg['Name']
-
+sys.path.append(directory)
+from skygear import __version__ as version, __title__ as name
 
 sys.path.insert(0, '../')
 source_suffix = '.rst'
