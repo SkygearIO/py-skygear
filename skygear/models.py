@@ -106,6 +106,11 @@ class RecordID:
     def key(self):
         return self._key
 
+    def __eq__(self, other):
+        if isinstance(self, other.__class__):
+            return self.__dict__ == other.__dict__
+        return False
+
 
 ACCESS_CONTROL_ENTRY_LEVEL_WRITE = 'write'
 ACCESS_CONTROL_ENTRY_LEVEL_READ = 'read'
@@ -158,11 +163,21 @@ class Asset:
             raise ValueError('Asset.name cannot be None or empty')
         self._name = name
 
+    def __eq__(self, other):
+        if isinstance(self, other.__class__):
+            return self.__dict__ == other.__dict__
+        return False
+
 
 class Location:
     def __init__(self, lng, lat):
         self.lng = lng
         self.lat = lat
+
+    def __eq__(self, other):
+        if isinstance(self, other.__class__):
+            return self.__dict__ == other.__dict__
+        return False
 
 
 class Reference:
@@ -179,6 +194,11 @@ class Reference:
             raise ValueError('Reference.recordID cannot be None')
         self._recordID = recordID
 
+    def __eq__(self, other):
+        if isinstance(self, other.__class__):
+            return self.__dict__ == other.__dict__
+        return False
+
 
 class UnknownValue:
     def __init__(self, underlyingType):
@@ -191,3 +211,8 @@ class UnknownValue:
     @underlyingType.setter
     def underlyingType(self, underlyingType):
         self._underlyingType = underlyingType
+
+    def __eq__(self, other):
+        if isinstance(self, other.__class__):
+            return self.__dict__ == other.__dict__
+        return False

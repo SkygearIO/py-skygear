@@ -44,15 +44,23 @@ def deserialize_or_none(obj):
         return None
 
 
+def deserialize_value(value):
+    return _RecordDecoder().decode_value(value)
+
+
 def serialize_record(record):
     return _RecordEncoder().encode(record)
+
+
+def serialize_value(value):
+    return _RecordEncoder().encode_value(value)
 
 
 class _RecordDecoder:
     def decode(self, d):
         id = self.decode_id(d['_id'])
-        owner_id = d['_ownerID']
-        acl = self.decode_acl(d['_access'])
+        owner_id = d.get('_ownerID', None)
+        acl = self.decode_acl(d.get('_access', None))
 
         created_at = None
         if d.get('_created_at', None):
@@ -99,7 +107,7 @@ class _RecordDecoder:
         user_id = d.get('user_id', None)
         public = d.get('public', None)
         if user_id is not None:
-            return DirectAccessControlEntry(d['user_id'], level)
+            return DirectAccessControlEntry(user_id, level)
         elif relation is not None:
             return RelationalAccessControlEntry(relation, level)
         elif role is not None:
@@ -128,6 +136,8 @@ class _RecordDecoder:
                 return self.decode_ref(v)
             elif type_ == 'unknown':
                 return self.decode_unknown_value(v)
+            elif type_ == 'record':
+                return self.decode_record(v)
             else:
                 return self.decode_dict(v)
         elif isinstance(v, list):
@@ -154,12 +164,16 @@ class _RecordDecoder:
     def decode_unknown_value(self, d):
         return UnknownValue(d['$underlying_type'])
 
+    def decode_record(self, d):
+        return self.decode(d['$record'])
+
 
 class _RecordEncoder:
     def encode(self, record):
         d = self.encode_dict(record.data)
         d['_id'] = self.encode_id(record.id)
-        d['_ownerID'] = record.owner_id
+        if record.owner_id:
+            d['_ownerID'] = record.owner_id
         d['_access'] = self.encode_acl(record.acl)
         if record.created_at is not None:
             # New record don't have following value yet
@@ -224,6 +238,8 @@ class _RecordEncoder:
             return self.encode_ref(v)
         elif isinstance(v, UnknownValue):
             return self.encode_unknown_value(v)
+        elif isinstance(v, Record):
+            return self.encode_record(v)
         else:
             return v
 
@@ -264,3 +280,9 @@ class _RecordEncoder:
         if unknown_value.underlyingType:
             data['$underlying_type'] = unknown_value.underlyingType
         return data
+
+    def encode_record(self, record):
+        return {
+            '$type': 'record',
+            '$record': self.encode(record)
+        }

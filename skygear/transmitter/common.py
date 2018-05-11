@@ -20,7 +20,8 @@ from functools import wraps
 from werkzeug.test import EnvironBuilder
 from werkzeug.wrappers import BaseResponse, Request
 
-from ..encoding import _serialize_exc, deserialize_or_none, serialize_record
+from ..encoding import (_serialize_exc, deserialize_or_none, deserialize_value,
+                        serialize_record, serialize_value)
 from ..error import SkygearException
 from ..registry import get_registry
 from ..utils import db
@@ -163,15 +164,15 @@ class CommonTransport:
 
     def op(self, func, param):
         if isinstance(param, list):
-            args = param
+            args = deserialize_value(param)
             kwargs = {}
         elif isinstance(param, dict):
             args = []
-            kwargs = param
+            kwargs = deserialize_value(param)
         else:
             msg = "Unsupported args type '{0}'".format(type(param))
             raise ValueError(msg)
-        return func(*args, **kwargs)
+        return serialize_value(func(*args, **kwargs))
 
     def hook(self, func, param):
         original_record = deserialize_or_none(param.get('original', None))
