@@ -109,10 +109,16 @@ class CommonTransport:
     @_wrap_result
     def call_event_func(self, name, param):
         try:
-            event_func = self._registry.get_func('event', name)
-            return self.event(event_func, param)
-        except KeyError as e:
+            event_funcs = self._registry.get_func('event', name)
+        except KeyError:
             log.warning('Missing event func named "{}"'.format(name))
+
+        results = [self.event(event_func, param) for event_func in event_funcs]
+
+        if name == 'init':
+            return results[0]
+
+        return results
 
     @_wrap_result
     def call_provider(self, ctx, name, action, param):

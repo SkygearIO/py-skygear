@@ -123,11 +123,13 @@ class Registry:
         log.debug("Registered hook '%s' to skygear!", name)
 
     def register_event(self, name, func, *args, **kwargs):
-        if name in self.func_map['event']:
-            log.warning("Replacing previously registered event handler '%s'",
-                        name)
+        event_funcs = self.func_map['event'].get(name)
+        if event_funcs is None:
+            event_funcs = []
+            self.func_map['event'][name] = event_funcs
 
-        self.func_map['event'][name] = func
+        event_funcs.append(func)
+
         self._add_param('event', {
             'name': name
         })
