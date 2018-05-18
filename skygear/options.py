@@ -147,6 +147,9 @@ def add_logging_arguments(ap: argparse.ArgumentParser):
     ap.add_argument('--loglevel', action='store', default='INFO',
                     help="Log level",
                     env_var='LOG_LEVEL')
+    ap.add_argument('--logformatter', action='store', default='text',
+                    help="Log formatter",
+                    env_var='LOG_FORMATTER')
 
 
 def add_debug_arguments(ap: argparse.ArgumentParser):
