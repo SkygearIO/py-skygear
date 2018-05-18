@@ -65,10 +65,20 @@ def clear_contexts():
 def current_user_id():
     """Return the current user ID of the current request context.
 
-    If the user is not logged in or if the request context is not available.
-    This function returns None.
+    If the user is not logged in or if the request context is not available,
+    this function returns None.
     """
     return current_context().get("user_id", None)
+
+
+def current_request_id():
+    """Return the current request ID of the current request context.
+
+    The request ID is generated from the server when receiving a request
+    from the client. If the request ID is not available, this function
+    returns None.
+    """
+    return current_context().get("request_id", None)
 
 
 @contextlib.contextmanager
