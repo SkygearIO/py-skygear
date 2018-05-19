@@ -18,6 +18,7 @@ from .registry import get_registry
 from .utils.assets import DirectoryStaticAssetsLoader, StaticAssetsLoader
 
 _registry = get_registry()
+RESERVED_EVENTS = ['init']
 
 
 def op(name, *args, **kwargs):
@@ -28,6 +29,10 @@ def op(name, *args, **kwargs):
 
 
 def event(name, *args, **kwargs):
+    if name in RESERVED_EVENTS:
+        raise Exception("'{0}' is a reserved event name. "
+                        "You cannot register for this event.".format(name))
+
     def skygear_event(func):
         _registry.register_event(name, func, *args, **kwargs)
         return func

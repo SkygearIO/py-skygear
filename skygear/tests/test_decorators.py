@@ -151,3 +151,19 @@ class TestExceptionHandlerDecorator(unittest.TestCase):
         mock.assert_called_with(SomeException, ANY)
         exc = fn(SomeException())
         assert isinstance(exc, SomeException)
+
+
+class TestEventDecorator(unittest.TestCase):
+    @patch('skygear.registry.Registry.register_event')
+    def test_register(self, mocker):
+        @d.event('some-event')
+        def fn():
+            pass
+        mocker.assert_called_with('some-event', ANY)
+
+    @patch('skygear.registry.Registry.register_event')
+    def test_register_reserved_events(self, mocker):
+        with self.assertRaises(Exception):
+            @d.event('init')
+            def fn():
+                pass
