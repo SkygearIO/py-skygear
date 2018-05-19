@@ -154,9 +154,9 @@ class TestRegistry(unittest.TestCase):
         registry = Registry()
         registry.register_event('plugin:event:foo', fn)
 
-        func_map = registry.func_map['event']
+        func_map = registry.event_map
         assert len(func_map) == 1
-        assert func_map['plugin:event:foo'] == fn
+        assert func_map['plugin:event:foo'] == [fn]
 
         param_map = registry.param_map['event']
         assert len(param_map) == 1

@@ -102,6 +102,16 @@ class TestCommonTransport(unittest.TestCase):
         assert result['error']['message'] == 'Error occurred'
         assert result['error']['code'] == 1
 
+    @patch('skygear.registry.Registry.get_event_funcs')
+    def testCallEventFunc(self, mocker):
+        mock1 = MagicMock()
+        mock2 = MagicMock()
+        mocker.return_value = [mock1, mock2]
+        self.transport.call_event_func('some-event', {})
+        mocker.assert_called_once_with('some-event')
+        mock1.assert_called_once_with()
+        mock2.assert_called_once_with()
+
     def testOpDictArg(self):
         mock = MagicMock(return_value={'result': 'OK'})
         self.transport.op(mock, dict(named='value'))
@@ -179,6 +189,11 @@ class TestCommonTransport(unittest.TestCase):
         mock = MagicMock()
         self.transport.provider(mock, 'action', {'data': 'hello'})
         mock.handle_action.assert_called_with('action', {'data': 'hello'})
+
+    def testEvent(self):
+        mock = MagicMock()
+        self.transport.event(mock, {})
+        mock.assert_called_once_with()
 
 
 class TestBase64Encoding(unittest.TestCase):

@@ -44,8 +44,8 @@ class Registry:
             'op': {},
             'hook': {},
             'timer': {},
-            'event': {},
         }
+        self.event_map = defaultdict(list)
         self.param_map = {
             'op': [],
             'handler': [],
@@ -123,12 +123,7 @@ class Registry:
         log.debug("Registered hook '%s' to skygear!", name)
 
     def register_event(self, name, func, *args, **kwargs):
-        event_funcs = self.func_map['event'].get(name)
-        if event_funcs is None:
-            event_funcs = []
-            self.func_map['event'][name] = event_funcs
-
-        event_funcs.append(func)
+        self.event_map[name].append(func)
 
         self._add_param('event', {
             'name': name
@@ -213,6 +208,9 @@ class Registry:
 
     def get_func(self, kind, name):
         return self.func_map[kind][name]
+
+    def get_event_funcs(self, name):
+        return self.event_map[name]
 
     def get_provider(self, name):
         return self.providers[name]
