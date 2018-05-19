@@ -77,13 +77,6 @@ class TestConsoleTransport(unittest.TestCase):
         mocker.assert_called_once_with('okay', {'data': 'haha'})
         assert output == mocker.return_value
 
-    @patch('skygear.transmitter.console.ConsoleTransport.init_event_handler')
-    def testInitEvent(self, mocker):
-        mocker.return_value = {'data': 'hello'}
-        output = self.exec(['event', 'init'], {'config': {'hello': 'world'}})
-        mocker.assert_called_once_with(config={'hello': 'world'})
-        assert output.get('result') == mocker.return_value
-
     @patch('skygear.transmitter.console.ConsoleTransport.call_func')
     def testHook(self, mocker):
         mocker.return_value = {}

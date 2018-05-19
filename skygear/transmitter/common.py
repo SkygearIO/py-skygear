@@ -59,6 +59,10 @@ def handle_exception(exc):
     return exc
 
 
+def handle_init_event(**data):
+    return get_registry().func_list()
+
+
 def encode_base64_json(data):
     """
     Encode dict-like data into a base64 encoded JSON string.
@@ -85,13 +89,6 @@ def dict_from_base64_environ(name):
 class CommonTransport:
     def __init__(self, registry=None):
         self._registry = registry or get_registry()
-        self.register_init_event()
-
-    def init_event_handler(self, **data):
-        return self._registry.func_list()
-
-    def register_init_event(self):
-        self._registry.register_event('init', self.init_event_handler)
 
     @_wrap_result
     def call_func(self, ctx, kind, name, param):
@@ -202,4 +199,6 @@ class CommonTransport:
         raise NotImplemented()
 
 
-get_registry().register_exception_handler(Exception, handle_exception)
+_registry = get_registry()
+_registry.register_exception_handler(Exception, handle_exception)
+_registry.register_event('init', handle_init_event)
