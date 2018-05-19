@@ -65,7 +65,7 @@ class Doc(Command):
         rmtree(temp_dir)
 
 extras_require={
-    'zmq': ['pyzmq>=14.7'],
+    'zmq': ['pyzmq>=16.0'],
     'doc': ['Sphinx==1.6.7',
             'sphinx-rtd-theme>=0.2.4',
             'sphinxcontrib-napoleon>=0.6.1',
