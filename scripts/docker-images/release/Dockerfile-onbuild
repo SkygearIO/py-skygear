@@ -1,7 +1,7 @@
 FROM python:3.6-stretch
 
 RUN \
-    wget https://github.com/Yelp/dumb-init/releases/download/v1.0.0/dumb-init_1.0.0_amd64.deb && \
+    wget https://github.com/Yelp/dumb-init/releases/download/v1.2.1/dumb-init_1.2.1_amd64.deb && \
     dpkg -i dumb-init_*.deb && \
     rm dumb-init_*.deb
 
