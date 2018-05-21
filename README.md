@@ -48,9 +48,9 @@ py-skygear sample.py \
 
 ## Support
 
-For implementation related questions or technical support, please refer to the [Stack Overflow](http://stackoverflow.com/questions/tagged/skygear) community.
+For implementation related questions or technical support, please find us on the [official forum](https://discuss.skygear.io) or [community chat](https://slack.skygear.io).
 
-If you believe you've found an issue with Skygear JavaScript SDK, please feel free to [report an issue](https://github.com/SkygearIO/py-skygear/issues).
+If you believe you've found an issue with the Skygear Python cloud function SDK, please feel free to [report an issue](https://github.com/SkygearIO/py-skygear/issues).
 
 
 ## How to contribute
