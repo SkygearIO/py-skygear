@@ -40,7 +40,7 @@ class RequestContextFilter(logging.Filter):
 
 
 class RequestTagFilter(logging.Filter):
-    def __init__(self, name, tag):
+    def __init__(self, tag, name=''):
         super(RequestTagFilter, self).__init__(name)
         self.tag = tag
 
@@ -51,3 +51,7 @@ class RequestTagFilter(logging.Filter):
             if not hasattr(record, 'tag') and self.tag:
                 record.tag = self.tag
         return True
+
+
+def setLoggerTag(logger, tag):
+    logger.addFilter(RequestTagFilter(tag))

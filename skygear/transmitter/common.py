@@ -26,8 +26,10 @@ from ..error import SkygearException
 from ..registry import get_registry
 from ..utils import db
 from ..utils.context import start_context
+from ..utils.logging import setLoggerTag
 
 log = logging.getLogger(__name__)
+setLoggerTag(log, 'plugin')
 
 
 def _get_engine():

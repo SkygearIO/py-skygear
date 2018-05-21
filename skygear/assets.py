@@ -21,8 +21,10 @@ from werkzeug.exceptions import NotFound
 from . import Response
 from .registry import get_registry
 from .utils.assets import StaticAssetsLoader
+from .utils.logging import setLoggerTag
 
 log = logging.getLogger(__name__)
+setLoggerTag(log, 'plugin')
 _registry = get_registry()
 
 

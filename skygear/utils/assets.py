@@ -16,7 +16,10 @@ import logging
 import os.path
 import shutil
 
+from .logging import setLoggerTag
+
 log = logging.getLogger(__name__)
+setLoggerTag(log, 'plugin')
 
 
 def _trim_abs_path(path):

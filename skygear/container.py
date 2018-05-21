@@ -21,8 +21,10 @@ import strict_rfc3339
 
 from .__version__ import __version__
 from .database import Database
+from .utils.logging import setLoggerTag
 
 log = logging.getLogger(__name__)
+setLoggerTag(log, 'plugin')
 
 
 class PayloadEncoder(json.JSONEncoder):

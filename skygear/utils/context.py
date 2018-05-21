@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import contextlib
-import logging
 import threading
-
-log = logging.getLogger(__name__)
 
 
 class RequestContextManager(threading.local):
@@ -24,8 +21,6 @@ class RequestContextManager(threading.local):
 
     def push(self, context):
         self.stack.append(context)
-        log.debug("Pushed request context: %s. Length: %d",
-                  context, len(self.stack))
 
     def pop(self):
         if len(self.stack) == 1:

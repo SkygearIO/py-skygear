@@ -15,7 +15,10 @@ import logging
 from collections import defaultdict
 from copy import deepcopy
 
+from .utils.logging import setLoggerTag
+
 log = logging.getLogger(__name__)
+setLoggerTag(log, 'plugin')
 
 
 def get_registry():
