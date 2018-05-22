@@ -23,9 +23,11 @@ from werkzeug.wrappers import Request, Response
 
 from ..__version__ import __version__
 from ..encoding import _serialize_exc
+from ..utils.logging import setLoggerTag
 from .common import CommonTransport
 
 log = logging.getLogger(__name__)
+setLoggerTag(log, 'plugin')
 
 
 class PayloadEncoder(json.JSONEncoder):

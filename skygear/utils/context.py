@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import contextlib
-import logging
 import threading
-
-log = logging.getLogger(__name__)
 
 
 class RequestContextManager(threading.local):
@@ -24,8 +21,6 @@ class RequestContextManager(threading.local):
 
     def push(self, context):
         self.stack.append(context)
-        log.debug("Pushed request context: %s. Length: %d",
-                  context, len(self.stack))
 
     def pop(self):
         if len(self.stack) == 1:
@@ -65,10 +60,20 @@ def clear_contexts():
 def current_user_id():
     """Return the current user ID of the current request context.
 
-    If the user is not logged in or if the request context is not available.
-    This function returns None.
+    If the user is not logged in or if the request context is not available,
+    this function returns None.
     """
     return current_context().get("user_id", None)
+
+
+def current_request_id():
+    """Return the current request ID of the current request context.
+
+    The request ID is generated from the server when receiving a request
+    from the client. If the request ID is not available, this function
+    returns None.
+    """
+    return current_context().get("request_id", None)
 
 
 @contextlib.contextmanager

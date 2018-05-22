@@ -19,9 +19,11 @@ from random import randint
 
 import zmq
 
+from ..utils.logging import setLoggerTag
 from .common import CommonTransport
 
 log = logging.getLogger(__name__)
+setLoggerTag(log, 'plugin')
 
 
 def _encoded(func):

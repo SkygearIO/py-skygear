@@ -23,8 +23,11 @@ from .importutil import LoadException, load_modules
 from .options import parse_args
 from .settings import parse_all as parse_all_settings
 from .transmitter import ConsoleTransport, HttpTransport, ZmqTransport
+from .utils.logging import (CloudLogFormatter, RequestContextFilter,
+                            RequestTagFilter, setLoggerTag)
 
 log = logging.getLogger(__name__)
+setLoggerTag(log, 'plugin')
 
 
 def main():
@@ -106,11 +109,25 @@ def setup_logging(options):
     logger.setLevel(level)
     handler = logging.StreamHandler()
     handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('''\
-%(asctime)s %(levelname)-5.5s \
-[%(name)s:%(lineno)s][%(threadName)s] %(message)s\
-''')
-    handler.setFormatter(formatter)
+
+    if options.logformatter == 'json':
+        formatter = CloudLogFormatter()
+        handler.setFormatter(formatter)
+        handler.addFilter(RequestContextFilter())
+        handler.addFilter(RequestTagFilter(tag='plugin', name='werkzeug'))
+
+        # Define a fallback tag filter. This filter will match all logs, even
+        # if the log already matched one of the tag filter above. Therefore,
+        # the fallback tag filter should be added last. Otherwise all
+        # log will be assigned the same tag.
+        handler.addFilter(RequestTagFilter(tag='cloud', name=''))
+    else:
+        formatter = logging.Formatter('''\
+    %(asctime)s %(levelname)-5.5s \
+    [%(name)s:%(lineno)s][%(threadName)s] %(message)s\
+    ''')
+        handler.setFormatter(formatter)
+
     logger.addHandler(handler)
 
 

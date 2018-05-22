@@ -16,9 +16,11 @@ import logging
 import sys
 
 from .. import error as skyerr
+from ..utils.logging import setLoggerTag
 from .common import CommonTransport, dict_from_base64_environ
 
 log = logging.getLogger(__name__)
+setLoggerTag(log, 'plugin')
 
 
 ACCEPTED_TARGETS = [

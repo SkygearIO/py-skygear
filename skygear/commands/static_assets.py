@@ -5,9 +5,11 @@ from ..assets import CollectorException, StaticAssetsCollector
 from ..options import options
 from ..registry import get_registry
 from ..utils.assets import StaticAssetsLoader
+from ..utils.logging import setLoggerTag
 
 _registry = get_registry()
 log = logging.getLogger(__name__)
+setLoggerTag(log, 'plugin')
 
 
 def collect_static_assets():

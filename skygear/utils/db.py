@@ -21,11 +21,13 @@ from sqlalchemy import schema
 from sqlalchemy.dialects.postgresql.base import ischema_names
 
 from ..container import SkygearContainer
+from .logging import setLoggerTag
 
 _app_name_pattern = re.compile('[.:]')
 _engine = None
 _metadata = None
 _logger = logging.getLogger(__name__)
+setLoggerTag(_logger, 'plugin')
 
 # Register CIText to SQLAlchemy's Postgres reflection subsystem.
 ischema_names['citext'] = sa.types.TEXT

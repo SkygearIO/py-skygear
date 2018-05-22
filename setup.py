@@ -93,6 +93,7 @@ setup(
             'ConfigArgParse>=0.12.0',
             'werkzeug>=0.11.0',
             'boto3>=1.4',
+            'python-json-logger>=0.1.8',
       ],
       extras_require=extras_require,
       cmdclass= {'test': PyTest, 'doc': Doc},

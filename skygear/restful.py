@@ -18,7 +18,10 @@ import uuid
 from skygear.container import SkygearContainer
 from skygear.error import BadRequest, SkygearException, UnexpectedError
 
+from .utils.logging import setLoggerTag
+
 log = logging.getLogger(__name__)
+setLoggerTag(log, 'plugin')
 
 
 def get_ident(base_name, request):
