@@ -169,6 +169,7 @@ class TestRegistry(unittest.TestCase):
         kwargs = {
                 'type': 'note',
                 'trigger': 'beforeSave',
+                'async_': True,
                 }
         registry = Registry()
         registry.register_hook('hook_name', fn, **kwargs)
@@ -182,6 +183,7 @@ class TestRegistry(unittest.TestCase):
         assert param_map[0]['name'] == 'hook_name'
         assert param_map[0]['type'] == 'note'
         assert param_map[0]['trigger'] == 'beforeSave'
+        assert param_map[0]['async'] is True
 
     def test_register_hook_twice(self):
         def fn1():

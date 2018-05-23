@@ -117,6 +117,9 @@ class Registry:
             raise ValueError("trigger is required for hook")
         kwargs['name'] = name
 
+        if 'async_' in kwargs:
+            kwargs['async'] = kwargs.pop('async_')
+
         if name in self.func_map['hook']:
             log.warning("Replacing previously registered hook '%s'.", name)
 
