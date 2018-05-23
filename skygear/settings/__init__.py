@@ -104,7 +104,7 @@ def config_module(name, *args, **kwargs):
                 'message': 'Some message being returned'
             }
 
-        @skygear.after_save('some_record', async=True)
+        @skygear.after_save('some_record', async_=True)
         def some_record_after_save(record, original_record, db):
             return {
                 'success': True
