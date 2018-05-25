@@ -3,6 +3,7 @@ language: python
 python:
   - '3.4'
   - '3.5'
+  - '3.6'
 
 addons:
   postgresql: "9.5"
@@ -56,14 +57,14 @@ deploy:
     on:
       repo: SkygearIO/py-skygear
       tags: true
-      python: 3.5
+      python: 3.6
   - provider: script
     script: ./scripts/deploy.sh
     skip_cleanup: true
     on:
       repo: SkygearIO/py-skygear
       all_branches: true
-      python: 3.5
+      python: 3.6
 
 notifications:
   slack:
