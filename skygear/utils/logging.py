@@ -30,6 +30,8 @@ class CloudLogFormatter(jsonlogger.JsonFormatter):
 
         if 'msg' not in log_record and 'message' in log_record:
             log_record['msg'] = log_record.pop('message')
+        if 'error' not in log_record and 'exc_info' in log_record:
+            log_record['error'] = log_record.pop('exc_info')
 
 
 class RequestContextFilter(logging.Filter):
