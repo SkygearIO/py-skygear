@@ -26,6 +26,7 @@ class CloudLogFormatter(jsonlogger.JsonFormatter):
         log_record['logger'] = record.name
         created = datetime.datetime.fromtimestamp(record.created)
         log_record['time'] = created.strftime('%Y-%m-%dT%H:%M:%SZ')
+        log_record['process'] = 'python'
 
         if 'msg' not in log_record and 'message' in log_record:
             log_record['msg'] = log_record.pop('message')
