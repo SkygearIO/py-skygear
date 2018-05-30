@@ -89,7 +89,7 @@ class SettingsParser:
         if not env_var:
             env_var = name.upper()
 
-        if default:
+        if default is not None:
             required = False
 
         setting = SettingItem(name, default, atype, env_var, resolve, required)
