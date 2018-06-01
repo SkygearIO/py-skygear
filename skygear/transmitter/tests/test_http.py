@@ -87,26 +87,6 @@ class TestHttpTransport(unittest.TestCase):
         assert resp.status_code == 200
         mocker.assert_called_once_with('funny', ANY)
 
-    @patch('skygear.transmitter.http.HttpTransport.init_event_handler')
-    def testInitEvent(self, mocker):
-        mocker.return_value = {'data': 'hello'}
-        data = {
-            'kind': 'event',
-            'name': 'init',
-            'param': {
-                'config': {'hello': 'world'}
-            }
-        }
-        transport = HttpTransport('127.0.0.1:8888', Registry())
-        client = self.get_client(transport.dispatch)
-        resp = client.post('/', data=json.dumps(data))
-
-        assert resp.status_code == 200
-        mocker.assert_called_once_with(config={'hello': 'world'})
-
-        resp_data = json.loads(resp.get_data(as_text=True))
-        assert resp_data.get('result') == mocker.return_value
-
     @patch('skygear.transmitter.http.HttpTransport.call_func')
     def testHook(self, mocker):
         mocker.return_value = {}

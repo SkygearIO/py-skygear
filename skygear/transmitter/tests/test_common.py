@@ -202,3 +202,12 @@ class TestHandleException(unittest.TestCase):
     def testHandleSkygearException(self):
         exc = SkygearException('Error occurred', 1, {'data': 'hello'})
         assert common.handle_exception(exc) is exc
+
+
+class TestHandleInitEvent(unittest.TestCase):
+    @patch('skygear.registry.Registry.func_list')
+    def testHandleInitEvent(self, mocker):
+        mocker.return_value = {'data': 'hello'}
+        output = common.handle_init_event(hello='world')
+        mocker.assert_called_once_with()
+        assert output == mocker.return_value

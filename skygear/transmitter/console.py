@@ -43,9 +43,6 @@ class ConsoleTransport(CommonTransport):
         self.input = stdin
         self.output = stdout
 
-    def init_event_handler(self, **data):
-        return self._registry.func_list()
-
     def run(self):
         self.args = self.args
         target = self.args[0]
