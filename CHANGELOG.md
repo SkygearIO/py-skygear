@@ -1,3 +1,22 @@
+## 1.6.0 (2018-06-26)
+
+### Features
+
+- Add Lambda support for Skygear Data Type #195
+- Support structural logging with JSON formatter #207
+
+### Bug Fixes
+
+- Option should be optional when a default is specified
+- Fix multiple registration of 'init' event
+- Register multiple event handlers #209
+
+### Other Notes
+
+- Disallow registering for 'init' event
+- Support `async_` hook param in addition to `async`
+- Update to python 3.6 in travis and docker image
+
 ## 1.5.0 (2018-04-23)
 
 ### Other Notes
