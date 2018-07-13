@@ -29,15 +29,16 @@ class FileSystemAssetSigner(BaseAssetSigner):
         self.secret = secret
 
     def sign(self, name: str) -> str:
+        percent_escaped_name = self.percent_escape_asset_name(name)
         if not self.signature_required:
-            return '{}/{}'.format(self.url_prefix, name)
+            return '{}/{}'.format(self.url_prefix, percent_escaped_name)
 
         expired_at = datetime.now() + self.signature_expiry_duration
         expired_at_str = str(int(expired_at.timestamp()))
 
         hasher = hmac.new(self.secret.encode('utf-8'),
                           digestmod=hashlib.sha256)
-        hasher.update(name.encode('utf-8'))
+        hasher.update(percent_escaped_name.encode('utf-8'))
         hasher.update(expired_at_str.encode('utf-8'))
 
         signature = base64\
@@ -45,7 +46,7 @@ class FileSystemAssetSigner(BaseAssetSigner):
             .decode('utf-8')
 
         return '{}/{}?expiredAt={}&signature={}'.format(self.url_prefix,
-                                                        name,
+                                                        percent_escaped_name,
                                                         expired_at_str,
                                                         signature)
 

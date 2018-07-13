@@ -57,14 +57,14 @@ class TestFileSystemAssetSigner(unittest.TestCase):
     def test_signing(self, mock_datetime):
         mock_datetime.now.return_value = datetime.fromtimestamp(1481095934)
         signer = FileSystemAssetSigner.create(self.mock_options)
-        assert signer.sign('index.html') == (
-            'http://skygear.dev/files/index.html'
+        assert signer.sign('a good fixture') == (
+            'http://skygear.dev/files/a%20good%20fixture'
             '?expiredAt=1481096834'
-            '&signature=R5kMq2neUkCGBjQD6zSv99PajRvI0EqMesuRHQS4hNA=')
+            '&signature=YxMw4BbMg4ftB2ZswxVKm97cbfVzkup0RtolZ3IGRws=')
 
     def test_signing_public(self):
         options = self.mock_options
         options.asset_store_public = True
         signer = FileSystemAssetSigner.create(options)
-        assert signer.sign('index.html') \
-            == 'http://skygear.dev/files/index.html'
+        assert signer.sign('a good fixture') \
+            == 'http://skygear.dev/files/a%20good%20fixture'

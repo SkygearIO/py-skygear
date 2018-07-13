@@ -29,3 +29,8 @@ class TestBaseAssetSigner(unittest.TestCase):
     def test_signature_required(self):
         assert BaseAssetSigner().signature_required is True
         assert BaseAssetSigner(public=True).signature_required is False
+
+    def test_percent_escape_asset_name(self):
+        f = BaseAssetSigner().percent_escape_asset_name
+        assert f('/very evil filename with a solidus') == \
+            '/very%20evil%20filename%20with%20a%20solidus'

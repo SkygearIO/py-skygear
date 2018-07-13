@@ -32,16 +32,18 @@ class S3AssetSigner(BaseAssetSigner):
                                  region_name=region)
 
     def public_url(self, name: str) -> str:
+        percent_escaped_name = self.percent_escape_asset_name(name)
         if self.url_prefix:
-            return '/'.join([self.url_prefix, name])
+            return '/'.join([self.url_prefix, percent_escaped_name])
         return 'https://s3-{}.amazonaws.com/{}/{}'.format(self.region,
                                                           self.bucket,
-                                                          name)
+                                                          percent_escaped_name)
 
     def sign(self, name: str) -> str:
         if not self.signature_required:
             return self.public_url(name)
 
+        # We keep passing non-percent-escaped name as Key.
         params = {'Bucket': self.bucket, 'Key': name}
         expire_duration = int(self.signature_expiry_duration.total_seconds())
         return self.client.generate_presigned_url('get_object',

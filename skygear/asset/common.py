@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from datetime import timedelta
+from urllib.parse import quote
 
 
 class BaseAssetSigner:
@@ -30,3 +31,11 @@ class BaseAssetSigner:
     # espect subclass may have some costly checking in this method
     def available(self) -> bool:
         return True
+
+    def percent_escape_asset_name(self, name: str) -> str:
+        # We do not quote '/' in name.
+        # The first reason is that most file system
+        # does not allow '/' be part of the filename.
+        # Another reason is that AWS S3 allows object
+        # key to contain '/'.
+        return quote(name, safe='/')
