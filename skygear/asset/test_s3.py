@@ -110,13 +110,14 @@ class TestS3AssetSigner(unittest.TestCase):
         options = self.mock_options
         options.asset_store_public = True
         signer = S3AssetSigner.create(options)
-        assert signer.sign('index.html') == (
+        assert signer.sign('a good fixture') == (
             'https://s3-mock-s3-region.amazonaws.com/'
-            'mock-s3-bucket/index.html')
+            'mock-s3-bucket/a%20good%20fixture')
 
     def test_signing_public_with_url_prefix(self):
         options = self.mock_options
         options.asset_store_public = True
         options.asset_store_s3_url_prefix = 'http://skygear.dev'
         signer = S3AssetSigner.create(options)
-        assert signer.sign('index.html') == 'http://skygear.dev/index.html'
+        assert signer.sign('a good fixture') == \
+            'http://skygear.dev/a%20good%20fixture'

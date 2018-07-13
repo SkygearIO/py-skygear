@@ -223,10 +223,10 @@ class TestCloudAssetSigner(unittest.TestCase):
     def test_sign(self, mock_datetime):
         mock_datetime.now.return_value = datetime.fromtimestamp(1481095934)
         signer = CloudAssetSigner.create(self.mock_options())
-        assert signer.sign('index.html') == (
-            'http://mock-cloud-asset.dev/private/skygear-test/index.html'
+        assert signer.sign('a good fixture') == (
+            'http://mock-cloud-asset.dev/private/skygear-test/a%20good%20fixture'  # noqa
             '?expired_at=1481096834'
-            '&signature=peQtnmSFdoQWtFAk3cwLkM3lUspBkIhl5SPlR5hjFm4%3D'
+            '&signature=ngcacX71oJzYNTAyp95uBMxJPAejfumWf/3%2B/S%2B2mZ8%3D'
             '.mock-token-extra')
 
     def test_sign_public(self):
@@ -237,5 +237,5 @@ class TestCloudAssetSigner(unittest.TestCase):
             cloud_asset_public_prefix='http://mock-cloud-asset.dev/public',
             cloud_asset_private_prefix='http://mock-cloud-asset.dev/private',
             asset_store_public=True))
-        assert signer.sign('index.html') == \
-            'http://mock-cloud-asset.dev/public/skygear-test/index.html'
+        assert signer.sign('a good fixture') == \
+            'http://mock-cloud-asset.dev/public/skygear-test/a%20good%20fixture'  # noqa

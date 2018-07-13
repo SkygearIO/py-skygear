@@ -114,7 +114,9 @@ class CloudAssetSigner(BaseAssetSigner):
         if not self.available():
             self.refresh_signer_token()
 
-        url = '/'.join([self.url_prefix, self.app_name, name])
+        percent_escaped_name = self.percent_escape_asset_name(name)
+
+        url = '/'.join([self.url_prefix, self.app_name, percent_escaped_name])
         if not self.signature_required:
             return url
 
@@ -123,6 +125,8 @@ class CloudAssetSigner(BaseAssetSigner):
 
         hasher = hmac.new(self.signer_token.value.encode('utf-8'),
                           digestmod=hashlib.sha256)
+        # We still use the original name to derive the
+        # signature.
         for each_info in [self.app_name, name, expired_at_str,
                           self.signer_token.extra]:
             hasher.update(each_info.encode('utf-8'))
