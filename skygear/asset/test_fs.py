@@ -60,7 +60,7 @@ class TestFileSystemAssetSigner(unittest.TestCase):
         assert signer.sign('a good fixture') == (
             'http://skygear.dev/files/a%20good%20fixture'
             '?expiredAt=1481096834'
-            '&signature=YxMw4BbMg4ftB2ZswxVKm97cbfVzkup0RtolZ3IGRws=')
+            '&signature=kqPK4xP5usSaJl2dVM7qWjW9y1tBkJQZBCvz7dGwrPM=')
 
     def test_signing_public(self):
         options = self.mock_options

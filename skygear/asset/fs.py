@@ -38,7 +38,8 @@ class FileSystemAssetSigner(BaseAssetSigner):
 
         hasher = hmac.new(self.secret.encode('utf-8'),
                           digestmod=hashlib.sha256)
-        hasher.update(percent_escaped_name.encode('utf-8'))
+        # We still use the original name to derive the signature.
+        hasher.update(name.encode('utf-8'))
         hasher.update(expired_at_str.encode('utf-8'))
 
         signature = base64\
