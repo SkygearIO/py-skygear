@@ -1,0 +1,16 @@
+FROM python:3.6
+
+RUN pip install --upgrade pip && \
+    pip install --upgrade setuptools
+
+COPY requirements.txt test_requirements.txt /tmp/py-skygear/
+RUN \
+    pip install --no-cache-dir -r /tmp/py-skygear/requirements.txt && \
+    pip install --no-cache-dir -r /tmp/py-skygear/test_requirements.txt
+
+COPY . /usr/src/app
+WORKDIR /usr/src/app
+RUN python setup.py develop
+
+ENV PYTHONUNBUFFERED 0
+CMD ["py-skygear"]

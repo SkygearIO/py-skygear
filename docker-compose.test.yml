@@ -1,0 +1,23 @@
+version: '2'
+
+services:
+  test-db:
+    image: mdillon/postgis:9.5
+    volumes:
+      - test_db_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  test-app:
+    build:
+      context: .
+      dockerfile: Dockerfile-test
+    command: py-skygear --http
+    volumes:
+      - .:/usr/src/app
+    environment:
+      DATABASE_URL: postgres://postgres@test-db/postgres?sslmode=disable
+
+volumes:
+  test_db_data:
+    driver: local

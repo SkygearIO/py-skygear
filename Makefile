@@ -9,6 +9,11 @@ else
 	SED := sed -i""
 endif
 
+DOCKER_COMPOSE_CMD_TEST := docker-compose \
+	-f docker-compose.test.yml
+
+DOCKER_RUN_TEST := ${DOCKER_COMPOSE_CMD_TEST} run --rm test-app
+
 .PHONY: build
 build:
 	python setup.py bdist_wheel
@@ -17,6 +22,28 @@ build:
 .PHONY: clean
 clean:
 	-rm -rf $(DIST_DIR)
+
+.PHONY: before-docker-test
+before-docker-test:
+	${DOCKER_COMPOSE_CMD_TEST} up -d test-db
+	sleep 20
+	${DOCKER_COMPOSE_CMD_TEST} exec test-db \
+		psql -c 'CREATE DATABASE skygear_test;' -U postgres
+	${DOCKER_COMPOSE_CMD_TEST} exec test-db \
+		psql -c 'CREATE EXTENSION postgis;' -U postgres -d skygear_test
+
+.PHONY: docker-just-test
+docker-just-test:
+	${DOCKER_RUN_TEST} pylama skygear
+	${DOCKER_RUN_TEST} coverage run --source skygear setup.py test
+	${DOCKER_RUN_TEST} coverage report -m --omit '*tests*'
+
+.PHONY: after-docker-test
+after-docker-test:
+	${DOCKER_COMPOSE_CMD_TEST} down -v
+
+.PHONY: docker-test
+docker-test: before-docker-test docker-just-test after-docker-test
 
 .PHONY: docker-build
 docker-build: build
