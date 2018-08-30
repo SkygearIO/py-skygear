@@ -245,9 +245,6 @@ class TestRegistry(unittest.TestCase):
         assert param_map[0]['name'] == 'timer_name'
 
     def test_register_provider(self):
-        def fn():
-            pass
-
         class Provider():
             pass
 
@@ -262,6 +259,30 @@ class TestRegistry(unittest.TestCase):
         assert len(param_map) == 1
         assert param_map[0]['type'] == 'example'
         assert param_map[0]['id'] == 'com.example'
+        assert param_map[0]['name'] == 'com.example'
+
+    def test_register_multiple_providers(self):
+        class Provider():
+            pass
+
+        provider1 = Provider()
+        provider2 = Provider()
+        registry = Registry()
+        registry.register_provider('example', 'com.example.1', provider1)
+        registry.register_provider('example', 'com.example.2', provider2)
+
+        assert len(registry.providers) == 2
+        assert registry.providers['com.example.1'] == provider1
+        assert registry.providers['com.example.2'] == provider2
+
+        param_map = registry.param_map['provider']
+        assert len(param_map) == 2
+        assert param_map[0]['type'] == 'example'
+        assert param_map[0]['id'] == 'com.example.1'
+        assert param_map[0]['name'] == 'com.example.1'
+        assert param_map[1]['type'] == 'example'
+        assert param_map[1]['id'] == 'com.example.2'
+        assert param_map[1]['name'] == 'com.example.2'
 
     def test_register_static_assets(self):
         def fn():
