@@ -189,6 +189,9 @@ class Registry:
         kwargs['type'] = provider_type
         kwargs['id'] = provider_id
 
+        if kwargs.get('name') is None:
+            kwargs['name'] = provider_id
+
         if provider_id in self.providers:
             log.warning("Replacing previously registered provider '%s'.",
                         provider_id)
