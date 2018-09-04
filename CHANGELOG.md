@@ -1,3 +1,11 @@
+## 1.6.1 (2018-09-04)
+
+### Bug Fixes
+
+- Fix registered provider being overwrite issue
+- Fix missing offset for Query
+- Fix percent escape asset name
+
 ## 1.6.0 (2018-06-26)
 
 ### Features
