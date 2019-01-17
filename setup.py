@@ -87,7 +87,7 @@ setup(
             'psycopg2>=2.6.1',
             'SQLAlchemy>=1.0.8',
             'strict-rfc3339>=0.5',
-            'requests',
+            'requests>=2.20.0',
             'websocket-client>=0.32.0',
             'bcrypt==3.1.4',
             'ConfigArgParse>=0.12.0',
