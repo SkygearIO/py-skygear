@@ -1,3 +1,9 @@
+## 1.7.0 (2019-01-21)
+
+### Other Notes
+
+- Update requests>=2.20.0
+
 ## 1.6.1 (2018-09-04)
 
 ### Bug Fixes
