@@ -16,4 +16,4 @@ six==1.11.0
 SQLAlchemy==1.0.8
 strict-rfc3339==0.5
 websocket-client==0.32.0
-Werkzeug==0.11.3
+Werkzeug==0.15.3
